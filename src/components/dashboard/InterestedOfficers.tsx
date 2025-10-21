@@ -5,13 +5,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Lock, Mail } from "lucide-react";
 
 interface InterestedOfficersProps {
   companyId: string;
+  subscriptionTier?: string;
 }
 
-export default function InterestedOfficers({ companyId }: InterestedOfficersProps) {
+export default function InterestedOfficers({ companyId, subscriptionTier }: InterestedOfficersProps) {
   const queryClient = useQueryClient();
+  const isFreeTier = !subscriptionTier || subscriptionTier === 'free';
 
   const { data: interests, isLoading } = useQuery({
     queryKey: ["officer-interests", companyId],
@@ -74,6 +77,29 @@ export default function InterestedOfficers({ companyId }: InterestedOfficersProp
     },
   });
 
+  const handleSendInterestEmail = async (officerId: string) => {
+    if (isFreeTier) {
+      toast.error("Upgrade to Professional or Premium tier to send interest emails");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.functions.invoke('express-interest', {
+        body: { officerId }
+      });
+      
+      if (error) {
+        console.error('Error sending email:', error);
+        toast.error('Failed to send interest email');
+      } else {
+        toast.success('Interest email sent to officer!');
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast.error('Failed to send interest email');
+    }
+  };
+
   const interestedOfficers = interests?.filter((i) => i.status === "interested") || [];
   const notInterestedOfficers = interests?.filter((i) => i.status === "not_interested") || [];
 
@@ -119,21 +145,38 @@ export default function InterestedOfficers({ companyId }: InterestedOfficersProp
                   <p className="text-sm text-muted-foreground">
                     <strong>Experience:</strong> {interest.officer_profiles?.years_experience || 0} years
                   </p>
-                  <div className="flex gap-2 mt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        updateInterestMutation.mutate({ id: interest.id, status: "not_interested" })
-                      }
-                    >
-                      Move to Not Interested
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => removeInterestMutation.mutate(interest.id)}
-                    >
-                      Remove
-                    </Button>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          updateInterestMutation.mutate({ id: interest.id, status: "not_interested" })
+                        }
+                      >
+                        Move to Not Interested
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => removeInterestMutation.mutate(interest.id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    {isFreeTier ? (
+                      <Button variant="outline" disabled className="w-full">
+                        <Lock className="w-4 h-4 mr-2" />
+                        Send Interest Email (Premium Feature)
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="default" 
+                        className="w-full"
+                        onClick={() => handleSendInterestEmail(interest.officer_profiles?.id)}
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        Send Interest Email
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>

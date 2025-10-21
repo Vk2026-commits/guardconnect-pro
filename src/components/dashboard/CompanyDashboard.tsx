@@ -451,7 +451,12 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
         </TabsContent>
 
         <TabsContent value="interested">
-          {companyProfile && <InterestedOfficers companyId={companyProfile.id} />}
+          {companyProfile && (
+            <InterestedOfficers 
+              companyId={companyProfile.id}
+              subscriptionTier={companyProfile.subscription_tier}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="employment">
