@@ -29,7 +29,8 @@ const Browse = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [availabilityFilter, setAvailabilityFilter] = useState<string>("all");
-  const [timeFilter, setTimeFilter] = useState<string>("all");
+  const [shiftFilter, setShiftFilter] = useState<string>("all");
+  const [employmentTypeFilter, setEmploymentTypeFilter] = useState<string>("all");
   const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -92,23 +93,17 @@ const Browse = () => {
       }
     }
 
-    let matchesTime = true;
-    if (timeFilter !== "all" && officer.availability_schedule) {
-      const schedule = officer.availability_schedule;
-      const hasTimeSlot = Object.values(schedule).some((day: any) => {
-        if (!day?.available || !day?.timeSlots) return false;
-        return day.timeSlots.some((slot: string) => {
-          if (timeFilter === "morning" && (slot.includes("6am") || slot.includes("7am") || slot.includes("8am") || slot.includes("9am") || slot.includes("10am") || slot.includes("11am"))) return true;
-          if (timeFilter === "afternoon" && (slot.includes("12pm") || slot.includes("1pm") || slot.includes("2pm") || slot.includes("3pm") || slot.includes("4pm") || slot.includes("5pm"))) return true;
-          if (timeFilter === "evening" && (slot.includes("6pm") || slot.includes("7pm") || slot.includes("8pm") || slot.includes("9pm") || slot.includes("10pm") || slot.includes("11pm"))) return true;
-          if (timeFilter === "overnight" && (slot.includes("12am") || slot.includes("1am") || slot.includes("2am") || slot.includes("3am") || slot.includes("4am") || slot.includes("5am"))) return true;
-          return false;
-        });
-      });
-      matchesTime = hasTimeSlot;
+    let matchesShift = true;
+    if (shiftFilter !== "all" && officer.shift_preference) {
+      matchesShift = officer.shift_preference.includes(shiftFilter);
     }
 
-    return matchesSearch && matchesCity && matchesAvailability && matchesTime;
+    let matchesEmploymentType = true;
+    if (employmentTypeFilter !== "all" && officer.employment_type) {
+      matchesEmploymentType = officer.employment_type.includes(employmentTypeFilter);
+    }
+
+    return matchesSearch && matchesCity && matchesAvailability && matchesShift && matchesEmploymentType;
   });
 
   const texasCities = [
@@ -122,11 +117,17 @@ const Browse = () => {
     { value: "weekends", label: "Weekends Only" }
   ];
 
-  const timeOptions = [
-    { value: "morning", label: "Morning (6am-11am)" },
-    { value: "afternoon", label: "Afternoon (12pm-5pm)" },
-    { value: "evening", label: "Evening (6pm-11pm)" },
-    { value: "overnight", label: "Overnight (12am-5am)" }
+  const shiftOptions = [
+    { value: "first_shift", label: "First Shift (Day)" },
+    { value: "second_shift", label: "Second Shift (Evening)" },
+    { value: "third_shift", label: "Third Shift (Night)" },
+    { value: "weekend", label: "Weekends" }
+  ];
+
+  const employmentTypeOptions = [
+    { value: "full_time", label: "Full-time" },
+    { value: "part_time", label: "Part-time" },
+    { value: "seasonal", label: "Seasonal" }
   ];
 
   const handleViewProfile = async (officer: any) => {
@@ -229,14 +230,29 @@ const Browse = () => {
             </div>
 
             <div className="w-full sm:w-auto sm:min-w-[200px]">
-              <Select value={timeFilter} onValueChange={setTimeFilter}>
+              <Select value={shiftFilter} onValueChange={setShiftFilter}>
                 <SelectTrigger>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Filter by Time" />
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filter by Shift" />
                 </SelectTrigger>
                 <SelectContent className="bg-background z-50">
-                  <SelectItem value="all">All Times</SelectItem>
-                  {timeOptions.map((option) => (
+                  <SelectItem value="all">All Shifts</SelectItem>
+                  {shiftOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-full sm:w-auto sm:min-w-[200px]">
+              <Select value={employmentTypeFilter} onValueChange={setEmploymentTypeFilter}>
+                <SelectTrigger>
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Employment Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">All Types</SelectItem>
+                  {employmentTypeOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                   ))}
                 </SelectContent>
