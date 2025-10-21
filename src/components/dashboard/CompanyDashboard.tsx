@@ -127,15 +127,15 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
       <div className="flex min-h-screen w-full">
         <CompanySidebar activeTab={activeTab} onTabChange={setActiveTab} />
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <div className="border-b bg-background sticky top-0 z-10">
-            <div className="flex h-16 items-center px-4">
+            <div className="flex h-16 items-center px-4 gap-2">
               <SidebarTrigger />
-              <h2 className="text-lg font-semibold ml-4">Company Dashboard</h2>
+              <h2 className="text-lg font-semibold">Company Dashboard</h2>
             </div>
           </div>
           
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 w-full overflow-auto">
             {activeTab === "browse" && (
               <>
                 <div className="grid md:grid-cols-2 gap-4">
