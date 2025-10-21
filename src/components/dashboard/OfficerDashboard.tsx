@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Award, Video, User, Briefcase } from "lucide-react";
+import { Award, Video, User, Briefcase, Clock } from "lucide-react";
 import { CertificationsManager } from "./CertificationsManager";
 import { PhotoUpload } from "./PhotoUpload";
 import { OfficerPhotos } from "./OfficerPhotos";
@@ -28,6 +29,8 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
     location: "",
     linkedin_url: "",
     hourly_rate: "",
+    employment_type: [] as string[],
+    availability_schedule: {} as Record<string, { start: string; end: string }>,
   });
 
   useEffect(() => {
@@ -51,6 +54,8 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         location: data.location || "",
         linkedin_url: data.linkedin_url || "",
         hourly_rate: data.hourly_rate?.toString() || "",
+        employment_type: data.employment_type || [],
+        availability_schedule: (data.availability_schedule as Record<string, { start: string; end: string }>) || {},
       });
     }
   };
@@ -83,6 +88,8 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         location: formData.location,
         linkedin_url: formData.linkedin_url,
         hourly_rate: parseFloat(formData.hourly_rate) || null,
+        employment_type: formData.employment_type,
+        availability_schedule: formData.availability_schedule,
       };
 
       if (officerProfile) {
@@ -151,8 +158,9 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="availability">Availability</TabsTrigger>
           <TabsTrigger value="photos">Photos</TabsTrigger>
           <TabsTrigger value="certifications">Certifications</TabsTrigger>
           <TabsTrigger value="work-history">Work History</TabsTrigger>
@@ -254,10 +262,127 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                   />
                 </div>
 
+                <div className="space-y-3">
+                  <Label>Employment Type Preference</Label>
+                  <div className="flex gap-6">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="full-time"
+                        checked={formData.employment_type.includes("Full-time")}
+                        onCheckedChange={(checked) => {
+                          setFormData({
+                            ...formData,
+                            employment_type: checked
+                              ? [...formData.employment_type, "Full-time"]
+                              : formData.employment_type.filter((t) => t !== "Full-time"),
+                          });
+                        }}
+                      />
+                      <Label htmlFor="full-time" className="cursor-pointer">Full-time</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="part-time"
+                        checked={formData.employment_type.includes("Part-time")}
+                        onCheckedChange={(checked) => {
+                          setFormData({
+                            ...formData,
+                            employment_type: checked
+                              ? [...formData.employment_type, "Part-time"]
+                              : formData.employment_type.filter((t) => t !== "Part-time"),
+                          });
+                        }}
+                      />
+                      <Label htmlFor="part-time" className="cursor-pointer">Part-time</Label>
+                    </div>
+                  </div>
+                </div>
+
                 <Button type="submit" disabled={loading}>
                   {loading ? "Saving..." : "Save Profile"}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="availability">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Weekly Availability
+              </CardTitle>
+              <CardDescription>
+                Set your available hours for each day of the week
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
+                  <div key={day} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center pb-4 border-b last:border-0">
+                    <Label className="font-semibold">{day}</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${day}-start`} className="text-sm text-muted-foreground">Start Time</Label>
+                      <Input
+                        id={`${day}-start`}
+                        type="time"
+                        value={formData.availability_schedule[day]?.start || ""}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            availability_schedule: {
+                              ...formData.availability_schedule,
+                              [day]: {
+                                ...formData.availability_schedule[day],
+                                start: e.target.value,
+                              },
+                            },
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${day}-end`} className="text-sm text-muted-foreground">End Time</Label>
+                      <Input
+                        id={`${day}-end`}
+                        type="time"
+                        value={formData.availability_schedule[day]?.end || ""}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            availability_schedule: {
+                              ...formData.availability_schedule,
+                              [day]: {
+                                ...formData.availability_schedule[day],
+                                end: e.target.value,
+                              },
+                            },
+                          });
+                        }}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newSchedule = { ...formData.availability_schedule };
+                        delete newSchedule[day];
+                        setFormData({
+                          ...formData,
+                          availability_schedule: newSchedule,
+                        });
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                ))}
+                <Button onClick={handleSubmit} disabled={loading}>
+                  {loading ? "Saving..." : "Save Availability"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

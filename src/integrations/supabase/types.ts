@@ -134,6 +134,8 @@ export type Database = {
           created_at: string | null
           id: string
           industry: string | null
+          license_number: string | null
+          license_types: string[] | null
           subscription_tier:
             | Database["public"]["Enums"]["subscription_tier"]
             | null
@@ -154,6 +156,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           industry?: string | null
+          license_number?: string | null
+          license_types?: string[] | null
           subscription_tier?:
             | Database["public"]["Enums"]["subscription_tier"]
             | null
@@ -174,6 +178,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           industry?: string | null
+          license_number?: string | null
+          license_types?: string[] | null
           subscription_tier?:
             | Database["public"]["Enums"]["subscription_tier"]
             | null
@@ -333,10 +339,12 @@ export type Database = {
           address_street: string | null
           address_unit: string | null
           address_zip: string | null
+          availability_schedule: Json | null
           availability_status: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          employment_type: string[] | null
           hourly_rate: number | null
           id: string
           linkedin_url: string | null
@@ -356,10 +364,12 @@ export type Database = {
           address_street?: string | null
           address_unit?: string | null
           address_zip?: string | null
+          availability_schedule?: Json | null
           availability_status?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          employment_type?: string[] | null
           hourly_rate?: number | null
           id?: string
           linkedin_url?: string | null
@@ -379,10 +389,12 @@ export type Database = {
           address_street?: string | null
           address_unit?: string | null
           address_zip?: string | null
+          availability_schedule?: Json | null
           availability_status?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          employment_type?: string[] | null
           hourly_rate?: number | null
           id?: string
           linkedin_url?: string | null

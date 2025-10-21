@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Building2, Crown, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,8 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
     company_phone_ext: "",
     contact_cell_phone: "",
     contact_email: "",
+    license_number: "",
+    license_types: [] as string[],
   });
 
   useEffect(() => {
@@ -57,6 +60,8 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
         company_phone_ext: data.company_phone_ext || "",
         contact_cell_phone: data.contact_cell_phone || "",
         contact_email: data.contact_email || "",
+        license_number: data.license_number || "",
+        license_types: data.license_types || [],
       });
     }
   };
@@ -276,6 +281,124 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
                     value={formData.contact_cell_phone}
                     onChange={(e) => setFormData({ ...formData, contact_cell_phone: e.target.value })}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="contact_email">Contact Email</Label>
+                  <Input
+                    id="contact_email"
+                    type="email"
+                    placeholder="hiring@company.com"
+                    value={formData.contact_email}
+                    onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="license_number">Company License Number</Label>
+                  <Input
+                    id="license_number"
+                    placeholder="e.g., A12345"
+                    value={formData.license_number}
+                    onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label>Texas Security License Type(s)</Label>
+              <div className="space-y-3 border rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="class-a"
+                    checked={formData.license_types.includes("Class A")}
+                    onCheckedChange={(checked) => {
+                      setFormData({
+                        ...formData,
+                        license_types: checked
+                          ? [...formData.license_types, "Class A"]
+                          : formData.license_types.filter((t) => t !== "Class A"),
+                      });
+                    }}
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor="class-a" className="font-semibold cursor-pointer">
+                      Class A: Private Investigation Company License
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Authorized to operate as a private investigations company. Limited to investigations, does not include general security contracting.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="class-b"
+                      checked={formData.license_types.includes("Class B")}
+                      onCheckedChange={(checked) => {
+                        setFormData({
+                          ...formData,
+                          license_types: checked
+                            ? [...formData.license_types, "Class B"]
+                            : formData.license_types.filter((t) => t !== "Class B"),
+                        });
+                      }}
+                    />
+                    <div className="space-y-1">
+                      <Label htmlFor="class-b" className="font-semibold cursor-pointer">
+                        Class B: Security Contractor Company License
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Authorized to operate as a security contractor. May include one or more subcategories:
+                      </p>
+                    </div>
+                  </div>
+                  <div className="ml-8 space-y-2 text-sm">
+                    {["Alarm Systems", "Armored Car", "Courier", "Electronic Access", "Guard", "Locksmith"].map((subtype) => (
+                      <div key={subtype} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`class-b-${subtype.toLowerCase().replace(" ", "-")}`}
+                          checked={formData.license_types.includes(`Class B - ${subtype}`)}
+                          onCheckedChange={(checked) => {
+                            setFormData({
+                              ...formData,
+                              license_types: checked
+                                ? [...formData.license_types, `Class B - ${subtype}`]
+                                : formData.license_types.filter((t) => t !== `Class B - ${subtype}`),
+                            });
+                          }}
+                        />
+                        <Label htmlFor={`class-b-${subtype.toLowerCase().replace(" ", "-")}`} className="cursor-pointer font-normal">
+                          {subtype}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="class-c"
+                    checked={formData.license_types.includes("Class C")}
+                    onCheckedChange={(checked) => {
+                      setFormData({
+                        ...formData,
+                        license_types: checked
+                          ? [...formData.license_types, "Class C"]
+                          : formData.license_types.filter((t) => t !== "Class C"),
+                      });
+                    }}
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor="class-c" className="font-semibold cursor-pointer">
+                      Class C: Investigations and Security Contractor Company License
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Provides both private investigation services and all types of security contractor services covered under Class A and Class B licenses.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
