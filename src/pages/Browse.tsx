@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, DollarSign, Briefcase, Search, Heart, HeartOff, Lock } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MapPin, DollarSign, Briefcase, Search, Heart, HeartOff, Lock, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Dialog,
@@ -26,6 +27,8 @@ const Browse = () => {
   const [officers, setOfficers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [cityFilter, setCityFilter] = useState<string>("all");
+  const [availabilityFilter, setAvailabilityFilter] = useState<string>("all");
   const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -68,12 +71,38 @@ const Browse = () => {
 
   const filteredOfficers = officers.filter((officer) => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = (
       officer.title?.toLowerCase().includes(searchLower) ||
       officer.location?.toLowerCase().includes(searchLower) ||
       officer.profiles?.full_name?.toLowerCase().includes(searchLower)
     );
+
+    const matchesCity = cityFilter === "all" || officer.address_city === cityFilter;
+
+    let matchesAvailability = true;
+    if (availabilityFilter !== "all" && officer.availability_schedule) {
+      const schedule = officer.availability_schedule;
+      matchesAvailability = schedule[availabilityFilter]?.available === true;
+    }
+
+    return matchesSearch && matchesCity && matchesAvailability;
   });
+
+  const texasCities = [
+    "Houston", "San Antonio", "Dallas", "Austin", "Fort Worth",
+    "El Paso", "Arlington", "Corpus Christi", "Plano", "Laredo",
+    "Lubbock", "Irving", "Garland", "Frisco", "McKinney"
+  ];
+
+  const daysOfWeek = [
+    { value: "monday", label: "Monday" },
+    { value: "tuesday", label: "Tuesday" },
+    { value: "wednesday", label: "Wednesday" },
+    { value: "thursday", label: "Thursday" },
+    { value: "friday", label: "Friday" },
+    { value: "saturday", label: "Saturday" },
+    { value: "sunday", label: "Sunday" }
+  ];
 
   const handleViewProfile = async (officer: any) => {
     setSelectedOfficer(officer);
@@ -132,7 +161,7 @@ const Browse = () => {
           </p>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 space-y-4">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -141,6 +170,38 @@ const Browse = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
+          </div>
+          
+          <div className="flex flex-wrap gap-4">
+            <div className="w-full sm:w-auto sm:min-w-[200px]">
+              <Select value={cityFilter} onValueChange={setCityFilter}>
+                <SelectTrigger>
+                  <MapPin className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filter by City" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {texasCities.map((city) => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-full sm:w-auto sm:min-w-[200px]">
+              <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
+                <SelectTrigger>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filter by Availability" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Availability</SelectItem>
+                  {daysOfWeek.map((day) => (
+                    <SelectItem key={day.value} value={day.value}>{day.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
