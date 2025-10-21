@@ -262,6 +262,48 @@ export type Database = {
           },
         ]
       }
+      officer_interests: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          id: string
+          officer_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          id?: string
+          officer_id: string
+          status: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          officer_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "officer_interests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "officer_interests_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       officer_profiles: {
         Row: {
           address_city: string | null

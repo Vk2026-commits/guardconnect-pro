@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Building2, Crown, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EmploymentTracking from "./EmploymentTracking";
+import InterestedOfficers from "./InterestedOfficers";
 
 interface CompanyDashboardProps {
   userId: string;
@@ -195,9 +196,10 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
       </Card>
 
       <Tabs defaultValue="browse" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="browse">Browse Officers</TabsTrigger>
-          <TabsTrigger value="employment">Employment Tracking</TabsTrigger>
+          <TabsTrigger value="interested">Interested</TabsTrigger>
+          <TabsTrigger value="employment">Hired</TabsTrigger>
         </TabsList>
         
         <TabsContent value="browse">
@@ -214,6 +216,10 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="interested">
+          {companyProfile && <InterestedOfficers companyId={companyProfile.id} />}
         </TabsContent>
 
         <TabsContent value="employment">

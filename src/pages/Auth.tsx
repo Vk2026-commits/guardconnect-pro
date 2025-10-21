@@ -27,13 +27,16 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
+  const urlRole = searchParams.get("role");
   
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
-  const [role, setRole] = useState<"officer" | "company">("officer");
+  const [role, setRole] = useState<"officer" | "company">(
+    (urlRole === "officer" || urlRole === "company") ? urlRole : "officer"
+  );
   const [loading, setLoading] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 

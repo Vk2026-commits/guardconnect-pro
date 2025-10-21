@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, DollarSign, Briefcase, Search } from "lucide-react";
+import { MapPin, DollarSign, Briefcase, Search, Heart, HeartOff, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Dialog,
@@ -14,6 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 import HireButton from "@/components/dashboard/HireButton";
 import { toast } from "sonner";
 
@@ -87,6 +92,34 @@ const Browse = () => {
     }
   };
 
+  const handleInterest = async (officerId: string, status: 'interested' | 'not_interested') => {
+    if (!companyProfile) {
+      toast.error("Please create a company profile first");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("officer_interests")
+        .upsert(
+          {
+            company_id: companyProfile.id,
+            officer_id: officerId,
+            status,
+          },
+          { onConflict: 'company_id,officer_id' }
+        );
+
+      if (error) throw error;
+      toast.success(`Officer marked as ${status === 'interested' ? 'interested' : 'not interested'}`);
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const isFreeTier = !companyProfile || companyProfile.subscription_tier === 'free';
+  const canViewFullDetails = companyProfile && ['professional', 'premium'].includes(companyProfile.subscription_tier);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -141,7 +174,9 @@ const Browse = () => {
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-xl">
-                        {officer.profiles?.full_name || "Anonymous"}
+                        {isFreeTier && officer.profiles?.full_name 
+                          ? `${officer.profiles.full_name.split(' ')[0]} ${officer.profiles.full_name.split(' ').slice(1).map((n: string) => n[0]).join('')}.`
+                          : officer.profiles?.full_name || "Anonymous"}
                       </CardTitle>
                       <CardDescription className="mt-1">
                         {officer.title || "Security Officer"}
@@ -200,7 +235,9 @@ const Browse = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl">
-              {selectedOfficer?.profiles?.full_name || "Officer Profile"}
+              {isFreeTier && selectedOfficer?.profiles?.full_name 
+                ? `${selectedOfficer.profiles.full_name.split(' ')[0]} ${selectedOfficer.profiles.full_name.split(' ').slice(1).map((n: string) => n[0]).join('')}.`
+                : selectedOfficer?.profiles?.full_name || "Officer Profile"}
             </DialogTitle>
             <DialogDescription>
               {selectedOfficer?.title || "Security Officer"}
@@ -209,11 +246,24 @@ const Browse = () => {
           
           {selectedOfficer && (
             <div className="space-y-4">
+              {isFreeTier && (
+                <Alert>
+                  <Lock className="h-4 w-4" />
+                  <AlertTitle>Limited Information Available</AlertTitle>
+                  <AlertDescription>
+                    Upgrade to Professional or Premium to view full officer details, including contact information, work history, and certifications.
+                    <Link to="/auth?role=company" className="block mt-2">
+                      <Button variant="link" className="p-0 h-auto">Upgrade Now</Button>
+                    </Link>
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <div className="flex items-center gap-4">
                 {selectedOfficer.availability_status === "available" && (
                   <Badge className="bg-green-100 text-green-800">Available</Badge>
                 )}
-                {selectedOfficer.officer_number && (
+                {!isFreeTier && selectedOfficer.officer_number && (
                   <span className="text-sm text-muted-foreground">
                     ID: {selectedOfficer.officer_number}
                   </span>
@@ -242,22 +292,29 @@ const Browse = () => {
                   </div>
                 )}
 
-                {selectedOfficer.hourly_rate && (
+                {canViewFullDetails && selectedOfficer.hourly_rate && (
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">${selectedOfficer.hourly_rate}/hour</span>
                   </div>
                 )}
 
-                {selectedOfficer.phone && (
+                {canViewFullDetails && selectedOfficer.phone && (
                   <div className="text-sm">
                     <span className="font-medium">Phone: </span>
                     {selectedOfficer.phone}
                   </div>
                 )}
+
+                {canViewFullDetails && selectedOfficer.profiles?.email && (
+                  <div className="text-sm">
+                    <span className="font-medium">Email: </span>
+                    {selectedOfficer.profiles.email}
+                  </div>
+                )}
               </div>
 
-              {selectedOfficer.main_region && (
+              {canViewFullDetails && selectedOfficer.main_region && (
                 <div>
                   <h3 className="font-semibold mb-2">Main Region</h3>
                   <p className="text-sm">{selectedOfficer.main_region}</p>
@@ -265,12 +322,33 @@ const Browse = () => {
               )}
 
               {companyProfile && (
-                <div className="pt-4 border-t">
-                  <HireButton 
-                    officerId={selectedOfficer.id}
-                    officerName={selectedOfficer.profiles?.full_name || "Officer"}
-                    companyId={companyProfile.id}
-                  />
+                <div className="pt-4 border-t space-y-3">
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleInterest(selectedOfficer.id, 'interested')}
+                    >
+                      <Heart className="w-4 h-4 mr-2" />
+                      Interested
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleInterest(selectedOfficer.id, 'not_interested')}
+                    >
+                      <HeartOff className="w-4 h-4 mr-2" />
+                      Not Interested
+                    </Button>
+                  </div>
+                  
+                  {canViewFullDetails && (
+                    <HireButton 
+                      officerId={selectedOfficer.id}
+                      officerName={selectedOfficer.profiles?.full_name || "Officer"}
+                      companyId={companyProfile.id}
+                    />
+                  )}
                 </div>
               )}
             </div>

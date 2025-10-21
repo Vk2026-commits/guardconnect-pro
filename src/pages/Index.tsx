@@ -1,8 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, Award, Video, Lock, Users, CheckCircle2 } from "lucide-react";
+import { Shield, Award, Video, Lock, Users, CheckCircle2, Building2, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Index = () => {
   return (
@@ -31,9 +39,37 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button size="lg" asChild className="text-lg h-12 px-8">
-                <Link to="/auth?mode=signup">Create Your Profile</Link>
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="text-lg h-12 px-8">
+                    Create Your Profile
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Choose Your Role</DialogTitle>
+                    <DialogDescription>
+                      Are you a security officer looking for work, or a company looking to hire?
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid grid-cols-1 gap-4 py-4">
+                    <Link to="/auth?role=officer" className="w-full">
+                      <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
+                        <User className="w-8 h-8" />
+                        <span className="font-semibold">I am a Security Officer</span>
+                        <span className="text-xs text-muted-foreground">Looking for opportunities</span>
+                      </Button>
+                    </Link>
+                    <Link to="/auth?role=company" className="w-full">
+                      <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
+                        <Building2 className="w-8 h-8" />
+                        <span className="font-semibold">I am a Company</span>
+                        <span className="text-xs text-muted-foreground">Looking to hire security officers</span>
+                      </Button>
+                    </Link>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Button size="lg" variant="outline" asChild className="text-lg h-12 px-8">
                 <Link to="/browse">Browse Professionals</Link>
               </Button>
