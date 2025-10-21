@@ -63,32 +63,41 @@ export type Database = {
       }
       certifications: {
         Row: {
+          certification_number: string | null
+          certification_type: string | null
           created_at: string | null
           credential_id: string | null
           expiry_date: string | null
           id: string
           issue_date: string | null
           issuing_organization: string | null
+          license_level: string | null
           name: string
           officer_id: string
         }
         Insert: {
+          certification_number?: string | null
+          certification_type?: string | null
           created_at?: string | null
           credential_id?: string | null
           expiry_date?: string | null
           id?: string
           issue_date?: string | null
           issuing_organization?: string | null
+          license_level?: string | null
           name: string
           officer_id: string
         }
         Update: {
+          certification_number?: string | null
+          certification_type?: string | null
           created_at?: string | null
           credential_id?: string | null
           expiry_date?: string | null
           id?: string
           issue_date?: string | null
           issuing_organization?: string | null
+          license_level?: string | null
           name?: string
           officer_id?: string
         }

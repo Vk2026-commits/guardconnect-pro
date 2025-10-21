@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Award, Video, User } from "lucide-react";
+import { CertificationsManager } from "./CertificationsManager";
 
 interface OfficerDashboardProps {
   userId: string;
@@ -131,99 +133,119 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Professional Profile</CardTitle>
-          <CardDescription>
-            Update your profile information to attract potential employers
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Professional Title</Label>
-                <Input
-                  id="title"
-                  placeholder="e.g., Licensed Security Officer"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                />
-              </div>
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="certifications">Certifications</TabsTrigger>
+        </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="years_experience">Years of Experience</Label>
-                <Input
-                  id="years_experience"
-                  type="number"
-                  placeholder="5"
-                  value={formData.years_experience}
-                  onChange={(e) => setFormData({ ...formData, years_experience: e.target.value })}
-                />
-              </div>
+        <TabsContent value="profile">
+          <Card>
+            <CardHeader>
+              <CardTitle>Professional Profile</CardTitle>
+              <CardDescription>
+                Update your profile information to attract potential employers
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Professional Title</Label>
+                    <Input
+                      id="title"
+                      placeholder="e.g., Licensed Security Officer"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+1 (555) 000-0000"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="years_experience">Years of Experience</Label>
+                    <Input
+                      id="years_experience"
+                      type="number"
+                      placeholder="5"
+                      value={formData.years_experience}
+                      onChange={(e) => setFormData({ ...formData, years_experience: e.target.value })}
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  placeholder="City, State"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="linkedin_url">LinkedIn Profile</Label>
-                <Input
-                  id="linkedin_url"
-                  type="url"
-                  placeholder="https://linkedin.com/in/..."
-                  value={formData.linkedin_url}
-                  onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      placeholder="City, State"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
-                <Input
-                  id="hourly_rate"
-                  type="number"
-                  step="0.01"
-                  placeholder="25.00"
-                  value={formData.hourly_rate}
-                  onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
-                />
-              </div>
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedin_url">LinkedIn Profile</Label>
+                    <Input
+                      id="linkedin_url"
+                      type="url"
+                      placeholder="https://linkedin.com/in/..."
+                      value={formData.linkedin_url}
+                      onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+                    />
+                  </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Professional Bio</Label>
-              <Textarea
-                id="bio"
-                placeholder="Tell companies about your experience, specializations, and what makes you an excellent security professional..."
-                rows={6}
-                value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              />
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
+                    <Input
+                      id="hourly_rate"
+                      type="number"
+                      step="0.01"
+                      placeholder="25.00"
+                      value={formData.hourly_rate}
+                      onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
+                    />
+                  </div>
+                </div>
 
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save Profile"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Professional Bio</Label>
+                  <Textarea
+                    id="bio"
+                    placeholder="Tell companies about your experience, specializations, and what makes you an excellent security professional..."
+                    rows={6}
+                    value={formData.bio}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  />
+                </div>
+
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Saving..." : "Save Profile"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="certifications">
+          {officerProfile && <CertificationsManager officerId={officerProfile.id} />}
+          {!officerProfile && (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Please complete your profile first to add certifications
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
