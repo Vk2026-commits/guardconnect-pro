@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Award, Video, Lock, Users, CheckCircle2, Building2, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import JobListings from "@/components/JobListings";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +18,11 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-[1fr_300px] gap-8">
+          <div>
+            {/* Hero Section */}
+            <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]" />
         <div className="container mx-auto max-w-6xl relative">
           <div className="text-center space-y-6">
@@ -78,8 +82,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-muted/30">
+            {/* Features Section */}
+            <section className="py-20 bg-muted/30 rounded-lg">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -130,8 +134,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Pricing Tiers */}
-      <section className="py-20 px-4">
+            {/* Pricing Tiers */}
+            <section className="py-20">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -245,8 +249,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+            {/* CTA Section */}
+            <section className="py-20 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-lg">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Get Started?
@@ -264,6 +268,15 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+          </div>
+
+          {/* Job Listings Sidebar */}
+          <aside className="lg:sticky lg:top-8 lg:self-start">
+            <JobListings />
+          </aside>
+        </div>
+      </div>
 
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">

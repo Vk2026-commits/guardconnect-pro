@@ -11,6 +11,8 @@ import { Building2, Crown, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import EmploymentTracking from "./EmploymentTracking";
 import InterestedOfficers from "./InterestedOfficers";
+import JobPostings from "./JobPostings";
+import JobApplicants from "./JobApplicants";
 
 interface CompanyDashboardProps {
   userId: string;
@@ -411,8 +413,10 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
       </Card>
 
       <Tabs defaultValue="browse" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="browse">Browse Officers</TabsTrigger>
+          <TabsTrigger value="jobs">Job Postings</TabsTrigger>
+          <TabsTrigger value="applicants">Applicants</TabsTrigger>
           <TabsTrigger value="interested">Interested</TabsTrigger>
           <TabsTrigger value="employment">Hired</TabsTrigger>
         </TabsList>
@@ -431,6 +435,19 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="jobs">
+          {companyProfile && <JobPostings companyId={companyProfile.id} />}
+        </TabsContent>
+
+        <TabsContent value="applicants">
+          {companyProfile && (
+            <JobApplicants
+              companyId={companyProfile.id}
+              subscriptionTier={companyProfile.subscription_tier}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="interested">

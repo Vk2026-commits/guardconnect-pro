@@ -289,6 +289,104 @@ export type Database = {
           },
         ]
       }
+      job_applications: {
+        Row: {
+          created_at: string | null
+          id: string
+          job_posting_id: string
+          message: string | null
+          officer_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          job_posting_id: string
+          message?: string | null
+          officer_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          job_posting_id?: string
+          message?: string | null
+          officer_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_posting_id_fkey"
+            columns: ["job_posting_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_postings: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          description: string | null
+          employment_type: string[] | null
+          hourly_rate_max: number | null
+          hourly_rate_min: number | null
+          id: string
+          location: string | null
+          requirements: string | null
+          shift_type: string[] | null
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          description?: string | null
+          employment_type?: string[] | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
+          id?: string
+          location?: string | null
+          requirements?: string | null
+          shift_type?: string[] | null
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          description?: string | null
+          employment_type?: string[] | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
+          id?: string
+          location?: string | null
+          requirements?: string | null
+          shift_type?: string[] | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_postings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       officer_interests: {
         Row: {
           company_id: string
