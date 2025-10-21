@@ -352,6 +352,7 @@ export type Database = {
           main_region: string | null
           officer_number: string | null
           phone: string | null
+          shift_preference: string[] | null
           title: string | null
           updated_at: string | null
           user_id: string
@@ -377,6 +378,7 @@ export type Database = {
           main_region?: string | null
           officer_number?: string | null
           phone?: string | null
+          shift_preference?: string[] | null
           title?: string | null
           updated_at?: string | null
           user_id: string
@@ -402,6 +404,7 @@ export type Database = {
           main_region?: string | null
           officer_number?: string | null
           phone?: string | null
+          shift_preference?: string[] | null
           title?: string | null
           updated_at?: string | null
           user_id?: string

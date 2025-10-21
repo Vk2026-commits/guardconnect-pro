@@ -31,7 +31,10 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
     hourly_rate: "",
     employment_type: [] as string[],
     availability_schedule: {} as Record<string, { start: string; end: string }>,
+    shift_preference: [] as string[],
   });
+  const [quickSetStart, setQuickSetStart] = useState("");
+  const [quickSetEnd, setQuickSetEnd] = useState("");
 
   useEffect(() => {
     loadProfile();
@@ -56,6 +59,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         hourly_rate: data.hourly_rate?.toString() || "",
         employment_type: data.employment_type || [],
         availability_schedule: (data.availability_schedule as Record<string, { start: string; end: string }>) || {},
+        shift_preference: data.shift_preference || [],
       });
     }
   };
@@ -90,6 +94,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         hourly_rate: parseFloat(formData.hourly_rate) || null,
         employment_type: formData.employment_type,
         availability_schedule: formData.availability_schedule,
+        shift_preference: formData.shift_preference,
       };
 
       if (officerProfile) {
@@ -318,7 +323,98 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
+                {/* Quick Set Actions */}
+                <div className="p-4 border rounded-lg space-y-4 bg-muted/30">
+                  <h3 className="font-semibold text-sm">Quick Actions</h3>
+                  
+                  {/* Set All Days */}
+                  <div className="flex flex-wrap gap-3 items-end">
+                    <div className="space-y-2">
+                      <Label htmlFor="quick-start" className="text-xs">Start Time</Label>
+                      <Input
+                        id="quick-start"
+                        type="time"
+                        value={quickSetStart}
+                        onChange={(e) => setQuickSetStart(e.target.value)}
+                        className="w-32"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="quick-end" className="text-xs">End Time</Label>
+                      <Input
+                        id="quick-end"
+                        type="time"
+                        value={quickSetEnd}
+                        onChange={(e) => setQuickSetEnd(e.target.value)}
+                        className="w-32"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (quickSetStart && quickSetEnd) {
+                          const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+                          const newSchedule: Record<string, { start: string; end: string }> = {};
+                          allDays.forEach(day => {
+                            newSchedule[day] = { start: quickSetStart, end: quickSetEnd };
+                          });
+                          setFormData({ ...formData, availability_schedule: newSchedule });
+                          toast.success("Applied schedule to all days");
+                        } else {
+                          toast.error("Please set both start and end times");
+                        }
+                      }}
+                    >
+                      Set All Days
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+                        const newSchedule: Record<string, { start: string; end: string }> = {};
+                        allDays.forEach(day => {
+                          newSchedule[day] = { start: "00:00", end: "23:59" };
+                        });
+                        setFormData({ ...formData, availability_schedule: newSchedule });
+                        toast.success("Set to available any time");
+                      }}
+                    >
+                      Available Any Time
+                    </Button>
+                  </div>
+
+                  {/* Shift Preference */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold">Preferred Shift</Label>
+                    <div className="flex flex-wrap gap-4">
+                      {["First Shift (Day)", "Second Shift (Evening)", "Third Shift (Night)", "Weekends Only"].map((shift) => (
+                        <div key={shift} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={shift}
+                            checked={formData.shift_preference.includes(shift)}
+                            onCheckedChange={(checked) => {
+                              setFormData({
+                                ...formData,
+                                shift_preference: checked
+                                  ? [...formData.shift_preference, shift]
+                                  : formData.shift_preference.filter((s) => s !== shift),
+                              });
+                            }}
+                          />
+                          <Label htmlFor={shift} className="cursor-pointer text-sm">{shift}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Weekly Schedule */}
+                <div className="space-y-4">
                 {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
                   <div key={day} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center pb-4 border-b last:border-0">
                     <Label className="font-semibold">{day}</Label>
@@ -379,9 +475,10 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                     </Button>
                   </div>
                 ))}
-                <Button onClick={handleSubmit} disabled={loading}>
-                  {loading ? "Saving..." : "Save Availability"}
-                </Button>
+                  <Button onClick={handleSubmit} disabled={loading}>
+                    {loading ? "Saving..." : "Save Availability"}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
