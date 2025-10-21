@@ -166,7 +166,22 @@ const Browse = () => {
         );
 
       if (error) throw error;
-      toast.success(`Officer marked as ${status === 'interested' ? 'interested' : 'not interested'}`);
+      
+      // Send email notification if interested
+      if (status === 'interested') {
+        const { error: emailError } = await supabase.functions.invoke('express-interest', {
+          body: { officerId }
+        });
+        
+        if (emailError) {
+          console.error('Error sending email:', emailError);
+          toast.success('Interest marked, but email notification failed to send');
+        } else {
+          toast.success('Officer notified of your interest via email!');
+        }
+      } else {
+        toast.success('Officer marked as not interested');
+      }
     } catch (error: any) {
       toast.error(error.message);
     }
