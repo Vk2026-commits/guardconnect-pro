@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Award, Video, User } from "lucide-react";
 import { CertificationsManager } from "./CertificationsManager";
-import { ProfilePhotoUpload } from "./ProfilePhotoUpload";
+import { PhotoUpload } from "./PhotoUpload";
 import { OfficerPhotos } from "./OfficerPhotos";
 
 interface OfficerDashboardProps {
@@ -54,19 +54,17 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
     }
   };
 
-  const handlePhotoUpdated = async (avatarUrl: string) => {
+  const handlePhotoChange = async (url: string) => {
     try {
-      if (officerProfile) {
-        const { error } = await supabase
-          .from("officer_profiles")
-          .update({ avatar_url: avatarUrl })
-          .eq("id", officerProfile.id);
+      const { error } = await supabase
+        .from("officer_profiles")
+        .update({ avatar_url: url })
+        .eq("user_id", userId);
 
-        if (error) throw error;
-        loadProfile();
-      }
+      if (error) throw error;
+      loadProfile();
     } catch (error: any) {
-      toast.error("Error updating profile photo");
+      toast.error("Failed to update profile photo");
     }
   };
 
@@ -169,10 +167,11 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="flex justify-center pb-4 border-b">
-                  <ProfilePhotoUpload
+                  <PhotoUpload
                     userId={userId}
-                    currentAvatarUrl={officerProfile?.avatar_url}
-                    onPhotoUpdated={handlePhotoUpdated}
+                    currentPhotoUrl={officerProfile?.avatar_url}
+                    onPhotoChange={handlePhotoChange}
+                    size="lg"
                   />
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
