@@ -178,6 +178,11 @@ const Browse = () => {
       return;
     }
 
+    if (isFreeTier) {
+      toast.error("Upgrade to Professional or Premium tier to send interest emails");
+      return;
+    }
+
     try {
       const { error } = await supabase.functions.invoke('express-interest', {
         body: { officerId }
@@ -482,12 +487,27 @@ const Browse = () => {
                     </Button>
                   </div>
                   
-                  <Button 
-                    className="w-full"
-                    onClick={() => handleSendInterestEmail(selectedOfficer.id)}
-                  >
-                    Send Interest Email to Officer
-                  </Button>
+                  {isFreeTier ? (
+                    <div className="space-y-2">
+                      <Button 
+                        className="w-full"
+                        disabled
+                      >
+                        <Lock className="w-4 h-4 mr-2" />
+                        Send Interest Email (Premium Feature)
+                      </Button>
+                      <p className="text-xs text-muted-foreground text-center">
+                        Upgrade to Professional or Premium to send interest emails
+                      </p>
+                    </div>
+                  ) : (
+                    <Button 
+                      className="w-full"
+                      onClick={() => handleSendInterestEmail(selectedOfficer.id)}
+                    >
+                      Send Interest Email to Officer
+                    </Button>
+                  )}
                   
                   {canViewFullDetails && (
                     <HireButton 
