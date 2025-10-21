@@ -166,24 +166,32 @@ const Browse = () => {
         );
 
       if (error) throw error;
-      
-      // Send email notification if interested
-      if (status === 'interested') {
-        const { error: emailError } = await supabase.functions.invoke('express-interest', {
-          body: { officerId }
-        });
-        
-        if (emailError) {
-          console.error('Error sending email:', emailError);
-          toast.success('Interest marked, but email notification failed to send');
-        } else {
-          toast.success('Officer notified of your interest via email!');
-        }
-      } else {
-        toast.success('Officer marked as not interested');
-      }
+      toast.success(`Officer marked as ${status === 'interested' ? 'interested' : 'not interested'}`);
     } catch (error: any) {
       toast.error(error.message);
+    }
+  };
+
+  const handleSendInterestEmail = async (officerId: string) => {
+    if (!companyProfile) {
+      toast.error("Please create a company profile first");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.functions.invoke('express-interest', {
+        body: { officerId }
+      });
+      
+      if (error) {
+        console.error('Error sending email:', error);
+        toast.error('Failed to send interest email');
+      } else {
+        toast.success('Interest email sent to officer!');
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast.error('Failed to send interest email');
     }
   };
 
@@ -473,6 +481,13 @@ const Browse = () => {
                       Not Interested
                     </Button>
                   </div>
+                  
+                  <Button 
+                    className="w-full"
+                    onClick={() => handleSendInterestEmail(selectedOfficer.id)}
+                  >
+                    Send Interest Email to Officer
+                  </Button>
                   
                   {canViewFullDetails && (
                     <HireButton 
