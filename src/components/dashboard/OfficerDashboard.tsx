@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Award, Video, User } from "lucide-react";
 import { CertificationsManager } from "./CertificationsManager";
+import { ProfilePhotoUpload } from "./ProfilePhotoUpload";
+import { OfficerPhotos } from "./OfficerPhotos";
 
 interface OfficerDashboardProps {
   userId: string;
@@ -49,6 +51,22 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         linkedin_url: data.linkedin_url || "",
         hourly_rate: data.hourly_rate?.toString() || "",
       });
+    }
+  };
+
+  const handlePhotoUpdated = async (avatarUrl: string) => {
+    try {
+      if (officerProfile) {
+        const { error } = await supabase
+          .from("officer_profiles")
+          .update({ avatar_url: avatarUrl })
+          .eq("id", officerProfile.id);
+
+        if (error) throw error;
+        loadProfile();
+      }
+    } catch (error: any) {
+      toast.error("Error updating profile photo");
     }
   };
 
@@ -134,8 +152,9 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="photos">Photos</TabsTrigger>
           <TabsTrigger value="certifications">Certifications</TabsTrigger>
         </TabsList>
 
@@ -148,7 +167,14 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="flex justify-center pb-4 border-b">
+                  <ProfilePhotoUpload
+                    userId={userId}
+                    currentAvatarUrl={officerProfile?.avatar_url}
+                    onPhotoUpdated={handlePhotoUpdated}
+                  />
+                </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="title">Professional Title</Label>
@@ -233,6 +259,10 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
               </form>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="photos">
+          <OfficerPhotos userId={userId} />
         </TabsContent>
 
         <TabsContent value="certifications">
