@@ -17,9 +17,10 @@ import JobApplicants from "./JobApplicants";
 
 interface CompanyDashboardProps {
   userId: string;
+  userName: string;
 }
 
-const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
+const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("browse");
@@ -124,14 +125,14 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full -mx-4 -my-8">
         <CompanySidebar activeTab={activeTab} onTabChange={setActiveTab} />
         
         <div className="flex-1 flex flex-col min-w-0">
           <div className="border-b bg-background sticky top-0 z-10">
-            <div className="flex h-16 items-center px-4 gap-2">
+            <div className="flex h-16 items-center px-4 gap-4">
               <SidebarTrigger />
-              <h2 className="text-lg font-semibold">Company Dashboard</h2>
+              <h1 className="text-2xl font-bold">Welcome, {userName}</h1>
             </div>
           </div>
           
