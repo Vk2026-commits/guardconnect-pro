@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      assigned_sites: {
+        Row: {
+          created_at: string | null
+          effective_rate_date: string | null
+          id: string
+          is_primary: boolean | null
+          officer_id: string
+          rate: number | null
+          site_name: string
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          effective_rate_date?: string | null
+          id?: string
+          is_primary?: boolean | null
+          officer_id: string
+          rate?: number | null
+          site_name: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          effective_rate_date?: string | null
+          id?: string
+          is_primary?: boolean | null
+          officer_id?: string
+          rate?: number | null
+          site_name?: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assigned_sites_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certifications: {
         Row: {
           created_at: string | null
@@ -107,13 +154,22 @@ export type Database = {
       }
       officer_profiles: {
         Row: {
+          address_city: string | null
+          address_country: string | null
+          address_state: string | null
+          address_street: string | null
+          address_unit: string | null
+          address_zip: string | null
           availability_status: string | null
+          avatar_url: string | null
           bio: string | null
           created_at: string | null
           hourly_rate: number | null
           id: string
           linkedin_url: string | null
           location: string | null
+          main_region: string | null
+          officer_number: string | null
           phone: string | null
           title: string | null
           updated_at: string | null
@@ -121,13 +177,22 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          address_city?: string | null
+          address_country?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_unit?: string | null
+          address_zip?: string | null
           availability_status?: string | null
+          avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           hourly_rate?: number | null
           id?: string
           linkedin_url?: string | null
           location?: string | null
+          main_region?: string | null
+          officer_number?: string | null
           phone?: string | null
           title?: string | null
           updated_at?: string | null
@@ -135,13 +200,22 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          address_city?: string | null
+          address_country?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_unit?: string | null
+          address_zip?: string | null
           availability_status?: string | null
+          avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           hourly_rate?: number | null
           id?: string
           linkedin_url?: string | null
           location?: string | null
+          main_region?: string | null
+          officer_number?: string | null
           phone?: string | null
           title?: string | null
           updated_at?: string | null
@@ -167,6 +241,7 @@ export type Database = {
           id: string
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string | null
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -176,6 +251,7 @@ export type Database = {
           id: string
           role: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -185,6 +261,7 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
+          username?: string | null
         }
         Relationships: []
       }
