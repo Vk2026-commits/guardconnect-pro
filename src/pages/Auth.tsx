@@ -9,6 +9,19 @@ import { Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { z } from "zod";
+
+// Password validation schema
+const passwordSchema = z.string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain at least one capital letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[^A-Za-z0-9]/, "Password must contain at least one special symbol");
+
+const usernameSchema = z.string()
+  .min(3, "Username must be at least 3 characters")
+  .max(20, "Username must be less than 20 characters")
+  .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores");
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -16,11 +29,13 @@ const Auth = () => {
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
   
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
-  const [email, setEmail] = useState("");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [role, setRole] = useState<"officer" | "company">("officer");
   const [loading, setLoading] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -31,19 +46,61 @@ const Auth = () => {
     });
   }, [navigate]);
 
+  const validatePassword = (pwd: string) => {
+    const errors: string[] = [];
+    try {
+      passwordSchema.parse(pwd);
+      setPasswordErrors([]);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map(e => e.message);
+        setPasswordErrors(errorMessages);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setPasswordErrors([]);
 
     try {
       if (mode === "signup") {
+        // Validate password
+        if (!validatePassword(password)) {
+          setLoading(false);
+          return;
+        }
+
+        // Validate username
+        try {
+          usernameSchema.parse(username);
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            toast.error(error.errors[0].message);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Check if email is valid
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailOrUsername)) {
+          toast.error("Please enter a valid email address");
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
-          email,
+          email: emailOrUsername,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
             data: {
               full_name: fullName,
+              username: username,
               role: role,
             },
           },
@@ -54,12 +111,36 @@ const Auth = () => {
         toast.success("Account created successfully! Redirecting...");
         setTimeout(() => navigate("/dashboard"), 1000);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        // Sign in - check if input is email or username
+        const isEmail = emailOrUsername.includes('@');
+        
+        if (isEmail) {
+          // Sign in with email
+          const { error } = await supabase.auth.signInWithPassword({
+            email: emailOrUsername,
+            password,
+          });
 
-        if (error) throw error;
+          if (error) throw error;
+        } else {
+          // Sign in with username - first get email from profiles
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('username', emailOrUsername)
+            .single();
+
+          if (profileError || !profile) {
+            throw new Error("Username not found");
+          }
+
+          const { error } = await supabase.auth.signInWithPassword({
+            email: profile.email,
+            password,
+          });
+
+          if (error) throw error;
+        }
         
         toast.success("Signed in successfully!");
         navigate("/dashboard");
@@ -109,6 +190,21 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="johndoe"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    3-20 characters, letters, numbers, and underscores only
+                  </p>
+                </div>
+
+                <div className="space-y-2">
                   <Label>I am a...</Label>
                   <RadioGroup value={role} onValueChange={(value) => setRole(value as "officer" | "company")}>
                     <div className="flex items-center space-x-2">
@@ -129,13 +225,15 @@ const Auth = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="emailOrUsername">
+                {mode === "signup" ? "Email" : "Email or Username"}
+              </Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="emailOrUsername"
+                type={mode === "signup" ? "email" : "text"}
+                placeholder={mode === "signup" ? "your@email.com" : "email or username"}
+                value={emailOrUsername}
+                onChange={(e) => setEmailOrUsername(e.target.value)}
                 required
               />
             </div>
@@ -147,10 +245,41 @@ const Auth = () => {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (mode === "signup") {
+                    validatePassword(e.target.value);
+                  }
+                }}
                 required
-                minLength={6}
+                minLength={8}
               />
+              {mode === "signup" && (
+                <div className="text-xs space-y-1">
+                  <p className="text-muted-foreground">Password must contain:</p>
+                  <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                    <li className={password.length >= 8 ? "text-green-600" : ""}>
+                      At least 8 characters
+                    </li>
+                    <li className={/[A-Z]/.test(password) ? "text-green-600" : ""}>
+                      One capital letter
+                    </li>
+                    <li className={/[0-9]/.test(password) ? "text-green-600" : ""}>
+                      One number
+                    </li>
+                    <li className={/[^A-Za-z0-9]/.test(password) ? "text-green-600" : ""}>
+                      One special symbol (!@#$%^&*)
+                    </li>
+                  </ul>
+                  {passwordErrors.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {passwordErrors.map((error, index) => (
+                        <p key={index} className="text-destructive text-xs">{error}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
