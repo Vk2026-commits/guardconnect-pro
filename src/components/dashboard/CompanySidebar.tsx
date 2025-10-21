@@ -36,6 +36,9 @@ export function CompanySidebar({ activeTab, onTabChange }: CompanySidebarProps) 
 
   return (
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
+      <div className="h-16 border-b flex items-center justify-center">
+        <span className={`font-semibold ${!open && "hidden"}`}>Menu</span>
+      </div>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Company Dashboard</SidebarGroupLabel>

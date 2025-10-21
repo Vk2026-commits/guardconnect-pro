@@ -125,7 +125,7 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full -mx-4 -my-8">
+      <div className="flex min-h-[calc(100vh-4rem)] w-full">
         <CompanySidebar activeTab={activeTab} onTabChange={setActiveTab} />
         
         <div className="flex-1 flex flex-col min-w-0">

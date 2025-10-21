@@ -78,10 +78,12 @@ const Dashboard = () => {
             <OfficerDashboard userId={user!.id} />
           </>
         ) : (
-          <CompanyDashboard 
-            userId={user!.id} 
-            userName={profile?.full_name || user?.email || ""}
-          />
+          <div className="-mx-4 -my-8">
+            <CompanyDashboard 
+              userId={user!.id} 
+              userName={profile?.full_name || user?.email || ""}
+            />
+          </div>
         )}
       </div>
     </div>
