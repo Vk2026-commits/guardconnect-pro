@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Get company profile
     const { data: companyProfile, error: companyError } = await supabase
       .from("company_profiles")
-      .select("id, company_name, contact_person_name, industry")
+      .select("id, company_name, contact_person_name, industry, subscription_tier")
       .eq("user_id", user.id)
       .single();
 
@@ -56,6 +56,15 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Company profile error:", companyError);
       return new Response(JSON.stringify({ error: "Company profile not found" }), {
         status: 404,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Check if company has paid tier
+    if (companyProfile.subscription_tier === 'free') {
+      console.log("Free tier company attempted to send interest email");
+      return new Response(JSON.stringify({ error: "This feature requires Professional or Premium subscription" }), {
+        status: 403,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
