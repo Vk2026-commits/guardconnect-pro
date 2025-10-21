@@ -170,6 +170,98 @@ export type Database = {
           },
         ]
       }
+      employment_updates: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          document_url: string | null
+          hire_id: string
+          id: string
+          notes: string | null
+          rating: number | null
+          update_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          document_url?: string | null
+          hire_id: string
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          update_type: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          document_url?: string | null
+          hire_id?: string
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          update_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employment_updates_hire_id_fkey"
+            columns: ["hire_id"]
+            isOneToOne: false
+            referencedRelation: "hires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hires: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          hire_date: string
+          hired_by_user_id: string
+          id: string
+          officer_id: string
+          position_title: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          hire_date: string
+          hired_by_user_id: string
+          id?: string
+          officer_id: string
+          position_title?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          hire_date?: string
+          hired_by_user_id?: string
+          id?: string
+          officer_id?: string
+          position_title?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hires_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hires_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       officer_profiles: {
         Row: {
           address_city: string | null
@@ -250,6 +342,45 @@ export type Database = {
           },
         ]
       }
+      profile_views: {
+        Row: {
+          company_id: string
+          id: string
+          officer_id: string
+          viewed_at: string | null
+          viewer_user_id: string
+        }
+        Insert: {
+          company_id: string
+          id?: string
+          officer_id: string
+          viewed_at?: string | null
+          viewer_user_id: string
+        }
+        Update: {
+          company_id?: string
+          id?: string
+          officer_id?: string
+          viewed_at?: string | null
+          viewer_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_views_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_views_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -280,6 +411,27 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -389,9 +541,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "company" | "officer"
       subscription_tier: "free" | "professional" | "premium"
       user_role: "officer" | "company"
     }
@@ -521,6 +680,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "company", "officer"],
       subscription_tier: ["free", "professional", "premium"],
       user_role: ["officer", "company"],
     },

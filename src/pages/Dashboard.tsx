@@ -25,6 +25,19 @@ const Dashboard = () => {
 
       setUser(session.user);
 
+      // Check if user is admin
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (roles) {
+        navigate("/admin");
+        return;
+      }
+
       const { data: profileData } = await supabase
         .from("profiles")
         .select("*")

@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Building2, Crown, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import EmploymentTracking from "./EmploymentTracking";
 
 interface CompanyDashboardProps {
   userId: string;
@@ -192,19 +194,32 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Browse Security Officers</CardTitle>
-          <CardDescription>
-            Find qualified security professionals for your needs
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild>
-            <a href="/browse">Browse Professionals</a>
-          </Button>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="browse" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="browse">Browse Officers</TabsTrigger>
+          <TabsTrigger value="employment">Employment Tracking</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="browse">
+          <Card>
+            <CardHeader>
+              <CardTitle>Browse Security Officers</CardTitle>
+              <CardDescription>
+                Find qualified security professionals for your needs
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <a href="/browse">Browse Professionals</a>
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="employment">
+          {companyProfile && <EmploymentTracking companyId={companyProfile.id} />}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

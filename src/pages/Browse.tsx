@@ -7,15 +7,41 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapPin, DollarSign, Briefcase, Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import HireButton from "@/components/dashboard/HireButton";
+import { toast } from "sonner";
 
 const Browse = () => {
   const [officers, setOfficers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
+  const [companyProfile, setCompanyProfile] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     loadOfficers();
+    loadUserProfile();
   }, []);
+
+  const loadUserProfile = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      setCurrentUser(session.user);
+      const { data } = await supabase
+        .from("company_profiles")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      setCompanyProfile(data);
+    }
+  };
 
   const loadOfficers = async () => {
     const { data } = await supabase
@@ -43,6 +69,23 @@ const Browse = () => {
       officer.profiles?.full_name?.toLowerCase().includes(searchLower)
     );
   });
+
+  const handleViewProfile = async (officer: any) => {
+    setSelectedOfficer(officer);
+    
+    // Track profile view if user is a company
+    if (companyProfile && currentUser) {
+      try {
+        await supabase.from("profile_views").insert({
+          officer_id: officer.id,
+          company_id: companyProfile.id,
+          viewer_user_id: currentUser.id,
+        });
+      } catch (error) {
+        console.error("Error tracking profile view:", error);
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,8 +182,11 @@ const Browse = () => {
                     )}
                   </div>
 
-                  <Button className="w-full" asChild>
-                    <Link to={`/profile/${officer.id}`}>View Profile</Link>
+                  <Button 
+                    className="w-full" 
+                    onClick={() => handleViewProfile(officer)}
+                  >
+                    View Profile
                   </Button>
                 </CardContent>
               </Card>
@@ -148,6 +194,89 @@ const Browse = () => {
           </div>
         )}
       </div>
+
+      {/* Profile Detail Dialog */}
+      <Dialog open={!!selectedOfficer} onOpenChange={(open) => !open && setSelectedOfficer(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              {selectedOfficer?.profiles?.full_name || "Officer Profile"}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedOfficer?.title || "Security Officer"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedOfficer && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                {selectedOfficer.availability_status === "available" && (
+                  <Badge className="bg-green-100 text-green-800">Available</Badge>
+                )}
+                {selectedOfficer.officer_number && (
+                  <span className="text-sm text-muted-foreground">
+                    ID: {selectedOfficer.officer_number}
+                  </span>
+                )}
+              </div>
+
+              {selectedOfficer.bio && (
+                <div>
+                  <h3 className="font-semibold mb-2">About</h3>
+                  <p className="text-sm text-muted-foreground">{selectedOfficer.bio}</p>
+                </div>
+              )}
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {selectedOfficer.location && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{selectedOfficer.location}</span>
+                  </div>
+                )}
+                
+                {selectedOfficer.years_experience && (
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{selectedOfficer.years_experience} years experience</span>
+                  </div>
+                )}
+
+                {selectedOfficer.hourly_rate && (
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">${selectedOfficer.hourly_rate}/hour</span>
+                  </div>
+                )}
+
+                {selectedOfficer.phone && (
+                  <div className="text-sm">
+                    <span className="font-medium">Phone: </span>
+                    {selectedOfficer.phone}
+                  </div>
+                )}
+              </div>
+
+              {selectedOfficer.main_region && (
+                <div>
+                  <h3 className="font-semibold mb-2">Main Region</h3>
+                  <p className="text-sm">{selectedOfficer.main_region}</p>
+                </div>
+              )}
+
+              {companyProfile && (
+                <div className="pt-4 border-t">
+                  <HireButton 
+                    officerId={selectedOfficer.id}
+                    officerName={selectedOfficer.profiles?.full_name || "Officer"}
+                    companyId={companyProfile.id}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
