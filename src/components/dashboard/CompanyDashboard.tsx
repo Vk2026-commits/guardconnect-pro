@@ -23,6 +23,13 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
     industry: "",
     company_size: "",
     website_url: "",
+    contact_person_name: "",
+    contact_person_title: "",
+    contact_person_position: "",
+    company_phone: "",
+    company_phone_ext: "",
+    contact_cell_phone: "",
+    contact_email: "",
   });
 
   useEffect(() => {
@@ -43,6 +50,13 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
         industry: data.industry || "",
         company_size: data.company_size || "",
         website_url: data.website_url || "",
+        contact_person_name: data.contact_person_name || "",
+        contact_person_title: data.contact_person_title || "",
+        contact_person_position: data.contact_person_position || "",
+        company_phone: data.company_phone || "",
+        company_phone_ext: data.company_phone_ext || "",
+        contact_cell_phone: data.contact_cell_phone || "",
+        contact_email: data.contact_email || "",
       });
     }
   };
@@ -185,6 +199,84 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
                   value={formData.website_url}
                   onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
                 />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-4">Hiring Contact Information</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contact_person_name">Contact Person Name</Label>
+                  <Input
+                    id="contact_person_name"
+                    placeholder="John Doe"
+                    value={formData.contact_person_name}
+                    onChange={(e) => setFormData({ ...formData, contact_person_name: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="contact_person_title">Title</Label>
+                  <Input
+                    id="contact_person_title"
+                    placeholder="HR Manager"
+                    value={formData.contact_person_title}
+                    onChange={(e) => setFormData({ ...formData, contact_person_title: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="contact_person_position">Position at Company</Label>
+                  <Input
+                    id="contact_person_position"
+                    placeholder="Director of Operations"
+                    value={formData.contact_person_position}
+                    onChange={(e) => setFormData({ ...formData, contact_person_position: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="contact_email">Email Address</Label>
+                  <Input
+                    id="contact_email"
+                    type="email"
+                    placeholder="contact@company.com"
+                    value={formData.contact_email}
+                    onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="company_phone">Company Phone Number</Label>
+                  <Input
+                    id="company_phone"
+                    type="tel"
+                    placeholder="(555) 123-4567"
+                    value={formData.company_phone}
+                    onChange={(e) => setFormData({ ...formData, company_phone: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="company_phone_ext">Phone Extension</Label>
+                  <Input
+                    id="company_phone_ext"
+                    placeholder="1234"
+                    value={formData.company_phone_ext}
+                    onChange={(e) => setFormData({ ...formData, company_phone_ext: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="contact_cell_phone">Cell Phone Number</Label>
+                  <Input
+                    id="contact_cell_phone"
+                    type="tel"
+                    placeholder="(555) 987-6543"
+                    value={formData.contact_cell_phone}
+                    onChange={(e) => setFormData({ ...formData, contact_cell_phone: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 

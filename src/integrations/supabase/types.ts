@@ -123,7 +123,14 @@ export type Database = {
       company_profiles: {
         Row: {
           company_name: string
+          company_phone: string | null
+          company_phone_ext: string | null
           company_size: string | null
+          contact_cell_phone: string | null
+          contact_email: string | null
+          contact_person_name: string | null
+          contact_person_position: string | null
+          contact_person_title: string | null
           created_at: string | null
           id: string
           industry: string | null
@@ -136,7 +143,14 @@ export type Database = {
         }
         Insert: {
           company_name: string
+          company_phone?: string | null
+          company_phone_ext?: string | null
           company_size?: string | null
+          contact_cell_phone?: string | null
+          contact_email?: string | null
+          contact_person_name?: string | null
+          contact_person_position?: string | null
+          contact_person_title?: string | null
           created_at?: string | null
           id?: string
           industry?: string | null
@@ -149,7 +163,14 @@ export type Database = {
         }
         Update: {
           company_name?: string
+          company_phone?: string | null
+          company_phone_ext?: string | null
           company_size?: string | null
+          contact_cell_phone?: string | null
+          contact_email?: string | null
+          contact_person_name?: string | null
+          contact_person_position?: string | null
+          contact_person_title?: string | null
           created_at?: string | null
           id?: string
           industry?: string | null
