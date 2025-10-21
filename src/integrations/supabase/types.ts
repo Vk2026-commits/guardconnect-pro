@@ -238,6 +238,71 @@ export type Database = {
           },
         ]
       }
+      evaluations: {
+        Row: {
+          areas_of_improvement: string | null
+          attendance_rating: number | null
+          completed_date: string | null
+          created_at: string | null
+          due_date: string
+          evaluation_period: string
+          hire_id: string
+          id: string
+          overall_rating: number | null
+          performance_notes: string | null
+          professionalism_rating: number | null
+          quality_of_work_rating: number | null
+          reliability_rating: number | null
+          sent_date: string | null
+          updated_at: string | null
+          would_rehire: boolean | null
+        }
+        Insert: {
+          areas_of_improvement?: string | null
+          attendance_rating?: number | null
+          completed_date?: string | null
+          created_at?: string | null
+          due_date: string
+          evaluation_period: string
+          hire_id: string
+          id?: string
+          overall_rating?: number | null
+          performance_notes?: string | null
+          professionalism_rating?: number | null
+          quality_of_work_rating?: number | null
+          reliability_rating?: number | null
+          sent_date?: string | null
+          updated_at?: string | null
+          would_rehire?: boolean | null
+        }
+        Update: {
+          areas_of_improvement?: string | null
+          attendance_rating?: number | null
+          completed_date?: string | null
+          created_at?: string | null
+          due_date?: string
+          evaluation_period?: string
+          hire_id?: string
+          id?: string
+          overall_rating?: number | null
+          performance_notes?: string | null
+          professionalism_rating?: number | null
+          quality_of_work_rating?: number | null
+          reliability_rating?: number | null
+          sent_date?: string | null
+          updated_at?: string | null
+          would_rehire?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_hire_id_fkey"
+            columns: ["hire_id"]
+            isOneToOne: false
+            referencedRelation: "hires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hires: {
         Row: {
           company_id: string
