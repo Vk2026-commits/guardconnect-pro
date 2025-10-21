@@ -265,7 +265,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </TabsContent>
 
         <TabsContent value="certifications">
-          {officerProfile && <CertificationsManager officerId={officerProfile.id} />}
+          {officerProfile && <CertificationsManager officerId={officerProfile.id} userId={userId} />}
           {!officerProfile && (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">

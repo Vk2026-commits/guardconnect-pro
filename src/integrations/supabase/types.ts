@@ -67,6 +67,9 @@ export type Database = {
           certification_type: string | null
           created_at: string | null
           credential_id: string | null
+          description: string | null
+          document_back_url: string | null
+          document_front_url: string | null
           expiry_date: string | null
           id: string
           issue_date: string | null
@@ -80,6 +83,9 @@ export type Database = {
           certification_type?: string | null
           created_at?: string | null
           credential_id?: string | null
+          description?: string | null
+          document_back_url?: string | null
+          document_front_url?: string | null
           expiry_date?: string | null
           id?: string
           issue_date?: string | null
@@ -93,6 +99,9 @@ export type Database = {
           certification_type?: string | null
           created_at?: string | null
           credential_id?: string | null
+          description?: string | null
+          document_back_url?: string | null
+          document_front_url?: string | null
           expiry_date?: string | null
           id?: string
           issue_date?: string | null
