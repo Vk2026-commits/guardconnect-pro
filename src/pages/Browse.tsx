@@ -29,6 +29,7 @@ const Browse = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [availabilityFilter, setAvailabilityFilter] = useState<string>("all");
+  const [timeFilter, setTimeFilter] = useState<string>("all");
   const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -82,10 +83,32 @@ const Browse = () => {
     let matchesAvailability = true;
     if (availabilityFilter !== "all" && officer.availability_schedule) {
       const schedule = officer.availability_schedule;
-      matchesAvailability = schedule[availabilityFilter]?.available === true;
+      if (availabilityFilter === "weekdays") {
+        const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+        matchesAvailability = weekdays.some(day => schedule[day]?.available === true);
+      } else if (availabilityFilter === "weekends") {
+        matchesAvailability = 
+          schedule.saturday?.available === true || schedule.sunday?.available === true;
+      }
     }
 
-    return matchesSearch && matchesCity && matchesAvailability;
+    let matchesTime = true;
+    if (timeFilter !== "all" && officer.availability_schedule) {
+      const schedule = officer.availability_schedule;
+      const hasTimeSlot = Object.values(schedule).some((day: any) => {
+        if (!day?.available || !day?.timeSlots) return false;
+        return day.timeSlots.some((slot: string) => {
+          if (timeFilter === "morning" && (slot.includes("6am") || slot.includes("7am") || slot.includes("8am") || slot.includes("9am") || slot.includes("10am") || slot.includes("11am"))) return true;
+          if (timeFilter === "afternoon" && (slot.includes("12pm") || slot.includes("1pm") || slot.includes("2pm") || slot.includes("3pm") || slot.includes("4pm") || slot.includes("5pm"))) return true;
+          if (timeFilter === "evening" && (slot.includes("6pm") || slot.includes("7pm") || slot.includes("8pm") || slot.includes("9pm") || slot.includes("10pm") || slot.includes("11pm"))) return true;
+          if (timeFilter === "overnight" && (slot.includes("12am") || slot.includes("1am") || slot.includes("2am") || slot.includes("3am") || slot.includes("4am") || slot.includes("5am"))) return true;
+          return false;
+        });
+      });
+      matchesTime = hasTimeSlot;
+    }
+
+    return matchesSearch && matchesCity && matchesAvailability && matchesTime;
   });
 
   const texasCities = [
@@ -94,14 +117,16 @@ const Browse = () => {
     "Lubbock", "Irving", "Garland", "Frisco", "McKinney"
   ];
 
-  const daysOfWeek = [
-    { value: "monday", label: "Monday" },
-    { value: "tuesday", label: "Tuesday" },
-    { value: "wednesday", label: "Wednesday" },
-    { value: "thursday", label: "Thursday" },
-    { value: "friday", label: "Friday" },
-    { value: "saturday", label: "Saturday" },
-    { value: "sunday", label: "Sunday" }
+  const availabilityOptions = [
+    { value: "weekdays", label: "Monday through Friday" },
+    { value: "weekends", label: "Weekends Only" }
+  ];
+
+  const timeOptions = [
+    { value: "morning", label: "Morning (6am-11am)" },
+    { value: "afternoon", label: "Afternoon (12pm-5pm)" },
+    { value: "evening", label: "Evening (6pm-11pm)" },
+    { value: "overnight", label: "Overnight (12am-5am)" }
   ];
 
   const handleViewProfile = async (officer: any) => {
@@ -179,7 +204,7 @@ const Browse = () => {
                   <MapPin className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Filter by City" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background z-50">
                   <SelectItem value="all">All Cities</SelectItem>
                   {texasCities.map((city) => (
                     <SelectItem key={city} value={city}>{city}</SelectItem>
@@ -194,10 +219,25 @@ const Browse = () => {
                   <Calendar className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Filter by Availability" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background z-50">
                   <SelectItem value="all">All Availability</SelectItem>
-                  {daysOfWeek.map((day) => (
-                    <SelectItem key={day.value} value={day.value}>{day.label}</SelectItem>
+                  {availabilityOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-full sm:w-auto sm:min-w-[200px]">
+              <Select value={timeFilter} onValueChange={setTimeFilter}>
+                <SelectTrigger>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filter by Time" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">All Times</SelectItem>
+                  {timeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
