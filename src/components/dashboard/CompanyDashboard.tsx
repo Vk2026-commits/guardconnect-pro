@@ -4,11 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Building2, Crown, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { CompanySidebar } from "./CompanySidebar";
 import EmploymentTracking from "./EmploymentTracking";
 import InterestedOfficers from "./InterestedOfficers";
 import JobPostings from "./JobPostings";
@@ -21,6 +22,7 @@ interface CompanyDashboardProps {
 const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("browse");
   const [formData, setFormData] = useState({
     company_name: "",
     industry: "",
@@ -121,7 +123,19 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <CompanySidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        
+        <div className="flex-1">
+          <div className="border-b bg-background">
+            <div className="flex h-16 items-center px-4">
+              <SidebarTrigger />
+              <h2 className="text-lg font-semibold ml-4">Company Dashboard</h2>
+            </div>
+          </div>
+          
+          <div className="p-6 space-y-6">
       <div className="grid md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -412,58 +426,47 @@ const CompanyDashboard = ({ userId }: CompanyDashboardProps) => {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="browse" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="browse">Browse Officers</TabsTrigger>
-          <TabsTrigger value="jobs">Job Postings</TabsTrigger>
-          <TabsTrigger value="applicants">Applicants</TabsTrigger>
-          <TabsTrigger value="interested">Interested</TabsTrigger>
-          <TabsTrigger value="employment">Hired</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="browse">
-          <Card>
-            <CardHeader>
-              <CardTitle>Browse Security Officers</CardTitle>
-              <CardDescription>
-                Find qualified security professionals for your needs
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild>
-                <a href="/browse">Browse Professionals</a>
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            {activeTab === "browse" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Browse Security Officers</CardTitle>
+                  <CardDescription>
+                    Find qualified security professionals for your needs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild>
+                    <a href="/browse">Browse Professionals</a>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
-        <TabsContent value="jobs">
-          {companyProfile && <JobPostings companyId={companyProfile.id} />}
-        </TabsContent>
+            {activeTab === "jobs" && companyProfile && (
+              <JobPostings companyId={companyProfile.id} />
+            )}
 
-        <TabsContent value="applicants">
-          {companyProfile && (
-            <JobApplicants
-              companyId={companyProfile.id}
-              subscriptionTier={companyProfile.subscription_tier}
-            />
-          )}
-        </TabsContent>
+            {activeTab === "applicants" && companyProfile && (
+              <JobApplicants
+                companyId={companyProfile.id}
+                subscriptionTier={companyProfile.subscription_tier}
+              />
+            )}
 
-        <TabsContent value="interested">
-          {companyProfile && (
-            <InterestedOfficers 
-              companyId={companyProfile.id}
-              subscriptionTier={companyProfile.subscription_tier}
-            />
-          )}
-        </TabsContent>
+            {activeTab === "interested" && companyProfile && (
+              <InterestedOfficers 
+                companyId={companyProfile.id}
+                subscriptionTier={companyProfile.subscription_tier}
+              />
+            )}
 
-        <TabsContent value="employment">
-          {companyProfile && <EmploymentTracking companyId={companyProfile.id} />}
-        </TabsContent>
-      </Tabs>
-    </div>
+            {activeTab === "employment" && companyProfile && (
+              <EmploymentTracking companyId={companyProfile.id} />
+            )}
+          </div>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
