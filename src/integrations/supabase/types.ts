@@ -321,6 +321,69 @@ export type Database = {
           },
         ]
       }
+      work_history: {
+        Row: {
+          company_address: string | null
+          company_city: string | null
+          company_name: string
+          company_phone: string | null
+          company_state: string | null
+          company_zip: string | null
+          created_at: string
+          end_date: string | null
+          id: string
+          job_description: string | null
+          may_contact: boolean | null
+          officer_id: string
+          position_title: string | null
+          reason_for_leaving: string | null
+          start_date: string | null
+          supervisor_name: string | null
+          supervisor_phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_address?: string | null
+          company_city?: string | null
+          company_name: string
+          company_phone?: string | null
+          company_state?: string | null
+          company_zip?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          job_description?: string | null
+          may_contact?: boolean | null
+          officer_id: string
+          position_title?: string | null
+          reason_for_leaving?: string | null
+          start_date?: string | null
+          supervisor_name?: string | null
+          supervisor_phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_address?: string | null
+          company_city?: string | null
+          company_name?: string
+          company_phone?: string | null
+          company_state?: string | null
+          company_zip?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          job_description?: string | null
+          may_contact?: boolean | null
+          officer_id?: string
+          position_title?: string | null
+          reason_for_leaving?: string | null
+          start_date?: string | null
+          supervisor_name?: string | null
+          supervisor_phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

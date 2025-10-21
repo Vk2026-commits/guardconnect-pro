@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Award, Video, User } from "lucide-react";
+import { Award, Video, User, Briefcase } from "lucide-react";
 import { CertificationsManager } from "./CertificationsManager";
 import { PhotoUpload } from "./PhotoUpload";
 import { OfficerPhotos } from "./OfficerPhotos";
+import { WorkHistory } from "./WorkHistory";
 
 interface OfficerDashboardProps {
   userId: string;
@@ -150,10 +151,11 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="photos">Photos</TabsTrigger>
           <TabsTrigger value="certifications">Certifications</TabsTrigger>
+          <TabsTrigger value="work-history">Work History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
@@ -270,6 +272,17 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
                 Please complete your profile first to add certifications
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="work-history">
+          {officerProfile && <WorkHistory officerId={officerProfile.id} userId={userId} />}
+          {!officerProfile && (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Please complete your profile first to add work history
               </CardContent>
             </Card>
           )}
