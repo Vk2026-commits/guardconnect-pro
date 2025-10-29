@@ -4,14 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Lock, User } from "lucide-react";
-import { Link } from "react-router-dom";
 
 interface JobApplicantsProps {
   companyId: string;
   subscriptionTier: string;
+  onNavigateToSubscriptions?: () => void;
 }
 
-const JobApplicants = ({ companyId, subscriptionTier }: JobApplicantsProps) => {
+const JobApplicants = ({ companyId, subscriptionTier, onNavigateToSubscriptions }: JobApplicantsProps) => {
   const [applications, setApplications] = useState<any[]>([]);
 
   useEffect(() => {
@@ -75,14 +75,23 @@ const JobApplicants = ({ companyId, subscriptionTier }: JobApplicantsProps) => {
       </CardHeader>
       <CardContent>
         {!isPaidSubscriber && (
-          <div className="mb-4 p-4 bg-muted rounded-lg flex items-start gap-3">
-            <Lock className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div>
-              <p className="font-medium mb-1">Upgrade to view full details</p>
-              <p className="text-sm text-muted-foreground">
-                Subscribe to Professional or Premium to view full officer profiles and contact them directly.
-              </p>
+          <div className="mb-4 p-4 bg-muted rounded-lg">
+            <div className="flex items-start gap-3 mb-3">
+              <Lock className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="font-medium mb-1">Upgrade to view full details</p>
+                <p className="text-sm text-muted-foreground">
+                  Subscribe to Professional or Premium to view full officer profiles and contact them directly.
+                </p>
+              </div>
             </div>
+            <Button 
+              size="sm" 
+              variant="default" 
+              onClick={onNavigateToSubscriptions}
+            >
+              View Subscription Plans
+            </Button>
           </div>
         )}
 
@@ -111,8 +120,8 @@ const JobApplicants = ({ companyId, subscriptionTier }: JobApplicantsProps) => {
 
                 {isPaidSubscriber ? (
                   <div className="flex gap-2 mt-3">
-                    <Button size="sm" asChild>
-                      <Link to={`/browse?officer=${app.officer?.id}`}>View Profile</Link>
+                    <Button size="sm">
+                      View Profile
                     </Button>
                     <Button size="sm" variant="outline">
                       Contact Officer

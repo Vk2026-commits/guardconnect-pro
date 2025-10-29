@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Briefcase, Users, Heart, UserCheck, Building2 } from "lucide-react";
+import { Briefcase, Users, Heart, UserCheck, Building2, CreditCard } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +27,7 @@ export function CompanySidebar({ activeTab, onTabChange }: CompanySidebarProps) 
     { title: "Applicants", value: "applicants", icon: UserCheck },
     { title: "Interested", value: "interested", icon: Heart },
     { title: "Hired", value: "employment", icon: Building2 },
+    { title: "Subscriptions", value: "subscriptions", icon: CreditCard },
   ];
 
   const getNavCls = (value: string) =>

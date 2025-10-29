@@ -14,6 +14,8 @@ import EmploymentTracking from "./EmploymentTracking";
 import InterestedOfficers from "./InterestedOfficers";
 import JobPostings from "./JobPostings";
 import JobApplicants from "./JobApplicants";
+import SubscriptionManager from "./SubscriptionManager";
+import { useSearchParams } from "react-router-dom";
 
 interface CompanyDashboardProps {
   userId: string;
@@ -21,9 +23,10 @@ interface CompanyDashboardProps {
 }
 
 const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
+  const [searchParams] = useSearchParams();
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("browse");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "browse");
   const [formData, setFormData] = useState({
     company_name: "",
     industry: "",
@@ -146,8 +149,15 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
                       <Crown className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center gap-2">
-                        {companyProfile && getTierBadge(companyProfile.subscription_tier)}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {companyProfile && getTierBadge(companyProfile.subscription_tier)}
+                        </div>
+                        {companyProfile?.subscription_tier === "free" && (
+                          <Button size="sm" onClick={() => setActiveTab("subscriptions")}>
+                            Upgrade
+                          </Button>
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-2">
                         {companyProfile?.subscription_tier === "free" && "Upgrade for more features"}
@@ -453,6 +463,7 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
               <JobApplicants
                 companyId={companyProfile.id}
                 subscriptionTier={companyProfile.subscription_tier}
+                onNavigateToSubscriptions={() => setActiveTab("subscriptions")}
               />
             )}
 
@@ -465,6 +476,15 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
 
             {activeTab === "employment" && companyProfile && (
               <EmploymentTracking companyId={companyProfile.id} />
+            )}
+
+            {activeTab === "subscriptions" && companyProfile && (
+              <SubscriptionManager
+                currentTier={companyProfile.subscription_tier}
+                onUpgrade={(tier) => {
+                  toast.success(`Upgrading to ${tier}...`);
+                }}
+              />
             )}
           </div>
         </div>
