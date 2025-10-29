@@ -45,44 +45,44 @@ const Index = () => {
               {t('hero.subtitle')}
             </p>
             
-            <p className="text-lg font-medium text-primary max-w-2xl mx-auto">
-              {t('hero.freeProfessionals')}
-            </p>
+            <Dialog>
+              <DialogTrigger asChild>
+                <p className="text-lg font-medium text-primary max-w-2xl mx-auto cursor-pointer hover:underline">
+                  {t('hero.freeProfessionals')}
+                </p>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{t('roleSelection.title')}</DialogTitle>
+                  <DialogDescription>
+                    {t('roleSelection.description')}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-1 gap-4 py-4">
+                  <Link to="/auth?role=officer" className="w-full">
+                    <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
+                      <User className="w-8 h-8" />
+                      <span className="font-semibold">{t('roleSelection.officer')}</span>
+                      <span className="text-xs text-muted-foreground">{t('roleSelection.officerSubtitle')}</span>
+                    </Button>
+                  </Link>
+                  <Link to="/auth?role=company" className="w-full">
+                    <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
+                      <Building2 className="w-8 h-8" />
+                      <span className="font-semibold">{t('roleSelection.company')}</span>
+                      <span className="text-xs text-muted-foreground">{t('roleSelection.companySubtitle')}</span>
+                    </Button>
+                  </Link>
+                </div>
+              </DialogContent>
+            </Dialog>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="text-lg h-12 px-8">
-                    {t('hero.createProfile')}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>{t('roleSelection.title')}</DialogTitle>
-                    <DialogDescription>
-                      {t('roleSelection.description')}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid grid-cols-1 gap-4 py-4">
-                    <Link to="/auth?role=officer" className="w-full">
-                      <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
-                        <User className="w-8 h-8" />
-                        <span className="font-semibold">{t('roleSelection.officer')}</span>
-                        <span className="text-xs text-muted-foreground">{t('roleSelection.officerSubtitle')}</span>
-                      </Button>
-                    </Link>
-                    <Link to="/auth?role=company" className="w-full">
-                      <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
-                        <Building2 className="w-8 h-8" />
-                        <span className="font-semibold">{t('roleSelection.company')}</span>
-                        <span className="text-xs text-muted-foreground">{t('roleSelection.companySubtitle')}</span>
-                      </Button>
-                    </Link>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button size="lg" asChild className="text-lg h-12 px-8">
+                <Link to="/auth?role=officer">{t('hero.createProfile')}</Link>
+              </Button>
               <Button size="lg" variant="outline" asChild className="text-lg h-12 px-8">
-                <Link to="/browse">{t('hero.browseProfiles')}</Link>
+                <Link to="/auth?role=company">{t('hero.browseProfiles')}</Link>
               </Button>
             </div>
           </div>
@@ -264,7 +264,7 @@ const Index = () => {
             {t('cta.title')}
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            {t('cta.subtitle')}
+            Join hundreds of security professionals and companies already using <span className="block">We Find Guards</span>
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" asChild className="text-lg h-12 px-8">
