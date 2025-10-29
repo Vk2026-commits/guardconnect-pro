@@ -373,7 +373,7 @@ const Auth = () => {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => handleQuickLogin("admin@securehire.com", "Admin123!", "Admin")}
+                onClick={() => handleQuickLogin("admin@wefindguards.com", "Admin123!", "Admin")}
                 disabled={loading}
               >
                 Login as Admin
@@ -382,7 +382,7 @@ const Auth = () => {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => handleQuickLogin("company@securehire.com", "Company123!", "Company")}
+                onClick={() => handleQuickLogin("company@wefindguards.com", "Company123!", "Company")}
                 disabled={loading}
               >
                 Login as Company
@@ -391,7 +391,7 @@ const Auth = () => {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => handleQuickLogin("officer@securehire.com", "Officer123!", "Officer")}
+                onClick={() => handleQuickLogin("officer@wefindguards.com", "Officer123!", "Officer")}
                 disabled={loading}
               >
                 Login as Officer
