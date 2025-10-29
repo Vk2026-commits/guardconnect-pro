@@ -4,6 +4,7 @@ import { Shield, Award, Video, Lock, Users, CheckCircle2, Building2, User } from
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import JobListings from "@/components/JobListings";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 
 const Index = () => {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -28,58 +31,58 @@ const Index = () => {
           <div className="text-center space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-primary/20 mb-4">
               <Shield className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Professional Security Marketplace</span>
+              <span className="text-sm font-medium">{t('hero.badge')}</span>
             </div>
             
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
-              Connect with Top
+              {t('hero.title')}
               <span className="block mt-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Security Professionals
+                {t('hero.titleHighlight')}
               </span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              The premier platform where security officers showcase their expertise and companies find qualified professionals for their security needs.
+              {t('hero.subtitle')}
             </p>
             
             <p className="text-lg font-medium text-primary max-w-2xl mx-auto">
-              Free for security professionals to sign up and showcase their skills
+              {t('hero.freeProfessionals')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Dialog>
                 <DialogTrigger asChild>
                   <Button size="lg" className="text-lg h-12 px-8">
-                    Create Your Profile
+                    {t('hero.createProfile')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Choose Your Role</DialogTitle>
+                    <DialogTitle>{t('roleSelection.title')}</DialogTitle>
                     <DialogDescription>
-                      Are you a security officer looking for work, or a company looking to hire?
+                      {t('roleSelection.description')}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid grid-cols-1 gap-4 py-4">
                     <Link to="/auth?role=officer" className="w-full">
                       <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
                         <User className="w-8 h-8" />
-                        <span className="font-semibold">I am a Security Officer</span>
-                        <span className="text-xs text-muted-foreground">Looking for opportunities</span>
+                        <span className="font-semibold">{t('roleSelection.officer')}</span>
+                        <span className="text-xs text-muted-foreground">{t('roleSelection.officerSubtitle')}</span>
                       </Button>
                     </Link>
                     <Link to="/auth?role=company" className="w-full">
                       <Button variant="outline" className="w-full h-24 flex flex-col gap-2">
                         <Building2 className="w-8 h-8" />
-                        <span className="font-semibold">I am a Company</span>
-                        <span className="text-xs text-muted-foreground">Looking to hire security officers</span>
+                        <span className="font-semibold">{t('roleSelection.company')}</span>
+                        <span className="text-xs text-muted-foreground">{t('roleSelection.companySubtitle')}</span>
                       </Button>
                     </Link>
                   </div>
                 </DialogContent>
               </Dialog>
               <Button size="lg" variant="outline" asChild className="text-lg h-12 px-8">
-                <Link to="/browse">Browse Professionals</Link>
+                <Link to="/browse">{t('hero.browseProfiles')}</Link>
               </Button>
             </div>
           </div>
@@ -91,10 +94,10 @@ const Index = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Everything You Need to Succeed
+              {t('features.title')}
             </h2>
             <p className="text-muted-foreground text-lg">
-              Powerful features designed for security professionals and hiring companies
+              {t('features.subtitle')}
             </p>
           </div>
 
@@ -104,9 +107,9 @@ const Index = () => {
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Professional Profiles</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('features.profiles.title')}</h3>
                 <p className="text-muted-foreground">
-                  Create comprehensive profiles showcasing your experience, certifications, and expertise.
+                  {t('features.profiles.description')}
                 </p>
               </CardContent>
             </Card>
@@ -116,9 +119,9 @@ const Index = () => {
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <Video className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Video Interviews</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('features.video.title')}</h3>
                 <p className="text-muted-foreground">
-                  Stand out with professional video interviews that showcase your personality and skills.
+                  {t('features.video.description')}
                 </p>
               </CardContent>
             </Card>
@@ -128,9 +131,9 @@ const Index = () => {
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <Award className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Certifications</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('features.certifications.title')}</h3>
                 <p className="text-muted-foreground">
-                  Display all your security certifications and credentials in one organized place.
+                  {t('features.certifications.description')}
                 </p>
               </CardContent>
             </Card>
@@ -143,10 +146,10 @@ const Index = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Flexible Access Plans
+              {t('pricing.title')}
             </h2>
             <p className="text-muted-foreground text-lg">
-              Choose the plan that fits your hiring needs
+              {t('pricing.subtitle')}
             </p>
           </div>
 
@@ -155,26 +158,26 @@ const Index = () => {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold mb-2">Free</h3>
-                  <div className="text-4xl font-bold mb-2">$0</div>
-                  <p className="text-muted-foreground">Basic browsing</p>
+                  <h3 className="text-2xl font-bold mb-2">{t('pricing.free.name')}</h3>
+                  <div className="text-4xl font-bold mb-2">{t('pricing.free.price')}</div>
+                  <p className="text-muted-foreground">{t('pricing.free.description')}</p>
                 </div>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <span>View officer profiles</span>
+                    <span>{t('pricing.free.features.viewProfiles')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <span>Basic information access</span>
+                    <span>{t('pricing.free.features.basicInfo')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <span>Search functionality</span>
+                    <span>{t('pricing.free.features.search')}</span>
                   </li>
                 </ul>
                 <Button variant="outline" className="w-full" asChild>
-                  <Link to="/browse">Start Browsing</Link>
+                  <Link to="/browse">{t('pricing.free.button')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -184,33 +187,33 @@ const Index = () => {
               <CardContent className="pt-6">
                 <div className="text-center mb-6">
                   <div className="inline-block px-3 py-1 bg-primary text-primary-foreground text-sm font-medium rounded-full mb-2">
-                    Popular
+                    {t('pricing.professional.popular')}
                   </div>
-                  <h3 className="text-2xl font-bold mb-2">Professional</h3>
-                  <div className="text-4xl font-bold mb-2">$19.99</div>
-                  <p className="text-muted-foreground">per month</p>
-                  <p className="text-sm text-primary font-medium">30-day free trial</p>
+                  <h3 className="text-2xl font-bold mb-2">{t('pricing.professional.name')}</h3>
+                  <div className="text-4xl font-bold mb-2">{t('pricing.professional.price')}</div>
+                  <p className="text-muted-foreground">{t('pricing.professional.period')}</p>
+                  <p className="text-sm text-primary font-medium">{t('pricing.professional.trial')}</p>
                 </div>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <span>Everything in Free</span>
+                    <span>{t('pricing.professional.features.everything')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <span>Direct messaging</span>
+                    <span>{t('pricing.professional.features.messaging')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <span>Email contact access</span>
+                    <span>{t('pricing.professional.features.email')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <span>Advanced search filters</span>
+                    <span>{t('pricing.professional.features.filters')}</span>
                   </li>
                 </ul>
                 <Button className="w-full" asChild>
-                  <Link to="/auth">Get Started</Link>
+                  <Link to="/auth">{t('pricing.professional.button')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -221,32 +224,32 @@ const Index = () => {
                 <div className="text-center mb-6">
                   <div className="inline-flex items-center gap-1 px-3 py-1 bg-accent text-accent-foreground text-sm font-medium rounded-full mb-2">
                     <Lock className="h-3 w-3" />
-                    <span>Premium</span>
+                    <span>{t('pricing.premium.name')}</span>
                   </div>
-                  <h3 className="text-2xl font-bold mb-2">Premium</h3>
-                  <div className="text-4xl font-bold mb-2">$29.99</div>
-                  <p className="text-muted-foreground">per month</p>
+                  <h3 className="text-2xl font-bold mb-2">{t('pricing.premium.name')}</h3>
+                  <div className="text-4xl font-bold mb-2">{t('pricing.premium.price')}</div>
+                  <p className="text-muted-foreground">{t('pricing.premium.period')}</p>
                 </div>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>Everything in Professional</span>
+                    <span>{t('pricing.premium.features.everything')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>Full certification access</span>
+                    <span>{t('pricing.premium.features.certifications')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>Video interview viewing</span>
+                    <span>{t('pricing.premium.features.video')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>Priority support</span>
+                    <span>{t('pricing.premium.features.support')}</span>
                   </li>
                 </ul>
                 <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" asChild>
-                  <Link to="/auth">Go Premium</Link>
+                  <Link to="/auth">{t('pricing.premium.button')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -258,17 +261,17 @@ const Index = () => {
             <section className="py-20 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-lg">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Get Started?
+            {t('cta.title')}
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join hundreds of security professionals and companies already using We Find Guards
+            {t('cta.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" asChild className="text-lg h-12 px-8">
-              <Link to="/auth?mode=signup">Create Account</Link>
+              <Link to="/auth?mode=signup">{t('cta.createAccount')}</Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="text-lg h-12 px-8 bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
-              <Link to="/browse">Explore Profiles</Link>
+              <Link to="/browse">{t('cta.exploreProfiles')}</Link>
             </Button>
           </div>
         </div>
@@ -286,7 +289,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">
         <div className="container mx-auto max-w-6xl text-center text-muted-foreground">
-          <p>© 2025 We Find Guards. Connecting security professionals with opportunity.</p>
+          <p>{t('footer.copyright')}</p>
         </div>
       </footer>
     </div>

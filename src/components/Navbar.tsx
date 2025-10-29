@@ -1,14 +1,26 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Shield } from "lucide-react";
+import { Shield, Languages } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
+import { useTranslation } from "react-i18next";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -57,13 +69,30 @@ const Navbar = () => {
         </Link>
 
         <div className="flex items-center gap-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Languages className="h-4 w-4" />
+                <span className="text-sm">{i18n.language === 'es' ? 'Español' : 'English'}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => changeLanguage('en')}>
+                English
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage('es')}>
+                Español
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           {user ? (
             <>
               <Button variant="ghost" asChild>
-                <Link to="/browse">Browse Officers</Link>
+                <Link to="/browse">{t('nav.browse')}</Link>
               </Button>
               <Button variant="ghost" asChild>
-                <Link to="/dashboard">Dashboard</Link>
+                <Link to="/dashboard">{t('nav.dashboard')}</Link>
               </Button>
               {isAdmin && (
                 <Button variant="ghost" asChild>
@@ -80,13 +109,13 @@ const Navbar = () => {
           ) : (
             <>
               <Button variant="ghost" asChild>
-                <Link to="/browse">Browse Officers</Link>
+                <Link to="/browse">{t('nav.browse')}</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/auth">Sign In</Link>
+                <Link to="/auth">{t('nav.login')}</Link>
               </Button>
               <Button asChild>
-                <Link to="/auth?mode=signup">Get Started</Link>
+                <Link to="/auth?mode=signup">{t('nav.signup')}</Link>
               </Button>
             </>
           )}
