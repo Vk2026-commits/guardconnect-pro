@@ -70,6 +70,9 @@ const Navbar = () => {
                   <Link to="/admin">Admin</Link>
                 </Button>
               )}
+              <Button variant="ghost" asChild>
+                <Link to="/auth?force=1">Switch account</Link>
+              </Button>
               <Button variant="outline" onClick={handleSignOut}>
                 Sign Out
               </Button>

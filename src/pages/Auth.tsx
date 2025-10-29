@@ -42,12 +42,13 @@ const Auth = () => {
 
   useEffect(() => {
     // Check if user is already logged in
+    const force = searchParams.get("force");
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (session && !force) {
         navigate("/dashboard");
       }
     });
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   const validatePassword = (pwd: string) => {
     const errors: string[] = [];
