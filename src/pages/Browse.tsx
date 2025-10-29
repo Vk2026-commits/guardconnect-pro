@@ -234,8 +234,8 @@ const Browse = () => {
             />
           </div>
           
-          <div className="flex flex-wrap gap-4">
-            <div className="w-full sm:w-auto sm:min-w-[200px]">
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="min-w-[180px]">
               <Select value={stateFilter} onValueChange={setStateFilter}>
                 <SelectTrigger>
                   <MapPin className="h-4 w-4 mr-2" />
@@ -250,7 +250,7 @@ const Browse = () => {
               </Select>
             </div>
 
-            <div className="w-full sm:w-auto sm:min-w-[200px]">
+            <div className="min-w-[150px]">
               <Input
                 placeholder="City"
                 value={cityFilter}
@@ -258,7 +258,7 @@ const Browse = () => {
               />
             </div>
 
-            <div className="w-full sm:w-auto sm:min-w-[200px]">
+            <div className="min-w-[120px]">
               <Input
                 placeholder="Zip Code"
                 value={zipFilter}
@@ -266,7 +266,7 @@ const Browse = () => {
               />
             </div>
 
-            <div className="w-full sm:w-auto sm:min-w-[200px]">
+            <div className="min-w-[200px]">
               <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
                 <SelectTrigger>
                   <Calendar className="h-4 w-4 mr-2" />
@@ -281,7 +281,7 @@ const Browse = () => {
               </Select>
             </div>
 
-            <div className="w-full sm:w-auto sm:min-w-[200px]">
+            <div className="min-w-[180px]">
               <Select value={shiftFilter} onValueChange={setShiftFilter}>
                 <SelectTrigger>
                   <Briefcase className="h-4 w-4 mr-2" />
@@ -296,7 +296,7 @@ const Browse = () => {
               </Select>
             </div>
 
-            <div className="w-full sm:w-auto sm:min-w-[200px]">
+            <div className="min-w-[180px]">
               <Select value={employmentTypeFilter} onValueChange={setEmploymentTypeFilter}>
                 <SelectTrigger>
                   <Briefcase className="h-4 w-4 mr-2" />
