@@ -123,6 +123,7 @@ export type Database = {
       company_profiles: {
         Row: {
           company_name: string
+          company_number: string | null
           company_phone: string | null
           company_phone_ext: string | null
           company_size: string | null
@@ -145,6 +146,7 @@ export type Database = {
         }
         Insert: {
           company_name: string
+          company_number?: string | null
           company_phone?: string | null
           company_phone_ext?: string | null
           company_size?: string | null
@@ -167,6 +169,7 @@ export type Database = {
         }
         Update: {
           company_name?: string
+          company_number?: string | null
           company_phone?: string | null
           company_phone_ext?: string | null
           company_size?: string | null
