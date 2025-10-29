@@ -27,7 +27,9 @@ const Browse = () => {
   const [officers, setOfficers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [cityFilter, setCityFilter] = useState<string>("all");
+  const [stateFilter, setStateFilter] = useState<string>("all");
+  const [cityFilter, setCityFilter] = useState<string>("");
+  const [zipFilter, setZipFilter] = useState<string>("");
   const [availabilityFilter, setAvailabilityFilter] = useState<string>("all");
   const [shiftFilter, setShiftFilter] = useState<string>("all");
   const [employmentTypeFilter, setEmploymentTypeFilter] = useState<string>("all");
@@ -79,7 +81,9 @@ const Browse = () => {
       officer.profiles?.full_name?.toLowerCase().includes(searchLower)
     );
 
-    const matchesCity = cityFilter === "all" || officer.address_city === cityFilter;
+    const matchesState = stateFilter === "all" || officer.address_state === stateFilter;
+    const matchesCity = !cityFilter || officer.address_city?.toLowerCase().includes(cityFilter.toLowerCase());
+    const matchesZip = !zipFilter || officer.address_zip?.includes(zipFilter);
 
     let matchesAvailability = true;
     if (availabilityFilter !== "all" && officer.availability_schedule) {
@@ -103,13 +107,17 @@ const Browse = () => {
       matchesEmploymentType = officer.employment_type.includes(employmentTypeFilter);
     }
 
-    return matchesSearch && matchesCity && matchesAvailability && matchesShift && matchesEmploymentType;
+    return matchesSearch && matchesState && matchesCity && matchesZip && matchesAvailability && matchesShift && matchesEmploymentType;
   });
 
-  const texasCities = [
-    "Houston", "San Antonio", "Dallas", "Austin", "Fort Worth",
-    "El Paso", "Arlington", "Corpus Christi", "Plano", "Laredo",
-    "Lubbock", "Irving", "Garland", "Frisco", "McKinney"
+  const usStates = [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
+    "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+    "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+    "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+    "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+    "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+    "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
   ];
 
   const availabilityOptions = [
@@ -228,18 +236,34 @@ const Browse = () => {
           
           <div className="flex flex-wrap gap-4">
             <div className="w-full sm:w-auto sm:min-w-[200px]">
-              <Select value={cityFilter} onValueChange={setCityFilter}>
+              <Select value={stateFilter} onValueChange={setStateFilter}>
                 <SelectTrigger>
                   <MapPin className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Filter by City" />
+                  <SelectValue placeholder="State" />
                 </SelectTrigger>
                 <SelectContent className="bg-background z-50">
-                  <SelectItem value="all">All Cities</SelectItem>
-                  {texasCities.map((city) => (
-                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  <SelectItem value="all">All States</SelectItem>
+                  {usStates.map((state) => (
+                    <SelectItem key={state} value={state}>{state}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="w-full sm:w-auto sm:min-w-[200px]">
+              <Input
+                placeholder="City"
+                value={cityFilter}
+                onChange={(e) => setCityFilter(e.target.value)}
+              />
+            </div>
+
+            <div className="w-full sm:w-auto sm:min-w-[200px]">
+              <Input
+                placeholder="Zip Code"
+                value={zipFilter}
+                onChange={(e) => setZipFilter(e.target.value)}
+              />
             </div>
 
             <div className="w-full sm:w-auto sm:min-w-[200px]">
