@@ -137,9 +137,13 @@ export type Database = {
           industry: string | null
           license_number: string | null
           license_types: string[] | null
+          subscription_start_date: string | null
+          subscription_status: string | null
           subscription_tier:
             | Database["public"]["Enums"]["subscription_tier"]
             | null
+          trial_end_date: string | null
+          trial_start_date: string | null
           updated_at: string | null
           user_id: string
           website_url: string | null
@@ -160,9 +164,13 @@ export type Database = {
           industry?: string | null
           license_number?: string | null
           license_types?: string[] | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
           subscription_tier?:
             | Database["public"]["Enums"]["subscription_tier"]
             | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string | null
           user_id: string
           website_url?: string | null
@@ -183,9 +191,13 @@ export type Database = {
           industry?: string | null
           license_number?: string | null
           license_types?: string[] | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
           subscription_tier?:
             | Database["public"]["Enums"]["subscription_tier"]
             | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string | null
           user_id?: string
           website_url?: string | null

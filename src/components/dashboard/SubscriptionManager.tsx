@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Crown, Users } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SubscriptionManagerProps {
   currentTier: string;
@@ -9,10 +10,25 @@ interface SubscriptionManagerProps {
 }
 
 const SubscriptionManager = ({ currentTier, onUpgrade }: SubscriptionManagerProps) => {
-  const handleUpgrade = (tier: string) => {
-    // For now, this is a placeholder - in production this would integrate with Stripe
-    toast.info("Upgrade functionality coming soon! Contact support to upgrade your subscription.");
-    // onUpgrade(tier);
+  const handleUpgrade = async (tier: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upgrade-subscription`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+        body: JSON.stringify({ tier }),
+      });
+
+      if (!response.ok) throw new Error('Upgrade failed');
+      
+      const data = await response.json();
+      toast.success(data.message || "Successfully upgraded! Your trial has started.");
+      onUpgrade(tier);
+    } catch (error) {
+      toast.error("Failed to upgrade subscription. Please try again.");
+    }
   };
 
   const tiers = [
@@ -31,8 +47,9 @@ const SubscriptionManager = ({ currentTier, onUpgrade }: SubscriptionManagerProp
     {
       name: "Professional",
       value: "professional",
-      price: "$49",
+      price: "$19.99",
       period: "per month",
+      trial: "30-day free trial",
       icon: Users,
       popular: true,
       features: [
@@ -47,7 +64,7 @@ const SubscriptionManager = ({ currentTier, onUpgrade }: SubscriptionManagerProp
     {
       name: "Premium",
       value: "premium",
-      price: "$99",
+      price: "$29.99",
       period: "per month",
       icon: Crown,
       features: [
@@ -103,6 +120,9 @@ const SubscriptionManager = ({ currentTier, onUpgrade }: SubscriptionManagerProp
                   <span className="text-4xl font-bold">{tier.price}</span>
                   {tier.period && (
                     <span className="text-muted-foreground ml-2">{tier.period}</span>
+                  )}
+                  {tier.trial && (
+                    <div className="text-sm text-primary font-medium mt-1">{tier.trial}</div>
                   )}
                 </div>
                 <CardDescription>{tier.description}</CardDescription>
