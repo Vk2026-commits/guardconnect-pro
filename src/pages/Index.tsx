@@ -42,6 +42,10 @@ const Index = () => {
               The premier platform where security officers showcase their expertise and companies find qualified professionals for their security needs.
             </p>
             
+            <p className="text-lg font-medium text-primary max-w-2xl mx-auto">
+              Free for security professionals to sign up and showcase their skills
+            </p>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Dialog>
                 <DialogTrigger asChild>
@@ -183,8 +187,9 @@ const Index = () => {
                     Popular
                   </div>
                   <h3 className="text-2xl font-bold mb-2">Professional</h3>
-                  <div className="text-4xl font-bold mb-2">$49</div>
+                  <div className="text-4xl font-bold mb-2">$19.99</div>
                   <p className="text-muted-foreground">per month</p>
+                  <p className="text-sm text-primary font-medium">30-day free trial</p>
                 </div>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-2">
@@ -219,7 +224,7 @@ const Index = () => {
                     <span>Premium</span>
                   </div>
                   <h3 className="text-2xl font-bold mb-2">Premium</h3>
-                  <div className="text-4xl font-bold mb-2">$99</div>
+                  <div className="text-4xl font-bold mb-2">$29.99</div>
                   <p className="text-muted-foreground">per month</p>
                 </div>
                 <ul className="space-y-3 mb-6">
