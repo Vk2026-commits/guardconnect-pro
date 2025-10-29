@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ import HireButton from "@/components/dashboard/HireButton";
 import { toast } from "sonner";
 
 const Browse = () => {
+  const navigate = useNavigate();
   const [officers, setOfficers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,11 +38,54 @@ const Browse = () => {
   const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
-    loadOfficers();
-    loadUserProfile();
+    checkAccess();
   }, []);
+
+  const checkAccess = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      toast.error("Please create a company account to browse security professionals");
+      navigate("/auth?role=company");
+      return;
+    }
+
+    // Get user profile to check role
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    setUserProfile(profile);
+
+    // Redirect officers to their dashboard
+    if (profile?.role === "officer") {
+      toast.error("Officers cannot browse other officers' profiles");
+      navigate("/dashboard");
+      return;
+    }
+
+    // Check if user has company profile
+    const { data: companyData } = await supabase
+      .from("company_profiles")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    if (!companyData) {
+      toast.error("Please complete your company profile to browse security professionals");
+      navigate("/dashboard");
+      return;
+    }
+
+    setCurrentUser(session.user);
+    setCompanyProfile(companyData);
+    await loadOfficers();
+  };
 
   const loadUserProfile = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -56,21 +101,32 @@ const Browse = () => {
   };
 
   const loadOfficers = async () => {
-    const { data } = await supabase
-      .from("officer_profiles")
-      .select(`
-        *,
-        profiles:user_id (
-          id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("officer_profiles")
+        .select(`
+          *,
+          profiles:user_id (
+            id,
+            full_name,
+            email,
+            avatar_url
+          )
+        `)
+        .order("created_at", { ascending: false });
 
-    setOfficers(data || []);
-    setLoading(false);
+      if (error) {
+        console.error("Error loading officers:", error);
+        toast.error("Failed to load officers. Please try again.");
+      } else {
+        setOfficers(data || []);
+      }
+    } catch (error) {
+      console.error("Error loading officers:", error);
+      toast.error("Failed to load officers. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredOfficers = officers.filter((officer) => {
