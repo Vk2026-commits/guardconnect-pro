@@ -353,7 +353,11 @@ const Admin = () => {
             <CardContent>
               <div className="space-y-4">
                 {analytics?.topViewedOfficers.map((officer, index) => (
-                  <div key={officer.id} className="flex justify-between items-center border-b pb-2">
+                  <div 
+                    key={officer.id} 
+                    className="flex justify-between items-center border-b pb-2 hover:bg-accent/50 -mx-2 px-2 py-1 rounded cursor-pointer transition-colors"
+                    onClick={() => navigate(`/browse?officer=${officer.id}`)}
+                  >
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-lg text-muted-foreground">#{index + 1}</span>
                       <div>
@@ -361,7 +365,7 @@ const Admin = () => {
                         <p className="text-sm text-muted-foreground">{officer.title || "Security Officer"}</p>
                       </div>
                     </div>
-                    <span className="font-bold text-primary">{officer.view_count} views</span>
+                    <span className="font-bold text-primary cursor-pointer hover:underline">{officer.view_count} views</span>
                   </div>
                 ))}
               </div>
