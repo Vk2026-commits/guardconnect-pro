@@ -79,10 +79,10 @@ const Index = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" asChild className="text-lg h-12 px-8">
-                <Link to="/auth?role=officer">{t('hero.createProfile')}</Link>
+                <Link to="/auth?role=officer">Security Professionals Create Your Profile</Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="text-lg h-12 px-8">
-                <Link to="/auth?role=company">{t('hero.browseProfiles')}</Link>
+                <Link to="/auth?role=company">Create Your Company Profile For Companies</Link>
               </Button>
             </div>
           </div>
@@ -264,7 +264,9 @@ const Index = () => {
             {t('cta.title')}
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join hundreds of security professionals and companies already using <span className="block">We Find Guards</span>
+            Join hundreds of security professionals and companies already using
+            <br />
+            We Find Guards
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" asChild className="text-lg h-12 px-8">
