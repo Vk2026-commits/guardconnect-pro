@@ -6,13 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Briefcase, MapPin, DollarSign, CheckCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 const JobListings = () => {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState<any[]>([]);
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [officerProfile, setOfficerProfile] = useState<any>(null);
   const [hasApplied, setHasApplied] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
     loadJobs();
@@ -39,11 +43,16 @@ const JobListings = () => {
       if (profile?.role === "officer") {
         const { data: officerData } = await supabase
           .from("officer_profiles")
-          .select("id")
+          .select("*")
           .eq("user_id", user.id)
           .single();
 
         setOfficerProfile(officerData);
+        
+        // Check if profile is complete (at least title and phone)
+        if (officerData) {
+          setProfileComplete(!!officerData.title && !!officerData.phone);
+        }
       }
     }
   };
@@ -76,14 +85,44 @@ const JobListings = () => {
     setHasApplied(!!data);
   };
 
+  const handleJobClick = (job: any) => {
+    if (!currentUser) {
+      setSelectedJob(job);
+      setShowAuthPrompt(true);
+      return;
+    }
+    
+    if (!profileComplete) {
+      toast.error("Please complete your profile before applying for jobs", {
+        action: {
+          label: "Go to Profile",
+          onClick: () => navigate("/dashboard")
+        }
+      });
+      return;
+    }
+    
+    setSelectedJob(job);
+  };
+
   const handleInterest = async () => {
     if (!currentUser) {
-      toast.error("Please sign in to express interest");
+      setShowAuthPrompt(true);
       return;
     }
 
     if (!officerProfile) {
       toast.error("Only security officers can apply for jobs");
+      return;
+    }
+    
+    if (!profileComplete) {
+      toast.error("Please complete your profile before applying", {
+        action: {
+          label: "Go to Profile",
+          onClick: () => navigate("/dashboard")
+        }
+      });
       return;
     }
 
@@ -124,7 +163,7 @@ const JobListings = () => {
             <div
               key={job.id}
               className="border rounded-lg p-3 hover:bg-accent/50 cursor-pointer transition-colors"
-              onClick={() => setSelectedJob(job)}
+              onClick={() => handleJobClick(job)}
             >
               <h4 className="font-semibold text-sm mb-1">{job.title}</h4>
               <p className="text-xs text-muted-foreground mb-2">
@@ -145,7 +184,33 @@ const JobListings = () => {
         </CardContent>
       </Card>
 
-      <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
+      <Dialog open={showAuthPrompt} onOpenChange={setShowAuthPrompt}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign In Required</DialogTitle>
+            <DialogDescription>
+              You need to sign in as a security professional and complete your profile to view and apply for job postings.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-4">
+            <Button 
+              onClick={() => navigate("/auth?role=officer")} 
+              className="w-full"
+            >
+              Sign In / Create Account
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAuthPrompt(false)} 
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!selectedJob && !showAuthPrompt} onOpenChange={() => setSelectedJob(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -156,7 +221,7 @@ const JobListings = () => {
               {selectedJob?.company_profiles?.company_name}
             </DialogDescription>
           </DialogHeader>
-          {selectedJob && (
+          {selectedJob && currentUser && (
             <div className="space-y-4">
               <div className="flex items-center gap-4 text-sm">
                 <span className="flex items-center gap-1">

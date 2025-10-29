@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Award, Video, User, Briefcase, Clock } from "lucide-react";
+import { Award, Video, User, Briefcase, Clock, Upload, FileText } from "lucide-react";
 import { CertificationsManager } from "./CertificationsManager";
 import { PhotoUpload } from "./PhotoUpload";
 import { OfficerPhotos } from "./OfficerPhotos";
@@ -20,15 +20,21 @@ interface OfficerDashboardProps {
 
 const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
   const [officerProfile, setOfficerProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     bio: "",
     years_experience: "",
     phone: "",
-    location: "",
+    address_street: "",
+    address_unit: "",
+    address_city: "",
+    address_state: "",
+    address_zip: "",
     linkedin_url: "",
-    hourly_rate: "",
+    desired_salary: "",
     employment_type: [] as string[],
     availability_schedule: {} as Record<string, { start: string; end: string }>,
     shift_preference: [] as string[],
@@ -40,7 +46,37 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
     loadProfile();
   }, [userId]);
 
+  const ensureOfficerProfile = async () => {
+    if (!officerProfile) {
+      try {
+        const { data, error } = await supabase
+          .from("officer_profiles")
+          .insert({ user_id: userId })
+          .select()
+          .single();
+        
+        if (error) throw error;
+        setOfficerProfile(data);
+        return data;
+      } catch (error: any) {
+        toast.error("Failed to create profile");
+        return null;
+      }
+    }
+    return officerProfile;
+  };
+
   const loadProfile = async () => {
+    // Load profiles table for email
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+    
+    setProfile(profileData);
+
+    // Load officer profile
     const { data } = await supabase
       .from("officer_profiles")
       .select("*")
@@ -54,9 +90,13 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         bio: data.bio || "",
         years_experience: data.years_experience?.toString() || "",
         phone: data.phone || "",
-        location: data.location || "",
+        address_street: data.address_street || "",
+        address_unit: data.address_unit || "",
+        address_city: data.address_city || "",
+        address_state: data.address_state || "",
+        address_zip: data.address_zip || "",
         linkedin_url: data.linkedin_url || "",
-        hourly_rate: data.hourly_rate?.toString() || "",
+        desired_salary: data.desired_salary?.toString() || "",
         employment_type: data.employment_type || [],
         availability_schedule: (data.availability_schedule as Record<string, { start: string; end: string }>) || {},
         shift_preference: data.shift_preference || [],
@@ -78,8 +118,63 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
     }
   };
 
+  const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploadingResume(true);
+
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+
+      const file = event.target.files[0];
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${userId}/resume.${fileExt}`;
+
+      // Delete old resume if exists
+      if (officerProfile?.resume_url) {
+        const oldPath = officerProfile.resume_url.split("/resumes/")[1];
+        if (oldPath) {
+          await supabase.storage.from("resumes").remove([oldPath]);
+        }
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from("resumes")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("resumes").getPublicUrl(filePath);
+
+      const { error } = await supabase
+        .from("officer_profiles")
+        .update({ resume_url: data.publicUrl })
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      toast.success("Resume uploaded successfully!");
+      loadProfile();
+    } catch (error: any) {
+      toast.error("Error uploading resume: " + error.message);
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.title) {
+      toast.error("Professional Title is required");
+      return;
+    }
+    if (!formData.phone) {
+      toast.error("Phone number is required");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -89,9 +184,13 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         bio: formData.bio,
         years_experience: parseInt(formData.years_experience) || null,
         phone: formData.phone,
-        location: formData.location,
+        address_street: formData.address_street || null,
+        address_unit: formData.address_unit || null,
+        address_city: formData.address_city || null,
+        address_state: formData.address_state || null,
+        address_zip: formData.address_zip || null,
         linkedin_url: formData.linkedin_url,
-        hourly_rate: parseFloat(formData.hourly_rate) || null,
+        desired_salary: parseFloat(formData.desired_salary) || null,
         employment_type: formData.employment_type,
         availability_schedule: formData.availability_schedule,
         shift_preference: formData.shift_preference,
@@ -176,7 +275,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
             <CardHeader>
               <CardTitle>Professional Profile</CardTitle>
               <CardDescription>
-                Update your profile information to attract potential employers
+                Update your profile information to attract potential employers. Fields marked with * are required.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -191,12 +290,41 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Professional Title</Label>
+                    <Label htmlFor="title" className={!formData.title ? "text-destructive" : ""}>
+                      Professional Title *
+                    </Label>
                     <Input
                       id="title"
                       placeholder="e.g., Licensed Security Officer"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className={!formData.title ? "border-destructive" : ""}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profile?.email || ""}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className={!formData.phone ? "text-destructive" : ""}>
+                      Phone *
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className={!formData.phone ? "border-destructive" : ""}
                     />
                   </div>
 
@@ -211,24 +339,64 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="address_street">Home Address</Label>
                     <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+1 (555) 000-0000"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      id="address_street"
+                      placeholder="Street Address"
+                      value={formData.address_street}
+                      onChange={(e) => setFormData({ ...formData, address_street: e.target.value })}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="address_unit">Apt/Unit</Label>
                     <Input
-                      id="location"
-                      placeholder="City, State"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      id="address_unit"
+                      placeholder="Apt, Unit, etc."
+                      value={formData.address_unit}
+                      onChange={(e) => setFormData({ ...formData, address_unit: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address_city">City</Label>
+                    <Input
+                      id="address_city"
+                      placeholder="City"
+                      value={formData.address_city}
+                      onChange={(e) => setFormData({ ...formData, address_city: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address_state">State</Label>
+                    <Input
+                      id="address_state"
+                      placeholder="State"
+                      value={formData.address_state}
+                      onChange={(e) => setFormData({ ...formData, address_state: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address_zip">ZIP Code</Label>
+                    <Input
+                      id="address_zip"
+                      placeholder="ZIP Code"
+                      value={formData.address_zip}
+                      onChange={(e) => setFormData({ ...formData, address_zip: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="desired_salary">Desired Annual Salary ($)</Label>
+                    <Input
+                      id="desired_salary"
+                      type="number"
+                      placeholder="50000"
+                      value={formData.desired_salary}
+                      onChange={(e) => setFormData({ ...formData, desired_salary: e.target.value })}
                     />
                   </div>
 
@@ -242,18 +410,46 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                       onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
                     />
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="resume">Resume</Label>
+                  <div className="flex items-center gap-3">
+                    {officerProfile?.resume_url && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(officerProfile.resume_url, '_blank')}
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        View Current Resume
+                      </Button>
+                    )}
                     <Input
-                      id="hourly_rate"
-                      type="number"
-                      step="0.01"
-                      placeholder="25.00"
-                      value={formData.hourly_rate}
-                      onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
+                      id="resume"
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleResumeUpload}
+                      disabled={uploadingResume}
+                      className="hidden"
                     />
+                    <label htmlFor="resume">
+                      <Button 
+                        type="button" 
+                        variant={officerProfile?.resume_url ? "secondary" : "outline"}
+                        size="sm"
+                        disabled={uploadingResume}
+                        asChild
+                      >
+                        <span className="cursor-pointer">
+                          <Upload className="mr-2 h-4 w-4" />
+                          {uploadingResume ? "Uploading..." : officerProfile?.resume_url ? "Replace Resume" : "Upload Resume"}
+                        </span>
+                      </Button>
+                    </label>
                   </div>
+                  <p className="text-xs text-muted-foreground">PDF, DOC, or DOCX format</p>
                 </div>
 
                 <div className="space-y-2">
@@ -509,14 +705,11 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </TabsContent>
 
         <TabsContent value="certifications">
-          {officerProfile && <CertificationsManager officerId={officerProfile.id} userId={userId} />}
-          {!officerProfile && (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Please complete your profile first to add certifications
-              </CardContent>
-            </Card>
-          )}
+          <CertificationsManager 
+            officerId={officerProfile?.id || ""} 
+            userId={userId}
+            onEnsureProfile={ensureOfficerProfile}
+          />
         </TabsContent>
 
         <TabsContent value="work-history">

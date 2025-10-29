@@ -28,6 +28,7 @@ interface Certification {
 interface CertificationsManagerProps {
   officerId: string;
   userId: string;
+  onEnsureProfile?: () => Promise<any>;
 }
 
 const LICENSE_LEVELS = [
@@ -54,21 +55,44 @@ const TRAINING_CERTIFICATIONS = [
   "CCTV Operations",
 ];
 
-export function CertificationsManager({ officerId, userId }: CertificationsManagerProps) {
+export function CertificationsManager({ officerId, userId, onEnsureProfile }: CertificationsManagerProps) {
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [currentOfficerId, setCurrentOfficerId] = useState(officerId);
 
   useEffect(() => {
-    loadCertifications();
+    if (officerId) {
+      setCurrentOfficerId(officerId);
+      loadCertifications();
+    }
   }, [officerId]);
 
+  const ensureOfficerId = async () => {
+    if (currentOfficerId) return currentOfficerId;
+    
+    if (onEnsureProfile) {
+      const profile = await onEnsureProfile();
+      if (profile?.id) {
+        setCurrentOfficerId(profile.id);
+        return profile.id;
+      }
+    }
+    return null;
+  };
+
   const loadCertifications = async () => {
+    const id = await ensureOfficerId();
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from("certifications")
         .select("*")
-        .eq("officer_id", officerId)
+        .eq("officer_id", id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -212,9 +236,15 @@ export function CertificationsManager({ officerId, userId }: CertificationsManag
         return;
       }
 
+      const id = await ensureOfficerId();
+      if (!id) {
+        toast.error("Please create your profile first");
+        return;
+      }
+
       try {
         const certData = {
-          officer_id: officerId,
+          officer_id: id,
           certification_type: "license",
           name: label,
           license_level: licenseLevel,
@@ -386,9 +416,15 @@ export function CertificationsManager({ officerId, userId }: CertificationsManag
         return;
       }
 
+      const id = await ensureOfficerId();
+      if (!id) {
+        toast.error("Please create your profile first");
+        return;
+      }
+
       try {
         const { error } = await supabase.from("certifications").insert({
-          officer_id: officerId,
+          officer_id: id,
           certification_type: "training",
           name: newTraining.name,
           issuing_organization: newTraining.issuing_organization || null,
