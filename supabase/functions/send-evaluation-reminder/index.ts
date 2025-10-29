@@ -98,7 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         // Send email
         const emailResponse = await resend.emails.send({
-          from: "SecureHire <onboarding@resend.dev>",
+          from: "We Find Guards <onboarding@resend.dev>",
           to: [companyEmail],
           subject: `${periodName} Performance Evaluation Due for ${officerName}`,
           html: `
@@ -138,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
               </p>
               
               <p style="color: #777; font-size: 12px; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
-                This is an automated reminder from SecureHire. If you have already completed this evaluation, 
+                This is an automated reminder from We Find Guards. If you have already completed this evaluation, 
                 please disregard this message.
               </p>
             </div>

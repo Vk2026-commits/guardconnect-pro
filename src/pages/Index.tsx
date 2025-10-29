@@ -256,7 +256,7 @@ const Index = () => {
             Ready to Get Started?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join hundreds of security professionals and companies already using SecureHire
+            Join hundreds of security professionals and companies already using We Find Guards
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" asChild className="text-lg h-12 px-8">
@@ -281,7 +281,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">
         <div className="container mx-auto max-w-6xl text-center text-muted-foreground">
-          <p>© 2025 SecureHire. Connecting security professionals with opportunity.</p>
+          <p>© 2025 We Find Guards. Connecting security professionals with opportunity.</p>
         </div>
       </footer>
     </div>

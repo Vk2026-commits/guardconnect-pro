@@ -119,7 +119,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "SecureHire <onboarding@resend.dev>",
+      from: "We Find Guards <onboarding@resend.dev>",
       to: [officerEmail],
       subject: `${companyProfile.company_name} is Interested in Your Profile`,
       html: `
@@ -128,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
           
           <p style="color: #555; line-height: 1.6;">
             We are pleased to inform you that <strong>${companyProfile.company_name}</strong> 
-            has reviewed your profile on SecureHire and is interested in potentially hiring you 
+            has reviewed your profile on We Find Guards and is interested in potentially hiring you 
             for a security position.
           </p>
           
@@ -141,7 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
           </p>` : ''}
           
           <p style="color: #555; line-height: 1.6;">
-            You can log in to your SecureHire dashboard to view more details about this company 
+            You can log in to your We Find Guards dashboard to view more details about this company 
             and communicate directly through our platform.
           </p>
           
@@ -154,7 +154,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <p style="color: #777; font-size: 12px; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
-            This is an automated message from SecureHire. Please do not reply to this email. 
+            This is an automated message from We Find Guards. Please do not reply to this email. 
             Log in to your account to communicate with employers.
           </p>
         </div>
