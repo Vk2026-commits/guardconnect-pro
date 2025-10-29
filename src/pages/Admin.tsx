@@ -69,19 +69,30 @@ const Admin = () => {
         supabase.from("profile_views").select("*", { count: "exact", head: true }),
       ]);
 
-      // Get recent officers with registration date
-      const { data: recentOfficers } = await supabase
+      console.log("Counts:", { 
+        officers: officersCount.count, 
+        companies: companiesCount.count,
+        hires: hiresCount.count,
+        views: viewsCount.count 
+      });
+
+      // Get recent officers with registration date - use left join to avoid RLS issues
+      const { data: recentOfficers, error: officersError } = await supabase
         .from("officer_profiles")
-        .select("*, profiles!inner(full_name, email, created_at)")
+        .select("*, profiles(full_name, email, created_at)")
         .order("created_at", { ascending: false })
         .limit(10);
 
-      // Get recent companies
-      const { data: recentCompanies } = await supabase
+      if (officersError) console.error("Officers error:", officersError);
+
+      // Get recent companies - use left join to avoid RLS issues
+      const { data: recentCompanies, error: companiesError } = await supabase
         .from("company_profiles")
-        .select("*, profiles!inner(email, created_at)")
+        .select("*, profiles(email, created_at)")
         .order("created_at", { ascending: false })
         .limit(10);
+
+      if (companiesError) console.error("Companies error:", companiesError);
 
       // Get top viewed officers
       const { data: topViewed } = await supabase
@@ -132,6 +143,67 @@ const Admin = () => {
       setLoading(false);
     }
   };
+
+  // Set up realtime subscriptions for automatic updates
+  useEffect(() => {
+    if (!analytics) return;
+
+    const channel = supabase
+      .channel('admin-analytics-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'company_profiles'
+        },
+        () => {
+          console.log('Company profiles updated, reloading analytics');
+          loadAnalytics();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'officer_profiles'
+        },
+        () => {
+          console.log('Officer profiles updated, reloading analytics');
+          loadAnalytics();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'hires'
+        },
+        () => {
+          console.log('Hires updated, reloading analytics');
+          loadAnalytics();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profile_views'
+        },
+        () => {
+          console.log('Profile views updated, reloading analytics');
+          loadAnalytics();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [analytics]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
