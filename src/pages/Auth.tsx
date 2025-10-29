@@ -174,6 +174,35 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!emailOrUsername) {
+      toast.error("Please enter your email address first");
+      return;
+    }
+    
+    // Check if input looks like an email
+    const isEmail = emailOrUsername.includes('@');
+    if (!isEmail) {
+      toast.error("Please enter your email address (not username)");
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(emailOrUsername, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      
+      if (error) throw error;
+      
+      toast.success("Password reset link sent to your email!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30 p-4">
       <Card className="w-full max-w-md">
@@ -307,6 +336,19 @@ const Auth = () => {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : mode === "signin" ? "Sign In" : "Create Account"}
             </Button>
+
+            {mode === "signin" && (
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={loading}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
 
             <div className="text-center text-sm">
               <button
