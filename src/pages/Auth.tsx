@@ -155,6 +155,25 @@ const Auth = () => {
     }
   };
 
+  const handleQuickLogin = async (testEmail: string, testPassword: string, accountType: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: testEmail,
+        password: testPassword,
+      });
+
+      if (error) throw error;
+      
+      toast.success(`Logged in as ${accountType}`);
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Test account not found. Please create it first.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30 p-4">
       <Card className="w-full max-w-md">
@@ -301,6 +320,42 @@ const Auth = () => {
               </button>
             </div>
           </form>
+
+          {/* Development Quick Login Panel */}
+          <div className="mt-6 pt-6 border-t">
+            <p className="text-sm font-medium text-center mb-3 text-muted-foreground">
+              Quick Login (Testing)
+            </p>
+            <div className="space-y-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => handleQuickLogin("admin@securehire.com", "Admin123!", "Admin")}
+                disabled={loading}
+              >
+                Login as Admin
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => handleQuickLogin("company@securehire.com", "Company123!", "Company")}
+                disabled={loading}
+              >
+                Login as Company
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => handleQuickLogin("officer@securehire.com", "Officer123!", "Officer")}
+                disabled={loading}
+              >
+                Login as Officer
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
