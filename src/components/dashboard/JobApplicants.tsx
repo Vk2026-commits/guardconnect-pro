@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ interface JobApplicantsProps {
 }
 
 const JobApplicants = ({ companyId, subscriptionTier, onNavigateToSubscriptions }: JobApplicantsProps) => {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState<any[]>([]);
   const [chatOpen, setChatOpen] = useState(false);
   const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
@@ -134,7 +136,13 @@ const JobApplicants = ({ companyId, subscriptionTier, onNavigateToSubscriptions 
 
                 {isPaidSubscriber ? (
                   <div className="flex gap-2 mt-3">
-                    <Button size="sm">
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        // Navigate to browse page to view the officer's profile
+                        navigate(`/browse?officer=${app.officer.id}`);
+                      }}
+                    >
                       View Profile
                     </Button>
                     <Button 
