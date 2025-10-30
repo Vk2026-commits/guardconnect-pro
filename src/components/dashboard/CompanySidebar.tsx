@@ -23,7 +23,7 @@ export function CompanySidebar({ activeTab, onTabChange }: CompanySidebarProps) 
 
   const items = [
     { title: "Company Profile", value: "profile", icon: Building2 },
-    { title: "Browse Officers", value: "browse", icon: Users },
+    { title: "Browse Guards", value: "browse", icon: Users },
     { title: "Job Postings", value: "jobs", icon: Briefcase },
     { title: "Applicants", value: "applicants", icon: UserCheck },
     { title: "Interested", value: "interested", icon: Heart },
