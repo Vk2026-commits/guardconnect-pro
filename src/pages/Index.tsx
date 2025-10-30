@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, Award, Video, Lock, Users, CheckCircle2, Building2, User } from "lucide-react";
+import { Shield, Award, Video, Lock, Users, CheckCircle2, Building2, User, QrCode } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import JobListings from "@/components/JobListings";
 import { useTranslation } from "react-i18next";
+import QRCode from "react-qr-code";
 import {
   Dialog,
   DialogContent,
@@ -88,6 +89,42 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+            {/* QR Code Section */}
+            <section className="py-16">
+              <div className="container mx-auto max-w-4xl">
+                <Card className="border-2 border-primary/20 bg-gradient-to-br from-background to-muted/30">
+                  <CardContent className="pt-8 pb-8">
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                      <div className="flex-1 text-center md:text-left">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
+                          <QrCode className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">Quick Access</span>
+                        </div>
+                        <h2 className="text-3xl font-bold mb-4">
+                          Scan to Get Started
+                        </h2>
+                        <p className="text-muted-foreground text-lg mb-4">
+                          Use this QR code to quickly access our platform from any device. Perfect for sharing on social media, print advertisements, and marketing materials.
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Scan with your phone's camera to create an account or log in instantly.
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <div className="p-6 bg-white rounded-lg shadow-lg">
+                          <QRCode
+                            value={`${window.location.origin}/auth`}
+                            size={200}
+                            level="H"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
 
             {/* Features Section */}
             <section className="py-20 bg-muted/30 rounded-lg">
