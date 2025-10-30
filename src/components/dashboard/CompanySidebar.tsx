@@ -48,13 +48,22 @@ export function CompanySidebar({ activeTab, onTabChange }: CompanySidebarProps) 
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.value}>
-                  <SidebarMenuButton
-                    onClick={() => onTabChange(item.value)}
-                    className={getNavCls(item.value)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {open && <span>{item.title}</span>}
-                  </SidebarMenuButton>
+                  {item.value === "browse" ? (
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/browse" className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4" />
+                        {open && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  ) : (
+                    <SidebarMenuButton
+                      onClick={() => onTabChange(item.value)}
+                      className={getNavCls(item.value)}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {open && <span>{item.title}</span>}
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
