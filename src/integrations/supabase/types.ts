@@ -128,6 +128,7 @@ export type Database = {
           company_phone: string | null
           company_phone_ext: string | null
           company_size: string | null
+          company_state: string | null
           contact_cell_phone: string | null
           contact_email: string | null
           contact_person_name: string | null
@@ -159,6 +160,7 @@ export type Database = {
           company_phone?: string | null
           company_phone_ext?: string | null
           company_size?: string | null
+          company_state?: string | null
           contact_cell_phone?: string | null
           contact_email?: string | null
           contact_person_name?: string | null
@@ -190,6 +192,7 @@ export type Database = {
           company_phone?: string | null
           company_phone_ext?: string | null
           company_size?: string | null
+          company_state?: string | null
           contact_cell_phone?: string | null
           contact_email?: string | null
           contact_person_name?: string | null
@@ -535,6 +538,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          date_of_birth: string | null
           desired_salary: number | null
           employment_type: string[] | null
           hourly_rate: number | null
@@ -564,6 +568,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           desired_salary?: number | null
           employment_type?: string[] | null
           hourly_rate?: number | null
@@ -593,6 +598,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           desired_salary?: number | null
           employment_type?: string[] | null
           hourly_rate?: number | null

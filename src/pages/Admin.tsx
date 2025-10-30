@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail, MoreVertical, Pause, XCircle, Trash2, PlayCircle, Search, AlertTriangle, Shield, UserPlus } from "lucide-react";
+import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail, MoreVertical, Pause, XCircle, Trash2, PlayCircle, Search, AlertTriangle, Shield, UserPlus, PieChart as PieChartIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 interface Analytics {
   totalOfficers: number;
@@ -60,6 +61,12 @@ const Admin = () => {
   const [selectedUserEmail, setSelectedUserEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [updatingPassword, setUpdatingPassword] = useState(false);
+  
+  // Pie chart data states
+  const [statsOverviewData, setStatsOverviewData] = useState<any[]>([]);
+  const [officerAgeData, setOfficerAgeData] = useState<any[]>([]);
+  const [officerStateData, setOfficerStateData] = useState<any[]>([]);
+  const [companyStateData, setCompanyStateData] = useState<any[]>([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -567,6 +574,105 @@ const Admin = () => {
     return days;
   };
 
+  const calculateAge = (dateOfBirth: string) => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const preparePieChartData = () => {
+    // Stats Overview Pie Chart
+    const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'];
+    const statsData = [
+      { name: 'Officers', value: analytics?.totalOfficers || 0, color: COLORS[0] },
+      { name: 'Companies', value: analytics?.totalCompanies || 0, color: COLORS[1] },
+      { name: 'Hires', value: analytics?.totalHires || 0, color: COLORS[2] },
+      { name: 'Profile Views', value: analytics?.totalProfileViews || 0, color: COLORS[3] },
+    ];
+    setStatsOverviewData(statsData);
+
+    // Officer Age Groups
+    const ageGroups = {
+      '18-24': 0,
+      '25-34': 0,
+      '35-44': 0,
+      '45-54': 0,
+      '55-64': 0,
+      '65+': 0,
+    };
+
+    allOfficers.forEach((officer) => {
+      if (officer.date_of_birth) {
+        const age = calculateAge(officer.date_of_birth);
+        if (age >= 18 && age <= 24) ageGroups['18-24']++;
+        else if (age >= 25 && age <= 34) ageGroups['25-34']++;
+        else if (age >= 35 && age <= 44) ageGroups['35-44']++;
+        else if (age >= 45 && age <= 54) ageGroups['45-54']++;
+        else if (age >= 55 && age <= 64) ageGroups['55-64']++;
+        else if (age >= 65) ageGroups['65+']++;
+      }
+    });
+
+    const AGE_COLORS = ['#8b5cf6', '#ec4899', '#f97316', '#eab308', '#84cc16', '#14b8a6'];
+    const ageData = Object.entries(ageGroups).map(([name, value], index) => ({
+      name,
+      value,
+      color: AGE_COLORS[index],
+    }));
+    setOfficerAgeData(ageData);
+
+    // Officer States Distribution
+    const officerStates: Record<string, number> = {};
+    allOfficers.forEach((officer) => {
+      if (officer.address_state) {
+        officerStates[officer.address_state] = (officerStates[officer.address_state] || 0) + 1;
+      }
+    });
+
+    const STATE_COLORS = [
+      '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', 
+      '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#f43f5e'
+    ];
+
+    const officerStateChartData = Object.entries(officerStates)
+      .sort(([, a], [, b]) => b - a)
+      .map(([name, value], index) => ({
+        name,
+        value,
+        color: STATE_COLORS[index % STATE_COLORS.length],
+      }));
+    setOfficerStateData(officerStateChartData);
+
+    // Company States Distribution
+    const companyStates: Record<string, number> = {};
+    allCompanies.forEach((company) => {
+      if (company.company_state) {
+        companyStates[company.company_state] = (companyStates[company.company_state] || 0) + 1;
+      }
+    });
+
+    const companyStateChartData = Object.entries(companyStates)
+      .sort(([, a], [, b]) => b - a)
+      .map(([name, value], index) => ({
+        name,
+        value,
+        color: STATE_COLORS[index % STATE_COLORS.length],
+      }));
+    setCompanyStateData(companyStateChartData);
+  };
+
+  // Update pie charts when data changes
+  useEffect(() => {
+    if (analytics && allOfficers.length > 0) {
+      preparePieChartData();
+    }
+  }, [analytics, allOfficers, allCompanies]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -648,6 +754,141 @@ const Admin = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{analytics?.totalProfileViews}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Pie Charts Section */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Stats Overview Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PieChartIcon className="h-5 w-5" />
+                Stats Overview
+              </CardTitle>
+              <CardDescription>Distribution of key metrics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={statsOverviewData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {statsOverviewData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Officer Age Groups Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Officer Age Groups
+              </CardTitle>
+              <CardDescription>Age distribution in 10-year increments</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={officerAgeData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {officerAgeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Officers by State Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Officers by State
+              </CardTitle>
+              <CardDescription>Geographic distribution of officers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={officerStateData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {officerStateData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Companies by State Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Companies by State
+              </CardTitle>
+              <CardDescription>Geographic distribution of companies</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={companyStateData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {companyStateData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
