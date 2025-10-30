@@ -116,7 +116,10 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
 
     const { error: uploadError } = await supabase.storage
       .from("certification-documents")
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        upsert: true,
+        cacheControl: "3600"
+      });
 
     if (uploadError) throw uploadError;
 
