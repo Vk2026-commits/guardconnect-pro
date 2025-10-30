@@ -97,25 +97,21 @@ const Index = () => {
                   <CardContent className="pt-8 pb-8">
                     <div className="flex flex-col md:flex-row items-center gap-8">
                       <div className="flex-1 text-center md:text-left">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
-                          <QrCode className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium">Quick Access</span>
-                        </div>
-                        <h2 className="text-3xl font-bold mb-4">
+                        <h2 className="text-2xl font-bold mb-4">
                           Scan to Get Started
                         </h2>
-                        <p className="text-muted-foreground text-lg mb-4">
-                          Use this QR code to quickly access our platform from any device. Perfect for sharing on social media, print advertisements, and marketing materials.
+                        <p className="text-muted-foreground mb-4">
+                          Use this QR code to quickly access our platform from any device.
                         </p>
                         <p className="text-sm text-muted-foreground">
                           Scan with your phone's camera to create an account or log in instantly.
                         </p>
                       </div>
                       <div className="flex-shrink-0">
-                        <div className="p-6 bg-white rounded-lg shadow-lg">
+                        <div className="p-4 bg-white rounded-lg shadow-lg">
                           <QRCode
                             value={`${window.location.origin}/auth`}
-                            size={200}
+                            size={150}
                             level="H"
                           />
                         </div>
