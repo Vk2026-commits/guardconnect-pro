@@ -45,25 +45,41 @@ export function InterestedJobsPanel({ officerId, officerName }: InterestedJobsPa
 
   const loadInterestedJobs = async () => {
     try {
-      const { data, error } = await supabase
+      // 1) Get applications for this officer
+      const { data: apps, error: appsError } = await supabase
         .from("job_applications")
-        .select(`
-          *,
-          job_postings!inner(
-            *,
-            company_profiles!inner(
-              id,
-              company_name,
-              logo_url
-            )
-          )
-        `)
+        .select("id, job_posting_id, created_at")
         .eq("officer_id", officerId)
         .eq("status", "interested")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setInterestedJobs(data || []);
+      if (appsError) throw appsError;
+      if (!apps || apps.length === 0) {
+        setInterestedJobs([]);
+        return;
+      }
+
+      // 2) Load job details in one query
+      const jobIds = apps.map((a: any) => a.job_posting_id);
+      const { data: jobs, error: jobsError } = await supabase
+        .from("job_postings")
+        .select("*, company_profiles(id, company_name, logo_url)")
+        .in("id", jobIds);
+
+      if (jobsError) throw jobsError;
+
+      const jobsMap = new Map(jobs?.map((j: any) => [j.id, j]) || []);
+
+      // 3) Combine so UI remains unchanged (expects application.job_postings)
+      const combined = apps
+        .map((a: any) => ({
+          id: a.id,
+          created_at: a.created_at,
+          job_postings: jobsMap.get(a.job_posting_id),
+        }))
+        .filter((c: any) => !!c.job_postings);
+
+      setInterestedJobs(combined);
     } catch (error) {
       console.error("Error loading interested jobs:", error);
       toast.error("Failed to load interested jobs");

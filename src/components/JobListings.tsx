@@ -154,7 +154,7 @@ const JobListings = () => {
           .eq("id", currentUser.id)
           .single();
 
-        await supabase
+        const { error: msgError } = await supabase
           .from("messages")
           .insert({
             company_id: job.company_id,
@@ -163,6 +163,9 @@ const JobListings = () => {
             message: `${profileData?.full_name || 'An officer'} is interested in your "${job.title}" position.`,
             is_read: false
           });
+        if (msgError) {
+          console.error('Failed to notify employer:', msgError);
+        }
       }
 
       toast.success(status === 'interested' ? "Added to interested jobs! Employer notified." : "Marked as not interested");
