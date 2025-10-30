@@ -15,6 +15,7 @@ import { OfficerPhotos } from "./OfficerPhotos";
 import { WorkHistory } from "./WorkHistory";
 import { OfficerMessages } from "./OfficerMessages";
 import { OfficerChatPanel } from "./OfficerChatPanel";
+import { InterestedJobsPanel } from "./InterestedJobsPanel";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { OfficerSidebar } from "./OfficerSidebar";
 
@@ -777,10 +778,16 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
           </div>
           </div>
           
-          {/* Right Side Chat Panel */}
+          {/* Right Side Chat Panel and Interested Jobs */}
           {officerProfile?.id && (
-            <div className="w-96 border-l bg-muted/20 p-4 overflow-y-auto">
-              <OfficerChatPanel 
+            <div className="w-96 border-l bg-muted/20 p-4 overflow-y-auto space-y-4">
+              <div className="h-[250px]">
+                <OfficerChatPanel 
+                  officerId={officerProfile.id} 
+                  officerName={profile?.full_name || profile?.email || "Officer"}
+                />
+              </div>
+              <InterestedJobsPanel 
                 officerId={officerProfile.id} 
                 officerName={profile?.full_name || profile?.email || "Officer"}
               />

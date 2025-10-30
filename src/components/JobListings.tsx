@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Briefcase, MapPin, DollarSign, CheckCircle } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, CheckCircle, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +17,7 @@ const JobListings = () => {
   const [hasApplied, setHasApplied] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
+  const [jobApplications, setJobApplications] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadJobs();
@@ -24,10 +25,31 @@ const JobListings = () => {
   }, []);
 
   useEffect(() => {
+    if (officerProfile) {
+      loadJobApplications();
+    }
+  }, [officerProfile]);
+
+  useEffect(() => {
     if (selectedJob && officerProfile) {
       checkApplication();
     }
   }, [selectedJob, officerProfile]);
+
+  const loadJobApplications = async () => {
+    if (!officerProfile) return;
+
+    const { data } = await supabase
+      .from("job_applications")
+      .select("job_posting_id, status")
+      .eq("officer_id", officerProfile.id);
+
+    const applicationsMap: Record<string, string> = {};
+    data?.forEach(app => {
+      applicationsMap[app.job_posting_id] = app.status;
+    });
+    setJobApplications(applicationsMap);
+  };
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -83,6 +105,49 @@ const JobListings = () => {
       .maybeSingle();
 
     setHasApplied(!!data);
+  };
+
+  const handleInterestClick = async (jobId: string, status: 'interested' | 'not_interested', event: React.MouseEvent) => {
+    event.stopPropagation();
+
+    if (!currentUser) {
+      setShowAuthPrompt(true);
+      return;
+    }
+
+    if (!officerProfile) {
+      toast.error("Only security officers can apply for jobs");
+      return;
+    }
+    
+    if (!profileComplete) {
+      toast.error("Please complete your profile before applying", {
+        action: {
+          label: "Go to Profile",
+          onClick: () => navigate("/dashboard")
+        }
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("job_applications")
+        .upsert({
+          job_posting_id: jobId,
+          officer_id: officerProfile.id,
+          status,
+        }, {
+          onConflict: 'job_posting_id,officer_id'
+        });
+
+      if (error) throw error;
+
+      toast.success(status === 'interested' ? "Added to interested jobs!" : "Marked as not interested");
+      setJobApplications(prev => ({ ...prev, [jobId]: status }));
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
 
   const handleJobClick = (job: any) => {
@@ -162,21 +227,45 @@ const JobListings = () => {
           {jobs.map((job) => (
             <div
               key={job.id}
-              className="border rounded-lg p-3 hover:bg-accent/50 cursor-pointer transition-colors"
-              onClick={() => handleJobClick(job)}
+              className="border rounded-lg p-3 hover:bg-accent/50 transition-colors"
             >
-              <h4 className="font-semibold text-sm mb-1">{job.title}</h4>
-              <p className="text-xs text-muted-foreground mb-2">
-                {job.company_profiles?.company_name}
-              </p>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" />
-                {job.location}
+              <div onClick={() => handleJobClick(job)} className="cursor-pointer">
+                <h4 className="font-semibold text-sm mb-1">{job.title}</h4>
+                <p className="text-xs text-muted-foreground mb-2">
+                  {job.company_profiles?.company_name}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <MapPin className="h-3 w-3" />
+                  {job.location}
+                </div>
+                {job.hourly_rate_min && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                    <DollarSign className="h-3 w-3" />
+                    ${job.hourly_rate_min}{job.hourly_rate_max && ` - $${job.hourly_rate_max}`}/hr
+                  </div>
+                )}
               </div>
-              {job.hourly_rate_min && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                  <DollarSign className="h-3 w-3" />
-                  ${job.hourly_rate_min}{job.hourly_rate_max && ` - $${job.hourly_rate_max}`}/hr
+              
+              {currentUser && officerProfile && (
+                <div className="flex gap-2 mt-3 pt-3 border-t">
+                  <Button 
+                    size="sm"
+                    variant={jobApplications[job.id] === 'interested' ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={(e) => handleInterestClick(job.id, 'interested', e)}
+                  >
+                    <ThumbsUp className="h-3 w-3 mr-1" />
+                    {jobApplications[job.id] === 'interested' ? 'Interested' : 'Interested'}
+                  </Button>
+                  <Button 
+                    size="sm"
+                    variant={jobApplications[job.id] === 'not_interested' ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={(e) => handleInterestClick(job.id, 'not_interested', e)}
+                  >
+                    <ThumbsDown className="h-3 w-3 mr-1" />
+                    Not Interested
+                  </Button>
                 </div>
               )}
             </div>
