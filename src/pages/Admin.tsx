@@ -67,6 +67,13 @@ const Admin = () => {
   const [officerAgeData, setOfficerAgeData] = useState<any[]>([]);
   const [officerStateData, setOfficerStateData] = useState<any[]>([]);
   const [companyStateData, setCompanyStateData] = useState<any[]>([]);
+  
+  // Edit states for Browse and Company Profiles tabs
+  const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
+  const [selectedCompany, setSelectedCompany] = useState<any>(null);
+  const [editingOfficer, setEditingOfficer] = useState<any>(null);
+  const [editingCompany, setEditingCompany] = useState<any>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -387,6 +394,54 @@ const Admin = () => {
     }
   };
 
+  const handleSaveOfficerProfile = async () => {
+    if (!editingOfficer) return;
+    
+    setSavingProfile(true);
+    try {
+      const { error } = await supabase
+        .from("officer_profiles")
+        .update(editingOfficer)
+        .eq("id", editingOfficer.id);
+
+      if (error) throw error;
+
+      toast.success("Officer profile updated successfully");
+      setSelectedOfficer(null);
+      setEditingOfficer(null);
+      await loadAllProfiles();
+    } catch (error: any) {
+      console.error("Error updating officer profile:", error);
+      toast.error(error.message || "Failed to update officer profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleSaveCompanyProfile = async () => {
+    if (!editingCompany) return;
+    
+    setSavingProfile(true);
+    try {
+      const { error } = await supabase
+        .from("company_profiles")
+        .update(editingCompany)
+        .eq("id", editingCompany.id);
+
+      if (error) throw error;
+
+      toast.success("Company profile updated successfully");
+      setSelectedCompany(null);
+      setEditingCompany(null);
+      await loadAllProfiles();
+    } catch (error: any) {
+      console.error("Error updating company profile:", error);
+      toast.error(error.message || "Failed to update company profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   // Filter functions
   const filteredOfficers = allOfficers.filter((officer) => {
     const searchLower = officerSearch.toLowerCase();
@@ -699,8 +754,16 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="analytics" className="w-full">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="browse">
+              <Users className="h-4 w-4 mr-2" />
+              Browse Officers
+            </TabsTrigger>
+            <TabsTrigger value="company-profiles">
+              <Building2 className="h-4 w-4 mr-2" />
+              Company Profiles
+            </TabsTrigger>
             <TabsTrigger value="officers">All Officers</TabsTrigger>
             <TabsTrigger value="companies">All Companies</TabsTrigger>
             <TabsTrigger value="suspended">
@@ -1010,6 +1073,402 @@ const Admin = () => {
             </CardContent>
           </Card>
         </div>
+          </TabsContent>
+
+          <TabsContent value="browse">
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Officer List */}
+              <Card className="md:col-span-1">
+                <CardHeader>
+                  <CardTitle>Select Officer</CardTitle>
+                  <CardDescription>Choose an officer to view and edit</CardDescription>
+                  <div className="mt-4 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search officers..."
+                      value={officerSearch}
+                      onChange={(e) => setOfficerSearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                    {filteredOfficers.map((officer) => (
+                      <div
+                        key={officer.id}
+                        onClick={() => {
+                          setSelectedOfficer(officer);
+                          setEditingOfficer({ ...officer });
+                        }}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                          selectedOfficer?.id === officer.id
+                            ? 'bg-primary/10 border-primary'
+                            : 'hover:bg-accent'
+                        }`}
+                      >
+                        <p className="font-medium">{officer.profiles?.full_name || "N/A"}</p>
+                        <p className="text-sm text-muted-foreground">{officer.officer_number}</p>
+                        <p className="text-xs text-muted-foreground">{officer.profiles?.email}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Officer Edit Form */}
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Officer Profile</CardTitle>
+                  <CardDescription>View and edit officer information</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!selectedOfficer ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      Select an officer from the list to view and edit their profile
+                    </div>
+                  ) : (
+                    <div className="space-y-6 max-h-[600px] overflow-y-auto pr-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Full Name</Label>
+                          <Input value={selectedOfficer.profiles?.full_name || ""} disabled />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Email</Label>
+                          <Input value={selectedOfficer.profiles?.email || ""} disabled />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Officer Number</Label>
+                          <Input value={editingOfficer?.officer_number || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, officer_number: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Phone</Label>
+                          <Input value={editingOfficer?.phone || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, phone: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Title</Label>
+                          <Input value={editingOfficer?.title || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, title: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Date of Birth</Label>
+                          <Input type="date" value={editingOfficer?.date_of_birth || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, date_of_birth: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Years Experience</Label>
+                          <Input type="number" value={editingOfficer?.years_experience || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, years_experience: parseInt(e.target.value) || 0 })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Hourly Rate</Label>
+                          <Input type="number" step="0.01" value={editingOfficer?.hourly_rate || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, hourly_rate: parseFloat(e.target.value) || 0 })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Desired Salary</Label>
+                          <Input type="number" step="0.01" value={editingOfficer?.desired_salary || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, desired_salary: parseFloat(e.target.value) || 0 })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Availability Status</Label>
+                          <Select value={editingOfficer?.availability_status || "available"} onValueChange={(value) => setEditingOfficer({ ...editingOfficer, availability_status: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="available">Available</SelectItem>
+                              <SelectItem value="unavailable">Unavailable</SelectItem>
+                              <SelectItem value="on_assignment">On Assignment</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Account Status</Label>
+                          <Select value={editingOfficer?.account_status || "active"} onValueChange={(value) => setEditingOfficer({ ...editingOfficer, account_status: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="paused">Paused</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                              <SelectItem value="deleted">Deleted</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Bio</Label>
+                        <textarea
+                          className="w-full min-h-[100px] px-3 py-2 border rounded-md"
+                          value={editingOfficer?.bio || ""}
+                          onChange={(e) => setEditingOfficer({ ...editingOfficer, bio: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Street Address</Label>
+                          <Input value={editingOfficer?.address_street || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, address_street: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Unit/Apt</Label>
+                          <Input value={editingOfficer?.address_unit || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, address_unit: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>City</Label>
+                          <Input value={editingOfficer?.address_city || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, address_city: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>State</Label>
+                          <Input value={editingOfficer?.address_state || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, address_state: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>ZIP Code</Label>
+                          <Input value={editingOfficer?.address_zip || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, address_zip: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Country</Label>
+                          <Input value={editingOfficer?.address_country || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, address_country: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Main Region</Label>
+                          <Input value={editingOfficer?.main_region || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, main_region: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Location</Label>
+                          <Input value={editingOfficer?.location || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, location: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>LinkedIn URL</Label>
+                          <Input value={editingOfficer?.linkedin_url || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, linkedin_url: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Avatar URL</Label>
+                          <Input value={editingOfficer?.avatar_url || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, avatar_url: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Resume URL</Label>
+                          <Input value={editingOfficer?.resume_url || ""} onChange={(e) => setEditingOfficer({ ...editingOfficer, resume_url: e.target.value })} />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4 pt-4">
+                        <Button onClick={handleSaveOfficerProfile} disabled={savingProfile}>
+                          {savingProfile ? "Saving..." : "Save Changes"}
+                        </Button>
+                        <Button variant="outline" onClick={() => { setSelectedOfficer(null); setEditingOfficer(null); }}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="company-profiles">
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Company List */}
+              <Card className="md:col-span-1">
+                <CardHeader>
+                  <CardTitle>Select Company</CardTitle>
+                  <CardDescription>Choose a company to view and edit</CardDescription>
+                  <div className="mt-4 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search companies..."
+                      value={companySearch}
+                      onChange={(e) => setCompanySearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                    {filteredCompanies.map((company) => (
+                      <div
+                        key={company.id}
+                        onClick={() => {
+                          setSelectedCompany(company);
+                          setEditingCompany({ ...company });
+                        }}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                          selectedCompany?.id === company.id
+                            ? 'bg-primary/10 border-primary'
+                            : 'hover:bg-accent'
+                        }`}
+                      >
+                        <p className="font-medium">{company.company_name}</p>
+                        <p className="text-sm text-muted-foreground">{company.company_number}</p>
+                        <p className="text-xs text-muted-foreground">{company.profiles?.email}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Company Edit Form */}
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Company Profile</CardTitle>
+                  <CardDescription>View and edit company information</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!selectedCompany ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      Select a company from the list to view and edit their profile
+                    </div>
+                  ) : (
+                    <div className="space-y-6 max-h-[600px] overflow-y-auto pr-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Company Name</Label>
+                          <Input value={editingCompany?.company_name || ""} onChange={(e) => setEditingCompany({ ...editingCompany, company_name: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Email</Label>
+                          <Input value={selectedCompany.profiles?.email || ""} disabled />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Company Number</Label>
+                          <Input value={editingCompany?.company_number || ""} onChange={(e) => setEditingCompany({ ...editingCompany, company_number: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Company State</Label>
+                          <Input value={editingCompany?.company_state || ""} onChange={(e) => setEditingCompany({ ...editingCompany, company_state: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Industry</Label>
+                          <Input value={editingCompany?.industry || ""} onChange={(e) => setEditingCompany({ ...editingCompany, industry: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Company Size</Label>
+                          <Input value={editingCompany?.company_size || ""} onChange={(e) => setEditingCompany({ ...editingCompany, company_size: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>License Number</Label>
+                          <Input value={editingCompany?.license_number || ""} onChange={(e) => setEditingCompany({ ...editingCompany, license_number: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Website URL</Label>
+                          <Input value={editingCompany?.website_url || ""} onChange={(e) => setEditingCompany({ ...editingCompany, website_url: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Contact Person Name</Label>
+                          <Input value={editingCompany?.contact_person_name || ""} onChange={(e) => setEditingCompany({ ...editingCompany, contact_person_name: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Contact Person Title</Label>
+                          <Input value={editingCompany?.contact_person_title || ""} onChange={(e) => setEditingCompany({ ...editingCompany, contact_person_title: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Contact Person Position</Label>
+                          <Input value={editingCompany?.contact_person_position || ""} onChange={(e) => setEditingCompany({ ...editingCompany, contact_person_position: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Contact Email</Label>
+                          <Input value={editingCompany?.contact_email || ""} onChange={(e) => setEditingCompany({ ...editingCompany, contact_email: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Contact Cell Phone</Label>
+                          <Input value={editingCompany?.contact_cell_phone || ""} onChange={(e) => setEditingCompany({ ...editingCompany, contact_cell_phone: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Company Phone</Label>
+                          <Input value={editingCompany?.company_phone || ""} onChange={(e) => setEditingCompany({ ...editingCompany, company_phone: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Company Phone Extension</Label>
+                          <Input value={editingCompany?.company_phone_ext || ""} onChange={(e) => setEditingCompany({ ...editingCompany, company_phone_ext: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Subscription Tier</Label>
+                          <Select value={editingCompany?.subscription_tier || "free"} onValueChange={(value) => setEditingCompany({ ...editingCompany, subscription_tier: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="free">Free</SelectItem>
+                              <SelectItem value="premium">Premium</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Subscription Status</Label>
+                          <Select value={editingCompany?.subscription_status || "free"} onValueChange={(value) => setEditingCompany({ ...editingCompany, subscription_status: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="free">Free</SelectItem>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                              <SelectItem value="expired">Expired</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Payment Status</Label>
+                          <Select value={editingCompany?.payment_status || "current"} onValueChange={(value) => setEditingCompany({ ...editingCompany, payment_status: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="current">Current</SelectItem>
+                              <SelectItem value="overdue">Overdue</SelectItem>
+                              <SelectItem value="suspended">Suspended</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Account Status</Label>
+                          <Select value={editingCompany?.account_status || "active"} onValueChange={(value) => setEditingCompany({ ...editingCompany, account_status: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="paused">Paused</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                              <SelectItem value="deleted">Deleted</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Payment Due Date</Label>
+                          <Input type="date" value={editingCompany?.payment_due_date || ""} onChange={(e) => setEditingCompany({ ...editingCompany, payment_due_date: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Last Payment Date</Label>
+                          <Input type="date" value={editingCompany?.last_payment_date || ""} onChange={(e) => setEditingCompany({ ...editingCompany, last_payment_date: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Trial Start Date</Label>
+                          <Input type="datetime-local" value={editingCompany?.trial_start_date?.slice(0, 16) || ""} onChange={(e) => setEditingCompany({ ...editingCompany, trial_start_date: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Trial End Date</Label>
+                          <Input type="datetime-local" value={editingCompany?.trial_end_date?.slice(0, 16) || ""} onChange={(e) => setEditingCompany({ ...editingCompany, trial_end_date: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Subscription Start Date</Label>
+                          <Input type="datetime-local" value={editingCompany?.subscription_start_date?.slice(0, 16) || ""} onChange={(e) => setEditingCompany({ ...editingCompany, subscription_start_date: e.target.value })} />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4 pt-4">
+                        <Button onClick={handleSaveCompanyProfile} disabled={savingProfile}>
+                          {savingProfile ? "Saving..." : "Save Changes"}
+                        </Button>
+                        <Button variant="outline" onClick={() => { setSelectedCompany(null); setEditingCompany(null); }}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="officers">
