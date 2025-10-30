@@ -136,8 +136,11 @@ export type Database = {
           created_at: string | null
           id: string
           industry: string | null
+          last_payment_date: string | null
           license_number: string | null
           license_types: string[] | null
+          payment_due_date: string | null
+          payment_status: string | null
           subscription_start_date: string | null
           subscription_status: string | null
           subscription_tier:
@@ -164,8 +167,11 @@ export type Database = {
           created_at?: string | null
           id?: string
           industry?: string | null
+          last_payment_date?: string | null
           license_number?: string | null
           license_types?: string[] | null
+          payment_due_date?: string | null
+          payment_status?: string | null
           subscription_start_date?: string | null
           subscription_status?: string | null
           subscription_tier?:
@@ -192,8 +198,11 @@ export type Database = {
           created_at?: string | null
           id?: string
           industry?: string | null
+          last_payment_date?: string | null
           license_number?: string | null
           license_types?: string[] | null
+          payment_due_date?: string | null
+          payment_status?: string | null
           subscription_start_date?: string | null
           subscription_status?: string | null
           subscription_tier?:
@@ -809,6 +818,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_overdue_payments: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

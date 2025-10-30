@@ -4,13 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail, MoreVertical, Pause, XCircle, Trash2, PlayCircle } from "lucide-react";
+import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail, MoreVertical, Pause, XCircle, Trash2, PlayCircle, Search, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 
 interface Analytics {
   totalOfficers: number;
@@ -30,6 +31,9 @@ const Admin = () => {
   const [allOfficers, setAllOfficers] = useState<any[]>([]);
   const [allCompanies, setAllCompanies] = useState<any[]>([]);
   const [resettingPassword, setResettingPassword] = useState(false);
+  const [officerSearch, setOfficerSearch] = useState("");
+  const [companySearch, setCompanySearch] = useState("");
+  const [suspendedCompanySearch, setSuspendedCompanySearch] = useState("");
 
   useEffect(() => {
     checkAdminAccess();
@@ -297,6 +301,39 @@ const Admin = () => {
     return days;
   };
 
+  const filteredOfficers = allOfficers.filter(officer => {
+    const searchLower = officerSearch.toLowerCase();
+    return (
+      officer.profiles?.full_name?.toLowerCase().includes(searchLower) ||
+      officer.profiles?.email?.toLowerCase().includes(searchLower) ||
+      officer.officer_number?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const filteredCompanies = allCompanies.filter(company => {
+    const searchLower = companySearch.toLowerCase();
+    return (
+      company.company_name?.toLowerCase().includes(searchLower) ||
+      company.profiles?.email?.toLowerCase().includes(searchLower) ||
+      company.company_number?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const suspendedCompanies = allCompanies.filter(company => 
+    company.payment_status === 'suspended' || 
+    company.payment_status === 'overdue' ||
+    (company.account_status === 'paused' && company.payment_due_date && new Date(company.payment_due_date) < new Date())
+  );
+
+  const filteredSuspendedCompanies = suspendedCompanies.filter(company => {
+    const searchLower = suspendedCompanySearch.toLowerCase();
+    return (
+      company.company_name?.toLowerCase().includes(searchLower) ||
+      company.profiles?.email?.toLowerCase().includes(searchLower) ||
+      company.company_number?.toLowerCase().includes(searchLower)
+    );
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -327,6 +364,10 @@ const Admin = () => {
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="officers">All Officers</TabsTrigger>
             <TabsTrigger value="companies">All Companies</TabsTrigger>
+            <TabsTrigger value="suspended">
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Suspended Companies
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="analytics">
@@ -498,6 +539,15 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle>All Security Officers</CardTitle>
                 <CardDescription>Complete list of registered security officers</CardDescription>
+                <div className="mt-4 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name, email, or officer number..."
+                    value={officerSearch}
+                    onChange={(e) => setOfficerSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -514,7 +564,14 @@ const Admin = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {allOfficers.map((officer) => (
+                    {filteredOfficers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                          No officers found matching your search
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredOfficers.map((officer) => (
                       <TableRow key={officer.id}>
                         <TableCell className="font-medium">{officer.profiles?.full_name || "N/A"}</TableCell>
                         <TableCell>{officer.profiles?.email}</TableCell>
@@ -602,7 +659,8 @@ const Admin = () => {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -614,6 +672,15 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle>All Companies</CardTitle>
                 <CardDescription>Complete list of registered companies</CardDescription>
+                <div className="mt-4 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by company name, email, or company number..."
+                    value={companySearch}
+                    onChange={(e) => setCompanySearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -630,7 +697,14 @@ const Admin = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {allCompanies.map((company) => (
+                    {filteredCompanies.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                          No companies found matching your search
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredCompanies.map((company) => (
                       <TableRow key={company.id}>
                         <TableCell className="font-medium">{company.company_name}</TableCell>
                         <TableCell>{company.profiles?.email}</TableCell>
@@ -726,7 +800,133 @@ const Admin = () => {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="suspended">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  Suspended Companies
+                </CardTitle>
+                <CardDescription>Companies suspended for non-payment or overdue bills</CardDescription>
+                <div className="mt-4 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search suspended companies..."
+                    value={suspendedCompanySearch}
+                    onChange={(e) => setSuspendedCompanySearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Company Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Company #</TableHead>
+                      <TableHead>Payment Status</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Last Payment</TableHead>
+                      <TableHead>Days Overdue</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSuspendedCompanies.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                          {suspendedCompanies.length === 0 
+                            ? "No suspended companies" 
+                            : "No companies found matching your search"}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredSuspendedCompanies.map((company) => {
+                        const daysOverdue = company.payment_due_date 
+                          ? Math.floor((Date.now() - new Date(company.payment_due_date).getTime()) / (1000 * 60 * 60 * 24))
+                          : 0;
+                        
+                        return (
+                          <TableRow key={company.id} className="bg-destructive/5">
+                            <TableCell className="font-medium">{company.company_name}</TableCell>
+                            <TableCell>{company.profiles?.email}</TableCell>
+                            <TableCell>{company.company_number || "N/A"}</TableCell>
+                            <TableCell>
+                              <span className="px-2 py-1 rounded text-xs bg-red-100 text-red-800 font-semibold">
+                                {company.payment_status || "overdue"}
+                              </span>
+                            </TableCell>
+                            <TableCell>{company.payment_due_date ? formatDate(company.payment_due_date) : "N/A"}</TableCell>
+                            <TableCell>{company.last_payment_date ? formatDate(company.last_payment_date) : "Never"}</TableCell>
+                            <TableCell>
+                              <span className="font-bold text-destructive">
+                                {daysOverdue > 0 ? `${daysOverdue} days` : "Due today"}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="outline" size="sm" disabled={resettingPassword}>
+                                      <KeyRound className="h-4 w-4 mr-2" />
+                                      Reset Password
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Reset Password</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Send a password reset email to {company.company_name} at {company.profiles?.email}?
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handlePasswordReset(company.profiles?.email, company.company_name)}>
+                                        <Mail className="h-4 w-4 mr-2" />
+                                        Send Reset Email
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem 
+                                      onClick={() => handleAccountStatusChange(company.user_id, 'active', 'company_profiles', company.company_name)}
+                                      className="text-green-600"
+                                    >
+                                      <PlayCircle className="h-4 w-4 mr-2" />
+                                      Reactivate Account
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => handleAccountStatusChange(company.user_id, 'deleted', 'company_profiles', company.company_name)}
+                                      className="text-destructive"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete Account
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
