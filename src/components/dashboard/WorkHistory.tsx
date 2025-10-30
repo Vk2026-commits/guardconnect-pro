@@ -206,7 +206,7 @@ export const WorkHistory = ({ officerId, userId, onEnsureProfile }: WorkHistoryP
             {currentEntry.id ? "Edit Work History" : "Add Work History"}
           </CardTitle>
           <CardDescription>
-            Please provide your last 3 years of work history
+            Please provide your last 3 previous employers
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
