@@ -1,12 +1,19 @@
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { User, Clock, Images, Award, Briefcase } from "lucide-react";
+import { User, Clock, Images, Award, Briefcase, Check } from "lucide-react";
 
 interface OfficerSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  completionStatus?: {
+    profile: boolean;
+    availability: boolean;
+    photos: boolean;
+    certifications: boolean;
+    workHistory: boolean;
+  };
 }
 
-export function OfficerSidebar({ activeTab, onTabChange }: OfficerSidebarProps) {
+export function OfficerSidebar({ activeTab, onTabChange, completionStatus }: OfficerSidebarProps) {
   const { open } = useSidebar();
 
   const items = [
@@ -17,8 +24,14 @@ export function OfficerSidebar({ activeTab, onTabChange }: OfficerSidebarProps) 
     { title: "Work History", value: "work-history", icon: Briefcase },
   ];
 
-  const getNavCls = (value: string) =>
-    activeTab === value ? "bg-accent text-accent-foreground font-medium" : "hover:bg-muted/50";
+  const getNavCls = (value: string) => {
+    const isComplete = completionStatus?.[value as keyof typeof completionStatus];
+    const baseClasses = activeTab === value ? "font-medium" : "hover:bg-muted/50";
+    const statusColor = isComplete ? "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20" : "bg-red-500/10 text-red-600 hover:bg-red-500/20";
+    return `${baseClasses} ${statusColor}`;
+  };
+
+  const isTabComplete = (value: string) => completionStatus?.[value as keyof typeof completionStatus];
 
   return (
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
@@ -36,8 +49,13 @@ export function OfficerSidebar({ activeTab, onTabChange }: OfficerSidebarProps) 
                     onClick={() => onTabChange(item.value)}
                     className={getNavCls(item.value)}
                   >
-                    <item.icon className="h-4 w-4" />
-                    {open && <span>{item.title}</span>}
+                    <div className="flex items-center gap-2">
+                      <item.icon className="h-4 w-4" />
+                      {open && <span>{item.title}</span>}
+                      {isTabComplete(item.value) && open && (
+                        <Check className="h-3 w-3 ml-auto text-blue-600" />
+                      )}
+                    </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

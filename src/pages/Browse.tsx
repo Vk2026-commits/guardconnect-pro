@@ -40,6 +40,7 @@ const Browse = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [selectedOfficerCertifications, setSelectedOfficerCertifications] = useState<any[]>([]);
+  const [officerInterests, setOfficerInterests] = useState<Record<string, string>>({});
 
   useEffect(() => {
     checkAccess();
@@ -86,6 +87,7 @@ const Browse = () => {
     setCurrentUser(session.user);
     setCompanyProfile(companyData);
     await loadOfficers();
+    await loadOfficerInterests(companyData.id);
   };
 
   const loadUserProfile = async () => {
@@ -98,6 +100,25 @@ const Browse = () => {
         .eq("user_id", session.user.id)
         .maybeSingle();
       setCompanyProfile(data);
+    }
+  };
+
+  const loadOfficerInterests = async (companyId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("officer_interests")
+        .select("officer_id, status")
+        .eq("company_id", companyId);
+
+      if (error) throw error;
+
+      const interestsMap: Record<string, string> = {};
+      data?.forEach(interest => {
+        interestsMap[interest.officer_id] = interest.status;
+      });
+      setOfficerInterests(interestsMap);
+    } catch (error) {
+      console.error("Error loading officer interests:", error);
     }
   };
 
@@ -246,6 +267,12 @@ const Browse = () => {
 
       if (error) throw error;
       toast.success(`Officer marked as ${status === 'interested' ? 'interested' : 'not interested'}`);
+      
+      // Update local state
+      setOfficerInterests(prev => ({
+        ...prev,
+        [officerId]: status
+      }));
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -539,7 +566,7 @@ const Browse = () => {
                   </div>
                 )}
 
-                {canViewFullDetails && selectedOfficer.phone && (
+                {companyProfile?.subscription_tier === 'premium' && selectedOfficer.phone && (
                   <div className="text-sm">
                     <span className="font-medium">Phone: </span>
                     {selectedOfficer.phone}
@@ -660,14 +687,25 @@ const Browse = () => {
               {companyProfile && (
                 <div className="pt-4 border-t space-y-3">
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => handleInterest(selectedOfficer.id, 'interested')}
-                    >
-                      <Heart className="w-4 h-4 mr-2" />
-                      Interested
-                    </Button>
+                    {officerInterests[selectedOfficer.id] === 'interested' ? (
+                      <Button 
+                        variant="outline"
+                        className="flex-1 bg-red-500 text-white hover:bg-red-600 hover:text-white border-red-500"
+                        onClick={() => handleInterest(selectedOfficer.id, 'interested')}
+                      >
+                        <Heart className="w-4 h-4 mr-2 fill-current" />
+                        Interested
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => handleInterest(selectedOfficer.id, 'interested')}
+                      >
+                        <Heart className="w-4 h-4 mr-2" />
+                        Interested
+                      </Button>
+                    )}
                     <Button 
                       variant="outline"
                       className="flex-1"

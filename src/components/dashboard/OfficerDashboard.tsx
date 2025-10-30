@@ -26,6 +26,9 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
+  const [certCount, setCertCount] = useState(0);
+  const [photoCount, setPhotoCount] = useState(0);
+  const [workHistoryCount, setWorkHistoryCount] = useState(0);
   const [formData, setFormData] = useState({
     title: "",
     bio: "",
@@ -111,6 +114,19 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         availability_schedule: (data.availability_schedule as Record<string, { start: string; end: string }>) || {},
         shift_preference: data.shift_preference || [],
       });
+
+      // Load counts for completion status
+      if (data.id) {
+        const [certsResult, workResult] = await Promise.all([
+          supabase.from("certifications").select("id", { count: 'exact' }).eq("officer_id", data.id),
+          supabase.from("work_history").select("id", { count: 'exact' }).eq("officer_id", data.id)
+        ]);
+        
+        setCertCount(certsResult.count || 0);
+        setWorkHistoryCount(workResult.count || 0);
+        // Photos count is based on avatar_url presence
+        setPhotoCount(data.avatar_url ? 1 : 0);
+      }
     }
   };
 
@@ -226,10 +242,26 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
     }
   };
 
+  // Calculate completion status for each tab
+  const completionStatus = {
+    profile: !!(officerProfile?.title && officerProfile?.bio && officerProfile?.phone && 
+                officerProfile?.address_city && officerProfile?.address_state),
+    availability: !!(officerProfile?.employment_type?.length && 
+                     officerProfile?.shift_preference?.length &&
+                     Object.keys(formData.availability_schedule).length > 0),
+    photos: photoCount > 0,
+    certifications: certCount > 0,
+    workHistory: workHistoryCount > 0,
+  };
+
   return (
     <SidebarProvider>
       <div className="flex w-full min-h-screen">
-        <OfficerSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <OfficerSidebar 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab}
+          completionStatus={completionStatus}
+        />
         <div className="flex-1 p-8">
           <div className="mb-4">
             <SidebarTrigger />
@@ -288,13 +320,19 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex justify-center pb-4 border-b">
+                <div className="flex flex-col items-center pb-4 border-b space-y-3">
                   <PhotoUpload
                     userId={userId}
                     currentPhotoUrl={officerProfile?.avatar_url}
                     onPhotoChange={handlePhotoChange}
                     size="lg"
                   />
+                  <div className="text-center max-w-md">
+                    <p className="text-sm text-muted-foreground">
+                      Upload a professional headshot photo to make a great first impression with potential employers. 
+                      A clear, well-lit photo can significantly increase your chances of getting hired.
+                    </p>
+                  </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
