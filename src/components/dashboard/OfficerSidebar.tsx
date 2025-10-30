@@ -21,7 +21,7 @@ export function OfficerSidebar({ activeTab, onTabChange, completionStatus }: Off
     { title: "Profile", value: "profile", icon: User },
     { title: "Availability", value: "availability", icon: Clock },
     { title: "Photos", value: "photos", icon: Images },
-    { title: "Certifications", value: "certifications", icon: Award },
+    { title: "Certifications and Certificates", value: "certifications", icon: Award },
     { title: "Work History", value: "work-history", icon: Briefcase },
     { title: "Messages", value: "messages", icon: MessageCircle },
   ];
