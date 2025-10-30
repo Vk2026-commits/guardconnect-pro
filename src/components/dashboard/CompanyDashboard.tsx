@@ -15,6 +15,7 @@ import EmploymentTracking from "./EmploymentTracking";
 import InterestedOfficers from "./InterestedOfficers";
 import JobPostings from "./JobPostings";
 import JobApplicants from "./JobApplicants";
+import JobApplicationsList from "./JobApplicationsList";
 import SubscriptionManager from "./SubscriptionManager";
 import { useSearchParams } from "react-router-dom";
 
@@ -651,10 +652,15 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
             )}
 
             {activeTab === "interested" && companyProfile && (
-              <InterestedOfficers 
-                companyId={companyProfile.id}
-                subscriptionTier={companyProfile.subscription_tier}
-              />
+              <>
+                <JobApplicationsList companyId={companyProfile.id} />
+                <div className="mt-8">
+                  <InterestedOfficers 
+                    companyId={companyProfile.id}
+                    subscriptionTier={companyProfile.subscription_tier}
+                  />
+                </div>
+              </>
             )}
 
             {activeTab === "employment" && companyProfile && (
