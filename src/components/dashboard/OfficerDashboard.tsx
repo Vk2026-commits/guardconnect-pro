@@ -469,57 +469,6 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                   />
                 </div>
 
-                <div className="space-y-3">
-                  <Label>Employment Type Preference</Label>
-                  <div className="flex flex-wrap gap-6">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="full-time"
-                        checked={formData.employment_type.includes("full_time")}
-                        onCheckedChange={(checked) => {
-                          setFormData({
-                            ...formData,
-                            employment_type: checked
-                              ? [...formData.employment_type, "full_time"]
-                              : formData.employment_type.filter((t) => t !== "full_time"),
-                          });
-                        }}
-                      />
-                      <Label htmlFor="full-time" className="cursor-pointer">Full-time</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="part-time"
-                        checked={formData.employment_type.includes("part_time")}
-                        onCheckedChange={(checked) => {
-                          setFormData({
-                            ...formData,
-                            employment_type: checked
-                              ? [...formData.employment_type, "part_time"]
-                              : formData.employment_type.filter((t) => t !== "part_time"),
-                          });
-                        }}
-                      />
-                      <Label htmlFor="part-time" className="cursor-pointer">Part-time</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="seasonal"
-                        checked={formData.employment_type.includes("seasonal")}
-                        onCheckedChange={(checked) => {
-                          setFormData({
-                            ...formData,
-                            employment_type: checked
-                              ? [...formData.employment_type, "seasonal"]
-                              : formData.employment_type.filter((t) => t !== "seasonal"),
-                          });
-                        }}
-                      />
-                      <Label htmlFor="seasonal" className="cursor-pointer">Seasonal</Label>
-                    </div>
-                  </div>
-                </div>
-
                 <Button type="submit" disabled={loading}>
                   {loading ? "Saving..." : "Save Profile"}
                 </Button>
@@ -631,6 +580,58 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                           <Label htmlFor={shift.value} className="cursor-pointer text-sm">{shift.label}</Label>
                         </div>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Employment Type Preference */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold">Employment Type Preference</Label>
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="full-time"
+                          checked={formData.employment_type.includes("full_time")}
+                          onCheckedChange={(checked) => {
+                            setFormData({
+                              ...formData,
+                              employment_type: checked
+                                ? [...formData.employment_type, "full_time"]
+                                : formData.employment_type.filter((t) => t !== "full_time"),
+                            });
+                          }}
+                        />
+                        <Label htmlFor="full-time" className="cursor-pointer text-sm">Full-time</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="part-time"
+                          checked={formData.employment_type.includes("part_time")}
+                          onCheckedChange={(checked) => {
+                            setFormData({
+                              ...formData,
+                              employment_type: checked
+                                ? [...formData.employment_type, "part_time"]
+                                : formData.employment_type.filter((t) => t !== "part_time"),
+                            });
+                          }}
+                        />
+                        <Label htmlFor="part-time" className="cursor-pointer text-sm">Part-time</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="seasonal"
+                          checked={formData.employment_type.includes("seasonal")}
+                          onCheckedChange={(checked) => {
+                            setFormData({
+                              ...formData,
+                              employment_type: checked
+                                ? [...formData.employment_type, "seasonal"]
+                                : formData.employment_type.filter((t) => t !== "seasonal"),
+                            });
+                          }}
+                        />
+                        <Label htmlFor="seasonal" className="cursor-pointer text-sm">Seasonal</Label>
+                      </div>
                     </div>
                   </div>
                 </div>
