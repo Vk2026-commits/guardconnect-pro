@@ -348,8 +348,11 @@ const Auth = () => {
           {/* Show pricing for companies */}
           {mode === "signup" && role === "company" && (
             <div className="mt-6 space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Choose Your Plan</h3>
+              <div className="text-center space-y-3">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+                  <span className="text-sm font-semibold text-primary">🎉 Free for the First 30 Days</span>
+                </div>
+                <h3 className="text-lg font-semibold">Choose Your Plan</h3>
                 <p className="text-sm text-muted-foreground">Select the plan that best fits your hiring needs</p>
               </div>
               
