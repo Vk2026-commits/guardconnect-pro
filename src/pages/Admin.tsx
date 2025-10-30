@@ -2297,6 +2297,7 @@ const Admin = () => {
             </Card>
           </TabsContent>
         </Tabs>
+      </TabsContent>
 
         <Dialog open={manualResetDialogOpen} onOpenChange={setManualResetDialogOpen}>
           <DialogContent>
@@ -2333,7 +2334,6 @@ const Admin = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </TabsContent>
         </Tabs>
       </div>
     </div>
