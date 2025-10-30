@@ -17,6 +17,7 @@ const Navbar = () => {
   const { t, i18n } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
@@ -27,6 +28,7 @@ const Navbar = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminStatus(session.user.id);
+        getUserRole(session.user.id);
       }
     });
 
@@ -34,8 +36,10 @@ const Navbar = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminStatus(session.user.id);
+        getUserRole(session.user.id);
       } else {
         setIsAdmin(false);
+        setUserRole(null);
       }
     });
 
@@ -51,6 +55,16 @@ const Navbar = () => {
       .maybeSingle();
     
     setIsAdmin(!!data);
+  };
+
+  const getUserRole = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+    
+    setUserRole(data?.role ?? null);
   };
 
   const handleSignOut = async () => {
@@ -88,9 +102,11 @@ const Navbar = () => {
           
           {user ? (
             <>
-              <Button variant="ghost" asChild>
-                <Link to="/browse">{t('nav.browse')}</Link>
-              </Button>
+              {userRole !== "officer" && (
+                <Button variant="ghost" asChild>
+                  <Link to="/browse">{t('nav.browse')}</Link>
+                </Button>
+              )}
               <Button variant="ghost" asChild>
                 <Link to="/dashboard">{t('nav.dashboard')}</Link>
               </Button>
@@ -99,9 +115,11 @@ const Navbar = () => {
                   <Link to="/admin">Admin</Link>
                 </Button>
               )}
-              <Button variant="ghost" asChild>
-                <Link to="/auth?force=1">Switch account</Link>
-              </Button>
+              {userRole !== "officer" && (
+                <Button variant="ghost" asChild>
+                  <Link to="/auth?force=1">Switch account</Link>
+                </Button>
+              )}
               <Button variant="outline" onClick={handleSignOut}>
                 Sign Out
               </Button>
