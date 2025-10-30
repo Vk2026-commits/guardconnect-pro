@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Building2, Crown, Users } from "lucide-react";
+import { Building2, Crown, Users, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CompanySidebar } from "./CompanySidebar";
@@ -32,6 +33,10 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
     industry: "",
     company_size: "",
     website_url: "",
+    linkedin_url: "",
+    facebook_url: "",
+    twitter_url: "",
+    instagram_url: "",
     contact_person_name: "",
     contact_person_title: "",
     contact_person_position: "",
@@ -40,8 +45,14 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
     contact_cell_phone: "",
     contact_email: "",
     license_number: "",
+    licensed_states: [] as string[],
     license_types: [] as string[],
+    years_in_business: "",
+    year_founded: "",
+    logo_url: "",
   });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -61,6 +72,10 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
         industry: data.industry || "",
         company_size: data.company_size || "",
         website_url: data.website_url || "",
+        linkedin_url: data.linkedin_url || "",
+        facebook_url: data.facebook_url || "",
+        twitter_url: data.twitter_url || "",
+        instagram_url: data.instagram_url || "",
         contact_person_name: data.contact_person_name || "",
         contact_person_title: data.contact_person_title || "",
         contact_person_position: data.contact_person_position || "",
@@ -69,8 +84,37 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
         contact_cell_phone: data.contact_cell_phone || "",
         contact_email: data.contact_email || "",
         license_number: data.license_number || "",
+        licensed_states: data.licensed_states || [],
         license_types: data.license_types || [],
+        years_in_business: data.years_in_business || "",
+        year_founded: data.year_founded?.toString() || "",
+        logo_url: data.logo_url || "",
       });
+    }
+  };
+
+  const handleLogoUpload = async (file: File) => {
+    setUploadingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${Math.random()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, logo_url: publicUrl });
+      toast.success("Logo uploaded successfully!");
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -79,9 +123,15 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
     setLoading(true);
 
     try {
+      // Upload logo if a new file was selected
+      if (logoFile) {
+        await handleLogoUpload(logoFile);
+      }
+
       const profileData = {
         user_id: userId,
         ...formData,
+        year_founded: formData.year_founded ? parseInt(formData.year_founded) : null,
       };
 
       if (companyProfile) {
@@ -216,23 +266,137 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
 
                         <div className="space-y-2">
                           <Label htmlFor="company_size">Company Size</Label>
-                          <Input
-                            id="company_size"
-                            placeholder="1-50 employees"
+                          <Select
                             value={formData.company_size}
-                            onChange={(e) => setFormData({ ...formData, company_size: e.target.value })}
+                            onValueChange={(value) => setFormData({ ...formData, company_size: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select company size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1-50">1-50 employees</SelectItem>
+                              <SelectItem value="50-100">50-100 employees</SelectItem>
+                              <SelectItem value="100-1000">100-1,000 employees</SelectItem>
+                              <SelectItem value="1000-2000">1,000-2,000 employees</SelectItem>
+                              <SelectItem value="2000-3000">2,000-3,000 employees</SelectItem>
+                              <SelectItem value="3000-4000">3,000-4,000 employees</SelectItem>
+                              <SelectItem value="4000-5000">4,000-5,000 employees</SelectItem>
+                              <SelectItem value="5000+">5,000+ employees</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="years_in_business">Years in Business</Label>
+                          <Select
+                            value={formData.years_in_business}
+                            onValueChange={(value) => setFormData({ ...formData, years_in_business: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select years in business" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="0-1">Less than 1 year</SelectItem>
+                              <SelectItem value="1-3">1-3 years</SelectItem>
+                              <SelectItem value="3-5">3-5 years</SelectItem>
+                              <SelectItem value="5-10">5-10 years</SelectItem>
+                              <SelectItem value="10-20">10-20 years</SelectItem>
+                              <SelectItem value="20+">20+ years</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="year_founded">Year Founded</Label>
+                          <Input
+                            id="year_founded"
+                            type="number"
+                            placeholder="e.g., 2005"
+                            min="1800"
+                            max={new Date().getFullYear()}
+                            value={formData.year_founded}
+                            onChange={(e) => setFormData({ ...formData, year_founded: e.target.value })}
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="website_url">Website</Label>
-                          <Input
-                            id="website_url"
-                            type="url"
-                            placeholder="https://example.com"
-                            value={formData.website_url}
-                            onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
-                          />
+                          <Label htmlFor="logo_url">Company Logo</Label>
+                          <div className="flex items-center gap-4">
+                            {formData.logo_url && (
+                              <img src={formData.logo_url} alt="Company Logo" className="h-16 w-16 object-contain rounded border" />
+                            )}
+                            <Input
+                              id="logo_upload"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) setLogoFile(file);
+                              }}
+                              disabled={uploadingLogo}
+                            />
+                          </div>
+                          {uploadingLogo && <p className="text-sm text-muted-foreground">Uploading logo...</p>}
+                        </div>
+                      </div>
+
+                      <div className="mt-6">
+                        <h3 className="text-lg font-semibold mb-4">Social Media & Website</h3>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="website_url">Website</Label>
+                            <Input
+                              id="website_url"
+                              type="url"
+                              placeholder="https://example.com"
+                              value={formData.website_url}
+                              onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="linkedin_url">LinkedIn</Label>
+                            <Input
+                              id="linkedin_url"
+                              type="url"
+                              placeholder="https://linkedin.com/company/yourcompany"
+                              value={formData.linkedin_url}
+                              onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="facebook_url">Facebook</Label>
+                            <Input
+                              id="facebook_url"
+                              type="url"
+                              placeholder="https://facebook.com/yourcompany"
+                              value={formData.facebook_url}
+                              onChange={(e) => setFormData({ ...formData, facebook_url: e.target.value })}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="twitter_url">Twitter</Label>
+                            <Input
+                              id="twitter_url"
+                              type="url"
+                              placeholder="https://twitter.com/yourcompany"
+                              value={formData.twitter_url}
+                              onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="instagram_url">Instagram</Label>
+                            <Input
+                              id="instagram_url"
+                              type="url"
+                              placeholder="https://instagram.com/yourcompany"
+                              value={formData.instagram_url}
+                              onChange={(e) => setFormData({ ...formData, instagram_url: e.target.value })}
+                            />
+                          </div>
                         </div>
                       </div>
 
@@ -331,6 +495,20 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
                               value={formData.license_number}
                               onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
                             />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="licensed_states">Licensed States</Label>
+                            <Input
+                              id="licensed_states"
+                              placeholder="e.g., TX, CA, FL (comma-separated)"
+                              value={formData.licensed_states.join(", ")}
+                              onChange={(e) => {
+                                const states = e.target.value.split(",").map(s => s.trim()).filter(s => s);
+                                setFormData({ ...formData, licensed_states: states });
+                              }}
+                            />
+                            <p className="text-xs text-muted-foreground">Enter state abbreviations separated by commas</p>
                           </div>
                         </div>
                       </div>

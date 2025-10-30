@@ -135,11 +135,16 @@ export type Database = {
           contact_person_position: string | null
           contact_person_title: string | null
           created_at: string | null
+          facebook_url: string | null
           id: string
           industry: string | null
+          instagram_url: string | null
           last_payment_date: string | null
           license_number: string | null
           license_types: string[] | null
+          licensed_states: string[] | null
+          linkedin_url: string | null
+          logo_url: string | null
           payment_due_date: string | null
           payment_status: string | null
           subscription_start_date: string | null
@@ -149,9 +154,12 @@ export type Database = {
             | null
           trial_end_date: string | null
           trial_start_date: string | null
+          twitter_url: string | null
           updated_at: string | null
           user_id: string
           website_url: string | null
+          year_founded: number | null
+          years_in_business: string | null
         }
         Insert: {
           account_status?: string | null
@@ -167,11 +175,16 @@ export type Database = {
           contact_person_position?: string | null
           contact_person_title?: string | null
           created_at?: string | null
+          facebook_url?: string | null
           id?: string
           industry?: string | null
+          instagram_url?: string | null
           last_payment_date?: string | null
           license_number?: string | null
           license_types?: string[] | null
+          licensed_states?: string[] | null
+          linkedin_url?: string | null
+          logo_url?: string | null
           payment_due_date?: string | null
           payment_status?: string | null
           subscription_start_date?: string | null
@@ -181,9 +194,12 @@ export type Database = {
             | null
           trial_end_date?: string | null
           trial_start_date?: string | null
+          twitter_url?: string | null
           updated_at?: string | null
           user_id: string
           website_url?: string | null
+          year_founded?: number | null
+          years_in_business?: string | null
         }
         Update: {
           account_status?: string | null
@@ -199,11 +215,16 @@ export type Database = {
           contact_person_position?: string | null
           contact_person_title?: string | null
           created_at?: string | null
+          facebook_url?: string | null
           id?: string
           industry?: string | null
+          instagram_url?: string | null
           last_payment_date?: string | null
           license_number?: string | null
           license_types?: string[] | null
+          licensed_states?: string[] | null
+          linkedin_url?: string | null
+          logo_url?: string | null
           payment_due_date?: string | null
           payment_status?: string | null
           subscription_start_date?: string | null
@@ -213,9 +234,12 @@ export type Database = {
             | null
           trial_end_date?: string | null
           trial_start_date?: string | null
+          twitter_url?: string | null
           updated_at?: string | null
           user_id?: string
           website_url?: string | null
+          year_founded?: number | null
+          years_in_business?: string | null
         }
         Relationships: [
           {
