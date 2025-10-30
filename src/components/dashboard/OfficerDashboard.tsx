@@ -203,28 +203,12 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         shift_preference: formData.shift_preference,
       };
 
-      // First check if profile exists to decide INSERT vs UPDATE
-      const { data: existingProfile } = await supabase
+      // Use upsert to handle both insert and update cases
+      const { error } = await supabase
         .from("officer_profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      let error;
-      if (existingProfile) {
-        // Update existing profile
-        const result = await supabase
-          .from("officer_profiles")
-          .update(profileData)
-          .eq("user_id", user.id);
-        error = result.error;
-      } else {
-        // Insert new profile
-        const result = await supabase
-          .from("officer_profiles")
-          .insert(profileData);
-        error = result.error;
-      }
+        .upsert(profileData, {
+          onConflict: 'user_id'
+        });
 
       if (error) throw error;
 
