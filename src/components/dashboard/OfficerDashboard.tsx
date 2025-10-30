@@ -276,6 +276,10 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
               Welcome, {profile?.full_name || profile?.email}
             </h1>
 
+            <div className="mb-6">
+              <JobSearch officerId={officerProfile?.id || null} />
+            </div>
+
             <Alert className="mb-6 border-primary/20 bg-primary/5">
               <Info className="h-4 w-4 text-primary" />
               <AlertDescription className="text-sm">
@@ -786,10 +790,6 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                 officerId={officerProfile?.id || ""} 
                 officerName={profile?.full_name || profile?.email || "Officer"}
               />
-            )}
-
-            {activeTab === "jobs" && (
-              <JobSearch officerId={officerProfile?.id || null} />
             )}
           </div>
           </div>
