@@ -143,6 +143,14 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
       }
 
       const file = event.target.files[0];
+      
+      // Validate file size (10MB for documents)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File size must be less than 10MB");
+        setUploading(null);
+        return;
+      }
+
       const url = await uploadDocument(file, certId, side);
 
       const updateField = side === "front" ? "document_front_url" : "document_back_url";
@@ -154,9 +162,13 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
       if (error) throw error;
 
       toast.success(`Document uploaded successfully`);
-      loadCertifications();
+      await loadCertifications();
+      
+      // Reset the input so the same file can be uploaded again if needed
+      event.target.value = '';
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error("Upload failed: " + error.message);
+      console.error("Upload error:", error);
     } finally {
       setUploading(null);
     }
@@ -368,22 +380,8 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                           </div>
                         </div>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        disabled={isUploading}
-                        onClick={() =>
-                          document
-                            .getElementById(`${existingLicense.id}-${side}`)
-                            ?.click()
-                        }
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
-                      </Button>
                       <input
-                        id={`${existingLicense.id}-${side}`}
+                        id={`license-upload-${existingLicense.id}-${side}`}
                         type="file"
                         accept="image/*,.pdf"
                         onChange={(e) =>
@@ -392,6 +390,20 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                         disabled={isUploading}
                         className="hidden"
                       />
+                      <label htmlFor={`license-upload-${existingLicense.id}-${side}`}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          disabled={isUploading}
+                          asChild
+                        >
+                          <span className="cursor-pointer">
+                            <Upload className="mr-2 h-4 w-4" />
+                            {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
+                          </span>
+                        </Button>
+                      </label>
                     </div>
                   );
                 })}
@@ -668,20 +680,8 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                                   </div>
                                 </div>
                               )}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full"
-                                disabled={isUploading}
-                                onClick={() =>
-                                  document.getElementById(`${training.id}-${side}`)?.click()
-                                }
-                              >
-                                <Upload className="mr-2 h-3 w-3" />
-                                {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
-                              </Button>
                               <input
-                                id={`${training.id}-${side}`}
+                                id={`training-upload-${training.id}-${side}`}
                                 type="file"
                                 accept="image/*,.pdf"
                                 onChange={(e) =>
@@ -690,6 +690,20 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                                 disabled={isUploading}
                                 className="hidden"
                               />
+                              <label htmlFor={`training-upload-${training.id}-${side}`}>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full"
+                                  disabled={isUploading}
+                                  asChild
+                                >
+                                  <span className="cursor-pointer">
+                                    <Upload className="mr-2 h-3 w-3" />
+                                    {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
+                                  </span>
+                                </Button>
+                              </label>
                             </div>
                           );
                         })}
