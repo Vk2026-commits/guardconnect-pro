@@ -90,38 +90,6 @@ const Index = () => {
         </div>
       </section>
 
-            {/* QR Code Section */}
-            <section className="py-16">
-              <div className="container mx-auto max-w-4xl">
-                <Card className="border-2 border-primary/20 bg-gradient-to-br from-background to-muted/30">
-                  <CardContent className="pt-8 pb-8">
-                    <div className="flex flex-col md:flex-row items-center gap-8">
-                      <div className="flex-1 text-center md:text-left">
-                        <h2 className="text-2xl font-bold mb-4">
-                          Scan to Get Started
-                        </h2>
-                        <p className="text-muted-foreground mb-4">
-                          Use this QR code to quickly access our platform from any device.
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Scan with your phone's camera to create an account or log in instantly.
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <div className="p-4 bg-white rounded-lg shadow-lg">
-                          <QRCode
-                            value={`${window.location.origin}/auth`}
-                            size={150}
-                            level="H"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </section>
-
             {/* Features Section */}
             <section className="py-20 bg-muted/30 rounded-lg">
         <div className="container mx-auto max-w-6xl">
@@ -196,6 +164,38 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+            {/* QR Code Section */}
+            <section className="py-16">
+              <div className="container mx-auto max-w-4xl">
+                <Card className="border-2 border-primary/20 bg-gradient-to-br from-background to-muted/30">
+                  <CardContent className="pt-8 pb-8">
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                      <div className="flex-1 text-center md:text-left">
+                        <h2 className="text-2xl font-bold mb-4">
+                          Scan to Get Started
+                        </h2>
+                        <p className="text-muted-foreground mb-4">
+                          Use this QR code to quickly access our platform from any device.
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Scan with your phone's camera to create an account or log in instantly.
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <div className="p-4 bg-white rounded-lg shadow-lg">
+                          <QRCode
+                            value={`${window.location.origin}/auth`}
+                            size={150}
+                            level="H"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
 
           </div>
 
