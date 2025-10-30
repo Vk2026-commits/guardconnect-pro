@@ -122,6 +122,7 @@ export type Database = {
       }
       company_profiles: {
         Row: {
+          account_status: string | null
           company_name: string
           company_number: string | null
           company_phone: string | null
@@ -149,6 +150,7 @@ export type Database = {
           website_url: string | null
         }
         Insert: {
+          account_status?: string | null
           company_name: string
           company_number?: string | null
           company_phone?: string | null
@@ -176,6 +178,7 @@ export type Database = {
           website_url?: string | null
         }
         Update: {
+          account_status?: string | null
           company_name?: string
           company_number?: string | null
           company_phone?: string | null
@@ -511,6 +514,7 @@ export type Database = {
       }
       officer_profiles: {
         Row: {
+          account_status: string | null
           address_city: string | null
           address_country: string | null
           address_state: string | null
@@ -539,6 +543,7 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          account_status?: string | null
           address_city?: string | null
           address_country?: string | null
           address_state?: string | null
@@ -567,6 +572,7 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          account_status?: string | null
           address_city?: string | null
           address_country?: string | null
           address_state?: string | null

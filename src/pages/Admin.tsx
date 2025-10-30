@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail } from "lucide-react";
+import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail, MoreVertical, Pause, XCircle, Trash2, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface Analytics {
   totalOfficers: number;
@@ -112,6 +113,28 @@ const Admin = () => {
       toast.error(error.message || "Failed to send password reset email");
     } finally {
       setResettingPassword(false);
+    }
+  };
+
+  const handleAccountStatusChange = async (
+    userId: string, 
+    newStatus: 'active' | 'paused' | 'cancelled' | 'deleted', 
+    tableName: 'officer_profiles' | 'company_profiles',
+    name: string
+  ) => {
+    try {
+      const { error } = await supabase
+        .from(tableName)
+        .update({ account_status: newStatus })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      toast.success(`Account ${newStatus} for ${name}`);
+      await loadAllProfiles();
+    } catch (error: any) {
+      console.error("Error updating account status:", error);
+      toast.error(error.message || "Failed to update account status");
     }
   };
 
@@ -485,6 +508,7 @@ const Admin = () => {
                       <TableHead>Officer #</TableHead>
                       <TableHead>Title</TableHead>
                       <TableHead>Location</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead>Registered</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -497,31 +521,85 @@ const Admin = () => {
                         <TableCell>{officer.officer_number || "N/A"}</TableCell>
                         <TableCell>{officer.title || "N/A"}</TableCell>
                         <TableCell>{officer.location || "N/A"}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            officer.account_status === 'active' 
+                              ? 'bg-green-100 text-green-800' 
+                              : officer.account_status === 'paused'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : officer.account_status === 'cancelled'
+                              ? 'bg-orange-100 text-orange-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {officer.account_status || "active"}
+                          </span>
+                        </TableCell>
                         <TableCell>{formatDate(officer.profiles?.created_at)}</TableCell>
                         <TableCell>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm" disabled={resettingPassword}>
-                                <KeyRound className="h-4 w-4 mr-2" />
-                                Reset Password
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Reset Password</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Send a password reset email to {officer.profiles?.full_name || "this officer"} at {officer.profiles?.email}?
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handlePasswordReset(officer.profiles?.email, officer.profiles?.full_name || "Officer")}>
-                                  <Mail className="h-4 w-4 mr-2" />
-                                  Send Reset Email
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <div className="flex items-center gap-2">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" disabled={resettingPassword}>
+                                  <KeyRound className="h-4 w-4 mr-2" />
+                                  Reset Password
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Reset Password</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Send a password reset email to {officer.profiles?.full_name || "this officer"} at {officer.profiles?.email}?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handlePasswordReset(officer.profiles?.email, officer.profiles?.full_name || "Officer")}>
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Send Reset Email
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem 
+                                  onClick={() => handleAccountStatusChange(officer.user_id, 'paused', 'officer_profiles', officer.profiles?.full_name || "Officer")}
+                                  disabled={officer.account_status === 'paused'}
+                                >
+                                  <Pause className="h-4 w-4 mr-2" />
+                                  Pause Account
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleAccountStatusChange(officer.user_id, 'cancelled', 'officer_profiles', officer.profiles?.full_name || "Officer")}
+                                  disabled={officer.account_status === 'cancelled'}
+                                >
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  Cancel Account
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleAccountStatusChange(officer.user_id, 'deleted', 'officer_profiles', officer.profiles?.full_name || "Officer")}
+                                  disabled={officer.account_status === 'deleted'}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete Account
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleAccountStatusChange(officer.user_id, 'active', 'officer_profiles', officer.profiles?.full_name || "Officer")}
+                                  disabled={officer.account_status === 'active'}
+                                >
+                                  <PlayCircle className="h-4 w-4 mr-2" />
+                                  Reactivate Account
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -546,6 +624,7 @@ const Admin = () => {
                       <TableHead>Company #</TableHead>
                       <TableHead>Subscription</TableHead>
                       <TableHead>Contact Person</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead>Registered</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -566,31 +645,85 @@ const Admin = () => {
                           </span>
                         </TableCell>
                         <TableCell>{company.contact_person_name || "N/A"}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            company.account_status === 'active' 
+                              ? 'bg-green-100 text-green-800' 
+                              : company.account_status === 'paused'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : company.account_status === 'cancelled'
+                              ? 'bg-orange-100 text-orange-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {company.account_status || "active"}
+                          </span>
+                        </TableCell>
                         <TableCell>{formatDate(company.profiles?.created_at)}</TableCell>
                         <TableCell>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm" disabled={resettingPassword}>
-                                <KeyRound className="h-4 w-4 mr-2" />
-                                Reset Password
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Reset Password</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Send a password reset email to {company.company_name} at {company.profiles?.email}?
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handlePasswordReset(company.profiles?.email, company.company_name)}>
-                                  <Mail className="h-4 w-4 mr-2" />
-                                  Send Reset Email
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <div className="flex items-center gap-2">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" disabled={resettingPassword}>
+                                  <KeyRound className="h-4 w-4 mr-2" />
+                                  Reset Password
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Reset Password</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Send a password reset email to {company.company_name} at {company.profiles?.email}?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handlePasswordReset(company.profiles?.email, company.company_name)}>
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Send Reset Email
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem 
+                                  onClick={() => handleAccountStatusChange(company.user_id, 'paused', 'company_profiles', company.company_name)}
+                                  disabled={company.account_status === 'paused'}
+                                >
+                                  <Pause className="h-4 w-4 mr-2" />
+                                  Pause Account
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleAccountStatusChange(company.user_id, 'cancelled', 'company_profiles', company.company_name)}
+                                  disabled={company.account_status === 'cancelled'}
+                                >
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  Cancel Account
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleAccountStatusChange(company.user_id, 'deleted', 'company_profiles', company.company_name)}
+                                  disabled={company.account_status === 'deleted'}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete Account
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleAccountStatusChange(company.user_id, 'active', 'company_profiles', company.company_name)}
+                                  disabled={company.account_status === 'active'}
+                                >
+                                  <PlayCircle className="h-4 w-4 mr-2" />
+                                  Reactivate Account
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
