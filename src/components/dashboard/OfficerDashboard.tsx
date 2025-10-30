@@ -17,6 +17,7 @@ import { WorkHistory } from "./WorkHistory";
 import { OfficerMessages } from "./OfficerMessages";
 import { OfficerChatPanel } from "./OfficerChatPanel";
 import { InterestedJobsPanel } from "./InterestedJobsPanel";
+import JobSearch from "./JobSearch";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { OfficerSidebar } from "./OfficerSidebar";
 
@@ -785,6 +786,10 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                 officerId={officerProfile?.id || ""} 
                 officerName={profile?.full_name || profile?.email || "Officer"}
               />
+            )}
+
+            {activeTab === "jobs" && (
+              <JobSearch officerId={officerProfile?.id || null} />
             )}
           </div>
           </div>

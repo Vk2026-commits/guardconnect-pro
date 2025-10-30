@@ -1,5 +1,5 @@
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { User, Clock, Images, Award, Briefcase, Check, MessageCircle } from "lucide-react";
+import { User, Clock, Images, Award, Briefcase, Check, MessageCircle, Search } from "lucide-react";
 
 interface OfficerSidebarProps {
   activeTab: string;
@@ -23,12 +23,13 @@ export function OfficerSidebar({ activeTab, onTabChange, completionStatus }: Off
     { title: "Photos", value: "photos", icon: Images },
     { title: "Certifications and Certificates", value: "certifications", icon: Award },
     { title: "Work History", value: "work-history", icon: Briefcase },
+    { title: "Search Jobs", value: "jobs", icon: Search },
     { title: "Messages", value: "messages", icon: MessageCircle },
   ];
 
   const getNavCls = (value: string) => {
-    // Messages tab doesn't need completion status
-    if (value === 'messages') {
+    // Messages and jobs tabs don't need completion status
+    if (value === 'messages' || value === 'jobs') {
       return activeTab === value ? "font-medium bg-accent text-accent-foreground" : "hover:bg-muted/50";
     }
     
@@ -39,7 +40,7 @@ export function OfficerSidebar({ activeTab, onTabChange, completionStatus }: Off
   };
 
   const isTabComplete = (value: string) => {
-    if (value === 'messages') return false; // Messages tab doesn't show completion
+    if (value === 'messages' || value === 'jobs') return false; // Messages and jobs tabs don't show completion
     return completionStatus?.[value as keyof typeof completionStatus];
   };
 
@@ -62,7 +63,7 @@ export function OfficerSidebar({ activeTab, onTabChange, completionStatus }: Off
                     <div className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       {open && <span>{item.title}</span>}
-                      {isTabComplete(item.value) && open && item.value !== 'messages' && (
+                      {isTabComplete(item.value) && open && item.value !== 'messages' && item.value !== 'jobs' && (
                         <Check className="h-3 w-3 ml-auto text-blue-600" />
                       )}
                     </div>
