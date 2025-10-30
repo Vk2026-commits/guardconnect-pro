@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Award, Video, User, Briefcase, Clock, Upload, FileText } from "lucide-react";
+import { Award, Video, User, Briefcase, Clock, Upload, FileText, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CertificationsManager } from "./CertificationsManager";
 import { PhotoUpload } from "./PhotoUpload";
 import { OfficerPhotos } from "./OfficerPhotos";
@@ -270,9 +271,19 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
             <div className="mb-4">
               <SidebarTrigger />
             </div>
-            <h1 className="text-3xl font-bold mb-8">
+            <h1 className="text-3xl font-bold mb-4">
               Welcome, {profile?.full_name || profile?.email}
             </h1>
+
+            <Alert className="mb-6 border-primary/20 bg-primary/5">
+              <Info className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-sm">
+                <strong>Stand out to employers!</strong> Complete your profile with detailed information, 
+                upload a professional headshot and full-body photo, and showcase your certifications. 
+                A complete profile significantly increases your chances of being hired.
+              </AlertDescription>
+            </Alert>
+
           <div className="space-y-6">
             <div className="grid md:grid-cols-3 gap-4">
         <Card>
