@@ -4,8 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Building2, Briefcase, Eye, TrendingUp } from "lucide-react";
+import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface Analytics {
   totalOfficers: number;
@@ -22,6 +26,9 @@ const Admin = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [allOfficers, setAllOfficers] = useState<any[]>([]);
+  const [allCompanies, setAllCompanies] = useState<any[]>([]);
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -52,10 +59,59 @@ const Admin = () => {
       }
 
       await loadAnalytics();
+      await loadAllProfiles();
     } catch (error) {
       console.error("Error checking admin access:", error);
       toast.error("Error checking permissions");
       navigate("/dashboard");
+    }
+  };
+
+  const loadAllProfiles = async () => {
+    try {
+      // Load all officers
+      const { data: officers, error: officersError } = await supabase
+        .from("officer_profiles")
+        .select("*, profiles(full_name, email, created_at)")
+        .order("created_at", { ascending: false });
+
+      if (officersError) throw officersError;
+      setAllOfficers(officers || []);
+
+      // Load all companies
+      const { data: companies, error: companiesError } = await supabase
+        .from("company_profiles")
+        .select("*, profiles(email, created_at)")
+        .order("created_at", { ascending: false });
+
+      if (companiesError) throw companiesError;
+      setAllCompanies(companies || []);
+    } catch (error) {
+      console.error("Error loading profiles:", error);
+      toast.error("Error loading profile data");
+    }
+  };
+
+  const handlePasswordReset = async (email: string, name: string) => {
+    setResettingPassword(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('reset-user-password', {
+        body: { email },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      toast.success(`Password reset email sent to ${name}`);
+    } catch (error: any) {
+      console.error("Error resetting password:", error);
+      toast.error(error.message || "Failed to send password reset email");
+    } finally {
+      setResettingPassword(false);
     }
   };
 
@@ -243,6 +299,15 @@ const Admin = () => {
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         </div>
 
+        <Tabs defaultValue="analytics" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="officers">All Officers</TabsTrigger>
+            <TabsTrigger value="companies">All Companies</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="analytics">
+
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -403,6 +468,138 @@ const Admin = () => {
             </CardContent>
           </Card>
         </div>
+          </TabsContent>
+
+          <TabsContent value="officers">
+            <Card>
+              <CardHeader>
+                <CardTitle>All Security Officers</CardTitle>
+                <CardDescription>Complete list of registered security officers</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Officer #</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Registered</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allOfficers.map((officer) => (
+                      <TableRow key={officer.id}>
+                        <TableCell className="font-medium">{officer.profiles?.full_name || "N/A"}</TableCell>
+                        <TableCell>{officer.profiles?.email}</TableCell>
+                        <TableCell>{officer.officer_number || "N/A"}</TableCell>
+                        <TableCell>{officer.title || "N/A"}</TableCell>
+                        <TableCell>{officer.location || "N/A"}</TableCell>
+                        <TableCell>{formatDate(officer.profiles?.created_at)}</TableCell>
+                        <TableCell>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" disabled={resettingPassword}>
+                                <KeyRound className="h-4 w-4 mr-2" />
+                                Reset Password
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Reset Password</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Send a password reset email to {officer.profiles?.full_name || "this officer"} at {officer.profiles?.email}?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handlePasswordReset(officer.profiles?.email, officer.profiles?.full_name || "Officer")}>
+                                  <Mail className="h-4 w-4 mr-2" />
+                                  Send Reset Email
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="companies">
+            <Card>
+              <CardHeader>
+                <CardTitle>All Companies</CardTitle>
+                <CardDescription>Complete list of registered companies</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Company Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Company #</TableHead>
+                      <TableHead>Subscription</TableHead>
+                      <TableHead>Contact Person</TableHead>
+                      <TableHead>Registered</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allCompanies.map((company) => (
+                      <TableRow key={company.id}>
+                        <TableCell className="font-medium">{company.company_name}</TableCell>
+                        <TableCell>{company.profiles?.email}</TableCell>
+                        <TableCell>{company.company_number || "N/A"}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            company.subscription_tier === 'premium' 
+                              ? 'bg-primary/20 text-primary' 
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {company.subscription_tier || "free"}
+                          </span>
+                        </TableCell>
+                        <TableCell>{company.contact_person_name || "N/A"}</TableCell>
+                        <TableCell>{formatDate(company.profiles?.created_at)}</TableCell>
+                        <TableCell>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" disabled={resettingPassword}>
+                                <KeyRound className="h-4 w-4 mr-2" />
+                                Reset Password
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Reset Password</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Send a password reset email to {company.company_name} at {company.profiles?.email}?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handlePasswordReset(company.profiles?.email, company.company_name)}>
+                                  <Mail className="h-4 w-4 mr-2" />
+                                  Send Reset Email
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
