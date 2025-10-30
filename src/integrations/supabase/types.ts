@@ -59,6 +59,13 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assigned_sites_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       certifications: {
@@ -116,6 +123,13 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certifications_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -247,6 +261,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "safe_officer_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -406,6 +427,13 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "hires_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       job_applications: {
@@ -446,6 +474,13 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -552,6 +587,13 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "messages_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       officer_interests: {
@@ -592,6 +634,13 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "officer_interests_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -695,6 +744,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "officer_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "safe_officer_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profile_views: {
@@ -732,6 +788,13 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_views_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -826,6 +889,13 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "video_interviews_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       work_history: {
@@ -893,7 +963,150 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      officer_certifications_summary: {
+        Row: {
+          certification_type: string | null
+          expiry_date: string | null
+          issue_date: string | null
+          issuing_organization: string | null
+          license_level: string | null
+          name: string | null
+          officer_id: string | null
+        }
+        Insert: {
+          certification_type?: string | null
+          expiry_date?: string | null
+          issue_date?: string | null
+          issuing_organization?: string | null
+          license_level?: string | null
+          name?: string | null
+          officer_id?: string | null
+        }
+        Update: {
+          certification_type?: string | null
+          expiry_date?: string | null
+          issue_date?: string | null
+          issuing_organization?: string | null
+          license_level?: string | null
+          name?: string | null
+          officer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certifications_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certifications_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      officer_profiles_public: {
+        Row: {
+          availability_schedule: Json | null
+          availability_status: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          employment_type: string[] | null
+          hourly_rate: number | null
+          id: string | null
+          location: string | null
+          main_region: string | null
+          shift_preference: string[] | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          availability_schedule?: Json | null
+          availability_status?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          employment_type?: string[] | null
+          hourly_rate?: number | null
+          id?: string | null
+          location?: string | null
+          main_region?: string | null
+          shift_preference?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          availability_schedule?: Json | null
+          availability_status?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          employment_type?: string[] | null
+          hourly_rate?: number | null
+          id?: string | null
+          location?: string | null
+          main_region?: string | null
+          shift_preference?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "officer_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "officer_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "safe_officer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      safe_officer_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_overdue_payments: { Args: never; Returns: undefined }
