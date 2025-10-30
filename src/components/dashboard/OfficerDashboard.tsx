@@ -276,17 +276,20 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
               Welcome, {profile?.full_name || profile?.email}
             </h1>
 
-            <Alert className="mb-6 border-primary/20 bg-primary/5">
-              <Info className="h-4 w-4 text-primary" />
-              <AlertDescription className="text-sm">
-                <strong>Stand out to employers!</strong> Complete your profile with detailed information, 
-                upload a professional headshot and full-body photo, and showcase your certifications. 
-                A complete profile significantly increases your chances of being hired.
-              </AlertDescription>
-            </Alert>
+            {activeTab !== "find-jobs" && (
+              <Alert className="mb-6 border-primary/20 bg-primary/5">
+                <Info className="h-4 w-4 text-primary" />
+                <AlertDescription className="text-sm">
+                  <strong>Stand out to employers!</strong> Complete your profile with detailed information, 
+                  upload a professional headshot and full-body photo, and showcase your certifications. 
+                  A complete profile significantly increases your chances of being hired.
+                </AlertDescription>
+              </Alert>
+            )}
 
           <div className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-4">
+            {activeTab !== "find-jobs" && (
+              <div className="grid md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Profile</CardTitle>
@@ -324,6 +327,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
           </CardContent>
         </Card>
       </div>
+            )}
 
 
             {activeTab === "profile" && (
