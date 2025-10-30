@@ -30,10 +30,11 @@ const Admin = () => {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [allOfficers, setAllOfficers] = useState<any[]>([]);
   const [allCompanies, setAllCompanies] = useState<any[]>([]);
+  const [suspendedCompanies, setSuspendedCompanies] = useState<any[]>([]);
   const [resettingPassword, setResettingPassword] = useState(false);
   const [officerSearch, setOfficerSearch] = useState("");
   const [companySearch, setCompanySearch] = useState("");
-  const [suspendedCompanySearch, setSuspendedCompanySearch] = useState("");
+  const [suspendedSearch, setSuspendedSearch] = useState("");
 
   useEffect(() => {
     checkAdminAccess();
@@ -83,14 +84,25 @@ const Admin = () => {
       if (officersError) throw officersError;
       setAllOfficers(officers || []);
 
-      // Load all companies
+      // Load all companies (active)
       const { data: companies, error: companiesError } = await supabase
         .from("company_profiles")
         .select("*, profiles(email, created_at)")
+        .neq("payment_status", "suspended")
         .order("created_at", { ascending: false });
 
       if (companiesError) throw companiesError;
       setAllCompanies(companies || []);
+
+      // Load suspended companies
+      const { data: suspended, error: suspendedError } = await supabase
+        .from("company_profiles")
+        .select("*, profiles(email, created_at)")
+        .eq("payment_status", "suspended")
+        .order("payment_due_date", { ascending: true });
+
+      if (suspendedError) throw suspendedError;
+      setSuspendedCompanies(suspended || []);
     } catch (error) {
       console.error("Error loading profiles:", error);
       toast.error("Error loading profile data");
@@ -127,9 +139,16 @@ const Admin = () => {
     name: string
   ) => {
     try {
+      const updateData: any = { account_status: newStatus };
+      
+      // If reactivating a company, reset payment status
+      if (newStatus === 'active' && tableName === 'company_profiles') {
+        updateData.payment_status = 'current';
+      }
+
       const { error } = await supabase
         .from(tableName)
-        .update({ account_status: newStatus })
+        .update(updateData)
         .eq('user_id', userId);
 
       if (error) throw error;
@@ -141,6 +160,34 @@ const Admin = () => {
       toast.error(error.message || "Failed to update account status");
     }
   };
+
+  // Filter functions
+  const filteredOfficers = allOfficers.filter((officer) => {
+    const searchLower = officerSearch.toLowerCase();
+    return (
+      officer.profiles?.full_name?.toLowerCase().includes(searchLower) ||
+      officer.profiles?.email?.toLowerCase().includes(searchLower) ||
+      officer.officer_number?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const filteredCompanies = allCompanies.filter((company) => {
+    const searchLower = companySearch.toLowerCase();
+    return (
+      company.company_name?.toLowerCase().includes(searchLower) ||
+      company.profiles?.email?.toLowerCase().includes(searchLower) ||
+      company.company_number?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const filteredSuspended = suspendedCompanies.filter((company) => {
+    const searchLower = suspendedSearch.toLowerCase();
+    return (
+      company.company_name?.toLowerCase().includes(searchLower) ||
+      company.profiles?.email?.toLowerCase().includes(searchLower) ||
+      company.company_number?.toLowerCase().includes(searchLower)
+    );
+  });
 
   const loadAnalytics = async () => {
     try {
@@ -300,39 +347,6 @@ const Admin = () => {
     const days = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
     return days;
   };
-
-  const filteredOfficers = allOfficers.filter(officer => {
-    const searchLower = officerSearch.toLowerCase();
-    return (
-      officer.profiles?.full_name?.toLowerCase().includes(searchLower) ||
-      officer.profiles?.email?.toLowerCase().includes(searchLower) ||
-      officer.officer_number?.toLowerCase().includes(searchLower)
-    );
-  });
-
-  const filteredCompanies = allCompanies.filter(company => {
-    const searchLower = companySearch.toLowerCase();
-    return (
-      company.company_name?.toLowerCase().includes(searchLower) ||
-      company.profiles?.email?.toLowerCase().includes(searchLower) ||
-      company.company_number?.toLowerCase().includes(searchLower)
-    );
-  });
-
-  const suspendedCompanies = allCompanies.filter(company => 
-    company.payment_status === 'suspended' || 
-    company.payment_status === 'overdue' ||
-    (company.account_status === 'paused' && company.payment_due_date && new Date(company.payment_due_date) < new Date())
-  );
-
-  const filteredSuspendedCompanies = suspendedCompanies.filter(company => {
-    const searchLower = suspendedCompanySearch.toLowerCase();
-    return (
-      company.company_name?.toLowerCase().includes(searchLower) ||
-      company.profiles?.email?.toLowerCase().includes(searchLower) ||
-      company.company_number?.toLowerCase().includes(searchLower)
-    );
-  });
 
   if (loading) {
     return (
@@ -820,8 +834,8 @@ const Admin = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search suspended companies..."
-                    value={suspendedCompanySearch}
-                    onChange={(e) => setSuspendedCompanySearch(e.target.value)}
+                    value={suspendedSearch}
+                    onChange={(e) => setSuspendedSearch(e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -841,7 +855,7 @@ const Admin = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredSuspendedCompanies.length === 0 ? (
+                    {filteredSuspended.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                           {suspendedCompanies.length === 0 
@@ -850,7 +864,7 @@ const Admin = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredSuspendedCompanies.map((company) => {
+                      filteredSuspended.map((company) => {
                         const daysOverdue = company.payment_due_date 
                           ? Math.floor((Date.now() - new Date(company.payment_due_date).getTime()) / (1000 * 60 * 60 * 24))
                           : 0;
