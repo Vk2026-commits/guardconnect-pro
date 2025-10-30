@@ -57,15 +57,17 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
           toast.error("You must be logged in");
           return null;
         }
-        const { data, error } = await supabase
-          .from("officer_profiles")
-          .upsert({ user_id: user.id }, { onConflict: "user_id" })
-          .select()
-          .single();
-        
+        // Call backend function using elevated privileges to ensure a row exists
+        const { data, error } = await supabase.functions.invoke('ensure-officer-profile', { body: {} });
         if (error) throw error;
-        setOfficerProfile(data);
-        return data;
+        // After ensuring, fetch the profile row
+        const { data: ensured } = await supabase
+          .from('officer_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (ensured) setOfficerProfile(ensured);
+        return ensured ?? null;
       } catch (error: any) {
         toast.error("Failed to create profile");
         return null;
@@ -202,6 +204,9 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         availability_schedule: formData.availability_schedule,
         shift_preference: formData.shift_preference,
       };
+
+      // Ensure a row exists via backend function before saving
+      await ensureOfficerProfile();
 
       // Use upsert to handle both insert and update cases
       const { error } = await supabase
