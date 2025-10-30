@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail, MoreVertical, Pause, XCircle, Trash2, PlayCircle, Search, AlertTriangle, Shield, UserPlus, PieChart as PieChartIcon } from "lucide-react";
+import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail, MoreVertical, Pause, XCircle, Trash2, PlayCircle, Search, AlertTriangle, Shield, UserPlus, PieChart as PieChartIcon, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -469,6 +469,82 @@ const Admin = () => {
       company.company_number?.toLowerCase().includes(searchLower)
     );
   });
+
+  // CSV Export Functions
+  const downloadOfficersCSV = () => {
+    const csvData = filteredOfficers.map(officer => ({
+      Name: officer.profiles?.full_name || "",
+      Phone: officer.phone || "",
+      Email: officer.profiles?.email || ""
+    }));
+
+    const headers = ["Name", "Phone", "Email"];
+    const csvContent = [
+      headers.join(","),
+      ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row] || ""}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `officers_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Officers CSV downloaded successfully");
+  };
+
+  const downloadCompaniesCSV = () => {
+    const csvData = filteredCompanies.map(company => ({
+      Name: company.company_name || "",
+      Phone: company.company_phone || company.contact_cell_phone || "",
+      Email: company.profiles?.email || company.contact_email || ""
+    }));
+
+    const headers = ["Name", "Phone", "Email"];
+    const csvContent = [
+      headers.join(","),
+      ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row] || ""}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `companies_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Companies CSV downloaded successfully");
+  };
+
+  const downloadSuspendedCSV = () => {
+    const csvData = filteredSuspended.map(company => ({
+      Name: company.company_name || "",
+      Phone: company.company_phone || company.contact_cell_phone || "",
+      Email: company.profiles?.email || company.contact_email || ""
+    }));
+
+    const headers = ["Name", "Phone", "Email"];
+    const csvContent = [
+      headers.join(","),
+      ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row] || ""}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `suspended_companies_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Suspended companies CSV downloaded successfully");
+  };
 
   const loadAnalytics = async () => {
     try {
@@ -1474,8 +1550,16 @@ const Admin = () => {
           <TabsContent value="officers">
             <Card>
               <CardHeader>
-                <CardTitle>All Security Officers</CardTitle>
-                <CardDescription>Complete list of registered security officers</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>All Security Officers</CardTitle>
+                    <CardDescription>Complete list of registered security officers</CardDescription>
+                  </div>
+                  <Button onClick={downloadOfficersCSV} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download CSV
+                  </Button>
+                </div>
                 <div className="mt-4 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -1620,8 +1704,16 @@ const Admin = () => {
           <TabsContent value="companies">
             <Card>
               <CardHeader>
-                <CardTitle>All Companies</CardTitle>
-                <CardDescription>Complete list of registered companies</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>All Companies</CardTitle>
+                    <CardDescription>Complete list of registered companies</CardDescription>
+                  </div>
+                  <Button onClick={downloadCompaniesCSV} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download CSV
+                  </Button>
+                </div>
                 <div className="mt-4 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -1761,11 +1853,19 @@ const Admin = () => {
           <TabsContent value="suspended">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                  Suspended Companies
-                </CardTitle>
-                <CardDescription>Companies suspended for non-payment or overdue bills</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                      Suspended Companies
+                    </CardTitle>
+                    <CardDescription>Companies suspended for non-payment or overdue bills</CardDescription>
+                  </div>
+                  <Button onClick={downloadSuspendedCSV} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download CSV
+                  </Button>
+                </div>
                 <div className="mt-4 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
