@@ -64,8 +64,9 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
   useEffect(() => {
     if (officerId) {
       setCurrentOfficerId(officerId);
-      loadCertifications();
     }
+    // Always attempt to load, will ensure/create profile if needed
+    loadCertifications();
   }, [officerId]);
 
   const ensureOfficerId = async () => {
@@ -708,28 +709,28 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
   return (
     <Tabs defaultValue="level-ii" className="w-full">
       <TabsList className="grid w-full grid-cols-4">
-        <TabsTrigger value="level-ii">Level II</TabsTrigger>
-        <TabsTrigger value="level-iii">Level III</TabsTrigger>
-        <TabsTrigger value="level-iv">Level IV</TabsTrigger>
-        <TabsTrigger value="training">Training</TabsTrigger>
+        <TabsTrigger value="level-ii">Non-Commission</TabsTrigger>
+        <TabsTrigger value="level-iii">Commission</TabsTrigger>
+        <TabsTrigger value="level-iv">Personal Protection Officer</TabsTrigger>
+        <TabsTrigger value="training">Other Training</TabsTrigger>
       </TabsList>
 
       <TabsContent value="level-ii" className="space-y-4">
         <LicenseForm
           licenseLevel="level-ii"
-          label="Level II - Non-Commissioned Security Officer"
+          label="Non-Commission Certificate"
         />
       </TabsContent>
 
       <TabsContent value="level-iii" className="space-y-4">
         <LicenseForm
           licenseLevel="level-iii"
-          label="Level III - Commissioned Security Officer"
+          label="Commission Certificate"
         />
       </TabsContent>
 
       <TabsContent value="level-iv" className="space-y-4">
-        <LicenseForm licenseLevel="level-iv" label="Level IV - Personal Protection Officer (PPO)" />
+        <LicenseForm licenseLevel="level-iv" label="Personal Protection Officer (Bodyguard)" />
       </TabsContent>
 
       <TabsContent value="training" className="space-y-4">

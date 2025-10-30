@@ -13,6 +13,8 @@ import { CertificationsManager } from "./CertificationsManager";
 import { PhotoUpload } from "./PhotoUpload";
 import { OfficerPhotos } from "./OfficerPhotos";
 import { WorkHistory } from "./WorkHistory";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { OfficerSidebar } from "./OfficerSidebar";
 
 interface OfficerDashboardProps {
   userId: string;
@@ -49,9 +51,14 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
   const ensureOfficerProfile = async () => {
     if (!officerProfile) {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast.error("You must be logged in");
+          return null;
+        }
         const { data, error } = await supabase
           .from("officer_profiles")
-          .insert({ user_id: userId })
+          .upsert({ user_id: user.id }, { onConflict: "user_id" })
           .select()
           .single();
         
