@@ -93,6 +93,43 @@ export function ChatDialog({
 
     setLoading(true);
     try {
+      // Check conversation limits before sending first message
+      if (messages.length === 0) {
+        if (currentUserType === "company") {
+          const { data: companyProfile } = await supabase
+            .from("company_profiles")
+            .select("subscription_tier")
+            .eq("id", companyId)
+            .single();
+          
+          const { data: companyConversations } = await supabase
+            .from("messages")
+            .select("officer_id")
+            .eq("company_id", companyId);
+          
+          const uniqueOfficers = new Set(companyConversations?.map(m => m.officer_id) || []);
+          
+          if (companyProfile?.subscription_tier === 'free' && uniqueOfficers.size >= 3) {
+            toast.error("You've reached the limit of 3 conversations on the free tier. Upgrade to continue.");
+            setLoading(false);
+            return;
+          }
+        } else if (currentUserType === "officer") {
+          const { data: officerConversations } = await supabase
+            .from("messages")
+            .select("company_id")
+            .eq("officer_id", officerId);
+          
+          const uniqueCompanies = new Set(officerConversations?.map(m => m.company_id) || []);
+          
+          if (uniqueCompanies.size >= 3) {
+            toast.error("You've reached the limit of 3 conversations on the free tier. Upgrade to continue.");
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
       const { error } = await supabase.from("messages").insert({
         company_id: companyId,
         officer_id: officerId,

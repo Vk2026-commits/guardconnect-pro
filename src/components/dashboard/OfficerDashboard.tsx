@@ -14,6 +14,7 @@ import { PhotoUpload } from "./PhotoUpload";
 import { OfficerPhotos } from "./OfficerPhotos";
 import { WorkHistory } from "./WorkHistory";
 import { OfficerMessages } from "./OfficerMessages";
+import { OfficerChatPanel } from "./OfficerChatPanel";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { OfficerSidebar } from "./OfficerSidebar";
 
@@ -263,13 +264,14 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
           onTabChange={setActiveTab}
           completionStatus={completionStatus}
         />
-        <div className="flex-1 p-8">
-          <div className="mb-4">
-            <SidebarTrigger />
-          </div>
-          <h1 className="text-3xl font-bold mb-8">
-            Welcome, {profile?.full_name || profile?.email}
-          </h1>
+        <div className="flex-1 flex">
+          <div className="flex-1 p-8">
+            <div className="mb-4">
+              <SidebarTrigger />
+            </div>
+            <h1 className="text-3xl font-bold mb-8">
+              Welcome, {profile?.full_name || profile?.email}
+            </h1>
           <div className="space-y-6">
             <div className="grid md:grid-cols-3 gap-4">
         <Card>
@@ -773,6 +775,17 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
               />
             )}
           </div>
+          </div>
+          
+          {/* Right Side Chat Panel */}
+          {officerProfile?.id && (
+            <div className="w-96 border-l bg-muted/20 p-4 overflow-y-auto">
+              <OfficerChatPanel 
+                officerId={officerProfile.id} 
+                officerName={profile?.full_name || profile?.email || "Officer"}
+              />
+            </div>
+          )}
         </div>
       </div>
     </SidebarProvider>

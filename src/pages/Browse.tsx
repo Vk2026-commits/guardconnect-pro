@@ -745,7 +745,22 @@ const Browse = () => {
                       <Button 
                         variant="outline"
                         className="w-full"
-                        onClick={() => setChatOpen(true)}
+                        onClick={async () => {
+                          // Check conversation limits
+                          const { data: companyConversations } = await supabase
+                            .from("messages")
+                            .select("officer_id")
+                            .eq("company_id", companyProfile.id);
+                          
+                          const uniqueOfficers = new Set(companyConversations?.map(m => m.officer_id) || []);
+                          
+                          if (companyProfile.subscription_tier === 'free' && uniqueOfficers.size >= 3 && !uniqueOfficers.has(selectedOfficer.id)) {
+                            toast.error("You've reached the limit of 3 conversations on the free tier. Upgrade to chat with more officers.");
+                            return;
+                          }
+                          
+                          setChatOpen(true);
+                        }}
                       >
                         <MessageCircle className="w-4 h-4 mr-2" />
                         Chat with Officer
