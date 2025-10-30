@@ -1555,6 +1555,19 @@ const Admin = () => {
                               </AlertDialogContent>
                             </AlertDialog>
 
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedUserId(officer.user_id);
+                                setSelectedUserEmail(officer.profiles?.email || "");
+                                setManualResetDialogOpen(true);
+                              }}
+                            >
+                              <Shield className="h-4 w-4 mr-2" />
+                              Set Password
+                            </Button>
+
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm">
