@@ -759,7 +759,7 @@ const Admin = () => {
         </div>
 
         {/* Pie Charts Section */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           {/* Stats Overview Pie Chart */}
           <Card>
             <CardHeader>
