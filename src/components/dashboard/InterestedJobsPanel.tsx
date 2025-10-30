@@ -140,7 +140,7 @@ export function InterestedJobsPanel({ officerId, officerName }: InterestedJobsPa
                             {application.job_postings.title}
                           </h4>
                           <p className="text-xs text-muted-foreground">
-                            {application.job_postings.company_profiles.company_name}
+                            {application.job_postings.company_profiles?.company_name || "Company"}
                           </p>
                         </div>
                       </div>
@@ -190,8 +190,8 @@ export function InterestedJobsPanel({ officerId, officerName }: InterestedJobsPa
         <ChatDialog
           open={chatOpen}
           onOpenChange={setChatOpen}
-          companyId={selectedJob.company_profiles.id}
-          companyName={selectedJob.company_profiles.company_name}
+          companyId={selectedJob.company_id}
+          companyName={selectedJob.company_profiles?.company_name || "Employer"}
           officerId={officerId}
           officerName={officerName}
           currentUserType="officer"
