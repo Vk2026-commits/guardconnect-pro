@@ -22,11 +22,12 @@ export function CompanySidebar({ activeTab, onTabChange }: CompanySidebarProps) 
   const { open } = useSidebar();
 
   const items = [
+    { title: "Company Profile", value: "profile", icon: Building2 },
     { title: "Browse Officers", value: "browse", icon: Users },
     { title: "Job Postings", value: "jobs", icon: Briefcase },
     { title: "Applicants", value: "applicants", icon: UserCheck },
     { title: "Interested", value: "interested", icon: Heart },
-    { title: "Hired", value: "employment", icon: Building2 },
+    { title: "Hired", value: "employment", icon: UserCheck },
     { title: "Subscriptions", value: "subscriptions", icon: CreditCard },
   ];
 

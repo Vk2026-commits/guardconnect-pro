@@ -27,7 +27,7 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
   const [searchParams] = useSearchParams();
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "browse");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "profile");
   const [formData, setFormData] = useState({
     company_name: "",
     industry: "",
@@ -185,12 +185,12 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
           <div className="border-b bg-background sticky top-0 z-10">
             <div className="flex h-16 items-center px-4 gap-4">
               <SidebarTrigger />
-              <h1 className="text-2xl font-bold">Welcome, {userName}</h1>
+              <h1 className="text-2xl font-bold">Welcome, {formData.company_name || userName}</h1>
             </div>
           </div>
           
           <div className="p-6 space-y-6 w-full overflow-auto">
-            {activeTab === "browse" && (
+            {activeTab === "profile" && (
               <>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Card>
@@ -276,12 +276,10 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
                             <SelectContent>
                               <SelectItem value="1-50">1-50 employees</SelectItem>
                               <SelectItem value="50-100">50-100 employees</SelectItem>
-                              <SelectItem value="100-1000">100-1,000 employees</SelectItem>
-                              <SelectItem value="1000-2000">1,000-2,000 employees</SelectItem>
-                              <SelectItem value="2000-3000">2,000-3,000 employees</SelectItem>
-                              <SelectItem value="3000-4000">3,000-4,000 employees</SelectItem>
-                              <SelectItem value="4000-5000">4,000-5,000 employees</SelectItem>
-                              <SelectItem value="5000+">5,000+ employees</SelectItem>
+                              <SelectItem value="100-200">100-200 employees</SelectItem>
+                              <SelectItem value="200-300">200-300 employees</SelectItem>
+                              <SelectItem value="300-400">300-400 employees</SelectItem>
+                              <SelectItem value="400+">400+ employees</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
