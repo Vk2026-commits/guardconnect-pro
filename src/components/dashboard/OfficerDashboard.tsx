@@ -172,15 +172,6 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
-    if (!formData.title) {
-      toast.error("Professional Title is required");
-      return;
-    }
-    if (!formData.phone) {
-      toast.error("Phone number is required");
-      return;
-    }
     
     setLoading(true);
 
@@ -211,13 +202,28 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         shift_preference: formData.shift_preference,
       };
 
-      // Use upsert to avoid duplicate key errors
-      const { error } = await supabase
+      // First check if profile exists to decide INSERT vs UPDATE
+      const { data: existingProfile } = await supabase
         .from("officer_profiles")
-        .upsert(profileData, {
-          onConflict: 'user_id',
-          ignoreDuplicates: false
-        });
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      let error;
+      if (existingProfile) {
+        // Update existing profile
+        const result = await supabase
+          .from("officer_profiles")
+          .update(profileData)
+          .eq("user_id", user.id);
+        error = result.error;
+      } else {
+        // Insert new profile
+        const result = await supabase
+          .from("officer_profiles")
+          .insert(profileData);
+        error = result.error;
+      }
 
       if (error) throw error;
 
@@ -285,7 +291,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
             <CardHeader>
               <CardTitle>Professional Profile</CardTitle>
               <CardDescription>
-                Update your profile information to attract potential employers. Fields marked with * are required.
+                Update your profile information to attract potential employers.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -300,15 +306,14 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title" className={!formData.title ? "text-destructive" : ""}>
-                      Professional Title *
+                    <Label htmlFor="title">
+                      Professional Title
                     </Label>
                     <Input
                       id="title"
                       placeholder="e.g., Licensed Security Officer"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className={!formData.title ? "border-destructive" : ""}
                     />
                   </div>
 
@@ -325,8 +330,8 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className={!formData.phone ? "text-destructive" : ""}>
-                      Phone *
+                    <Label htmlFor="phone">
+                      Phone
                     </Label>
                     <Input
                       id="phone"
@@ -334,7 +339,6 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                       placeholder="+1 (555) 000-0000"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className={!formData.phone ? "border-destructive" : ""}
                     />
                   </div>
 

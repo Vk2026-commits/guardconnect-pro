@@ -75,7 +75,15 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold mb-8">
               Welcome, {profile?.full_name || user?.email}
             </h1>
-            <OfficerDashboard userId={user!.id} />
+            <SidebarProvider>
+              <div className="flex w-full">
+                <OfficerSidebar />
+                <div className="flex-1 ml-4">
+                  <SidebarTrigger className="mb-4" />
+                  <OfficerDashboard userId={user!.id} />
+                </div>
+              </div>
+            </SidebarProvider>
           </>
         ) : (
           <div className="-mx-4 -my-8">

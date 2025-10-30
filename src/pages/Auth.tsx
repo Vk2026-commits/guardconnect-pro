@@ -344,6 +344,78 @@ const Auth = () => {
               </button>
             </div>
           </form>
+          
+          {/* Show pricing for companies */}
+          {mode === "signup" && role === "company" && (
+            <div className="mt-6 space-y-4">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-2">Choose Your Plan</h3>
+                <p className="text-sm text-muted-foreground">Select the plan that best fits your hiring needs</p>
+              </div>
+              
+              <div className="space-y-3">
+                <Card className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-semibold">Free</h4>
+                      <p className="text-sm text-muted-foreground">Basic browsing</p>
+                    </div>
+                    <span className="font-bold">$0</span>
+                  </div>
+                  <ul className="text-xs space-y-1 text-muted-foreground">
+                    <li>• View officer profiles</li>
+                    <li>• Basic information access</li>
+                    <li>• Search functionality</li>
+                  </ul>
+                </Card>
+                
+                <Card className="p-4 border-2 border-primary">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold">Professional</h4>
+                        <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full">Popular</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">30-day free trial</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold">$19.99</span>
+                      <p className="text-xs text-muted-foreground">per month</p>
+                    </div>
+                  </div>
+                  <ul className="text-xs space-y-1 text-muted-foreground">
+                    <li>• Everything in Free</li>
+                    <li>• Full officer names</li>
+                    <li>• Direct messaging</li>
+                    <li>• Job posting management</li>
+                  </ul>
+                </Card>
+                
+                <Card className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-semibold">Premium</h4>
+                      <p className="text-sm text-muted-foreground">Full access</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold">$29.99</span>
+                      <p className="text-xs text-muted-foreground">per month</p>
+                    </div>
+                  </div>
+                  <ul className="text-xs space-y-1 text-muted-foreground">
+                    <li>• Everything in Professional</li>
+                    <li>• Full certification access</li>
+                    <li>• Video interview viewing</li>
+                    <li>• Work history details</li>
+                  </ul>
+                </Card>
+              </div>
+              
+              <p className="text-xs text-center text-muted-foreground">
+                You can upgrade or change plans after signing up
+              </p>
+            </div>
+          )}
 
         </CardContent>
       </Card>
