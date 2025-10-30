@@ -344,6 +344,34 @@ const JobPostings = ({ companyId }: JobPostingsProps) => {
                       Edit
                     </Button>
                     <Button
+                      variant={job.status === 'pending' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={async () => {
+                        await supabase
+                          .from('job_postings')
+                          .update({ status: 'pending' })
+                          .eq('id', job.id);
+                        loadJobs();
+                        toast.success('Job marked as pending');
+                      }}
+                    >
+                      Pending
+                    </Button>
+                    <Button
+                      variant={job.status === 'filled' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={async () => {
+                        await supabase
+                          .from('job_postings')
+                          .update({ status: 'filled' })
+                          .eq('id', job.id);
+                        loadJobs();
+                        toast.success('Job marked as filled');
+                      }}
+                    >
+                      Filled
+                    </Button>
+                    <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(job.id)}

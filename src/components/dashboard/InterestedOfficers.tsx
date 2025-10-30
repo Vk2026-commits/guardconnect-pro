@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Mail } from "lucide-react";
+import { Lock, Mail, MessageCircle } from "lucide-react";
+import { ChatDialog } from "./ChatDialog";
 
 interface InterestedOfficersProps {
   companyId: string;
@@ -15,29 +17,41 @@ interface InterestedOfficersProps {
 export default function InterestedOfficers({ companyId, subscriptionTier }: InterestedOfficersProps) {
   const queryClient = useQueryClient();
   const isFreeTier = !subscriptionTier || subscriptionTier === 'free';
+  const [chatOpen, setChatOpen] = useState(false);
+  const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
+  const [companyProfile, setCompanyProfile] = useState<any>(null);
 
   const { data: interests, isLoading } = useQuery({
     queryKey: ["officer-interests", companyId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("officer_interests")
-        .select(`
-          *,
-          officer_profiles (
-            id,
-            user_id,
-            title,
-            location,
-            availability_status,
-            years_experience,
-            profiles (full_name, email)
-          )
-        `)
-        .eq("company_id", companyId)
-        .order("created_at", { ascending: false });
+      const [interestsResult, companyResult] = await Promise.all([
+        supabase
+          .from("officer_interests")
+          .select(`
+            *,
+            officer_profiles (
+              id,
+              user_id,
+              title,
+              location,
+              availability_status,
+              years_experience,
+              profiles (full_name, email)
+            )
+          `)
+          .eq("company_id", companyId)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("company_profiles")
+          .select("company_name")
+          .eq("id", companyId)
+          .single()
+      ]);
 
-      if (error) throw error;
-      return data;
+      if (interestsResult.error) throw interestsResult.error;
+      if (companyResult.data) setCompanyProfile(companyResult.data);
+      
+      return interestsResult.data;
     },
   });
 
@@ -168,14 +182,30 @@ export default function InterestedOfficers({ companyId, subscriptionTier }: Inte
                         Send Interest Email (Premium Feature)
                       </Button>
                     ) : (
-                      <Button 
-                        variant="default" 
-                        className="w-full"
-                        onClick={() => handleSendInterestEmail(interest.officer_profiles?.id)}
-                      >
-                        <Mail className="w-4 h-4 mr-2" />
-                        Send Interest Email
-                      </Button>
+                      <>
+                        <Button 
+                          variant="default" 
+                          className="w-full"
+                          onClick={() => handleSendInterestEmail(interest.officer_profiles?.id)}
+                        >
+                          <Mail className="w-4 h-4 mr-2" />
+                          Send Interest Email
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => {
+                            setSelectedOfficer({
+                              id: interest.officer_profiles?.id,
+                              name: interest.officer_profiles?.profiles?.full_name
+                            });
+                            setChatOpen(true);
+                          }}
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Chat with Officer
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -225,6 +255,17 @@ export default function InterestedOfficers({ companyId, subscriptionTier }: Inte
           ))
         )}
       </TabsContent>
+      {chatOpen && selectedOfficer && companyProfile && (
+        <ChatDialog
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+          companyId={companyId}
+          companyName={companyProfile.company_name}
+          officerId={selectedOfficer.id}
+          officerName={selectedOfficer.name}
+          currentUserType="company"
+        />
+      )}
     </Tabs>
   );
 }

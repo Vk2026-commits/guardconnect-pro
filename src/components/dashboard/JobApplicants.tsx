@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Lock, User } from "lucide-react";
+import { Lock, User, MessageCircle } from "lucide-react";
+import { ChatDialog } from "./ChatDialog";
 
 interface JobApplicantsProps {
   companyId: string;
@@ -13,10 +14,23 @@ interface JobApplicantsProps {
 
 const JobApplicants = ({ companyId, subscriptionTier, onNavigateToSubscriptions }: JobApplicantsProps) => {
   const [applications, setApplications] = useState<any[]>([]);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
+  const [companyProfile, setCompanyProfile] = useState<any>(null);
 
   useEffect(() => {
     loadApplications();
+    loadCompanyProfile();
   }, [companyId]);
+
+  const loadCompanyProfile = async () => {
+    const { data } = await supabase
+      .from("company_profiles")
+      .select("company_name")
+      .eq("id", companyId)
+      .single();
+    setCompanyProfile(data);
+  };
 
   const loadApplications = async () => {
     const { data, error } = await supabase
@@ -123,8 +137,19 @@ const JobApplicants = ({ companyId, subscriptionTier, onNavigateToSubscriptions 
                     <Button size="sm">
                       View Profile
                     </Button>
-                    <Button size="sm" variant="outline">
-                      Contact Officer
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedOfficer({
+                          id: app.officer.id,
+                          name: app.officerName
+                        });
+                        setChatOpen(true);
+                      }}
+                    >
+                      <MessageCircle className="h-3 w-3 mr-2" />
+                      Chat
                     </Button>
                   </div>
                 ) : (
@@ -138,6 +163,17 @@ const JobApplicants = ({ companyId, subscriptionTier, onNavigateToSubscriptions 
           )}
         </div>
       </CardContent>
+      {chatOpen && selectedOfficer && companyProfile && (
+        <ChatDialog
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+          companyId={companyId}
+          companyName={companyProfile.company_name}
+          officerId={selectedOfficer.id}
+          officerName={selectedOfficer.name}
+          currentUserType="company"
+        />
+      )}
     </Card>
   );
 };

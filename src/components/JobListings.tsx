@@ -60,7 +60,7 @@ const JobListings = () => {
   const loadJobs = async () => {
     const { data, error } = await supabase
       .from("job_postings")
-      .select("*, company_profiles(company_name)")
+      .select("*, company_profiles(company_name, logo_url)")
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(5);
@@ -213,6 +213,15 @@ const JobListings = () => {
       <Dialog open={!!selectedJob && !showAuthPrompt} onOpenChange={() => setSelectedJob(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
+            {selectedJob?.company_profiles?.logo_url && (
+              <div className="mb-4">
+                <img
+                  src={selectedJob.company_profiles.logo_url}
+                  alt={selectedJob.company_profiles.company_name}
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
+            )}
             <DialogTitle className="flex items-center gap-2">
               <Briefcase className="h-5 w-5" />
               {selectedJob?.title}

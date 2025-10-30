@@ -506,6 +506,54 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          officer_id: string
+          sender_type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          officer_id: string
+          sender_type: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          officer_id?: string
+          sender_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       officer_interests: {
         Row: {
           company_id: string

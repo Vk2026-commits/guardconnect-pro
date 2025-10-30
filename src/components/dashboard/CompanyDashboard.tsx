@@ -185,6 +185,13 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
           <div className="border-b bg-background sticky top-0 z-10">
             <div className="flex h-16 items-center px-4 gap-4">
               <SidebarTrigger />
+              {formData.logo_url && (
+                <img
+                  src={formData.logo_url}
+                  alt={formData.company_name}
+                  className="h-10 w-10 object-contain rounded"
+                />
+              )}
               <h1 className="text-2xl font-bold">Welcome, {formData.company_name || userName}</h1>
             </div>
           </div>
