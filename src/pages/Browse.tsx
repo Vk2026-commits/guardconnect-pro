@@ -39,6 +39,7 @@ const Browse = () => {
   const [companyProfile, setCompanyProfile] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [selectedOfficerCertifications, setSelectedOfficerCertifications] = useState<any[]>([]);
 
   useEffect(() => {
     checkAccess();
@@ -196,6 +197,20 @@ const Browse = () => {
 
   const handleViewProfile = async (officer: any) => {
     setSelectedOfficer(officer);
+    
+    // Load officer certifications
+    try {
+      const { data: certs } = await supabase
+        .from("certifications")
+        .select("*")
+        .eq("officer_id", officer.id)
+        .eq("certification_type", "license")
+        .order("created_at", { ascending: false });
+      
+      setSelectedOfficerCertifications(certs || []);
+    } catch (error) {
+      console.error("Error loading certifications:", error);
+    }
     
     // Track profile view if user is a company
     if (companyProfile && currentUser) {
@@ -543,6 +558,51 @@ const Browse = () => {
                 <div>
                   <h3 className="font-semibold mb-2">Main Region</h3>
                   <p className="text-sm">{selectedOfficer.main_region}</p>
+                </div>
+              )}
+
+              {/* License Credentials */}
+              {selectedOfficerCertifications.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">License Credentials</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedOfficerCertifications.map((cert) => {
+                      const getLicenseLabel = (level: string) => {
+                        switch (level) {
+                          case "level-ii":
+                            return "Non-Commission Certificate";
+                          case "level-iii":
+                            return "Commission Certificate";
+                          case "level-iv":
+                            return "Personal Protection Officer (PPO)";
+                          default:
+                            return cert.name;
+                        }
+                      };
+
+                      const getBadgeColor = (level: string) => {
+                        switch (level) {
+                          case "level-ii":
+                            return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100";
+                          case "level-iii":
+                            return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100";
+                          case "level-iv":
+                            return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100";
+                          default:
+                            return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100";
+                        }
+                      };
+
+                      return (
+                        <Badge 
+                          key={cert.id}
+                          className={getBadgeColor(cert.license_level)}
+                        >
+                          {getLicenseLabel(cert.license_level)}
+                        </Badge>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
