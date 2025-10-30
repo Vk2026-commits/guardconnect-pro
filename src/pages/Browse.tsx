@@ -562,7 +562,7 @@ const Browse = () => {
               )}
 
               {/* License Credentials */}
-              {selectedOfficerCertifications.length > 0 && (
+              {canViewFullDetails && selectedOfficerCertifications.length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-2">License Credentials</h3>
                   <div className="flex flex-wrap gap-2">
@@ -601,6 +601,57 @@ const Browse = () => {
                           {getLicenseLabel(cert.license_level)}
                         </Badge>
                       );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Employment Type */}
+              {canViewFullDetails && selectedOfficer.employment_type && selectedOfficer.employment_type.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Employment Type Preference</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedOfficer.employment_type.map((type: string) => {
+                      const getTypeLabel = (empType: string) => {
+                        switch (empType) {
+                          case "full_time":
+                            return "Full-time";
+                          case "part_time":
+                            return "Part-time";
+                          case "seasonal":
+                            return "Seasonal";
+                          default:
+                            return empType;
+                        }
+                      };
+
+                      return (
+                        <Badge key={type} variant="outline">
+                          {getTypeLabel(type)}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Availability Schedule */}
+              {canViewFullDetails && selectedOfficer.availability_schedule && (
+                <div>
+                  <h3 className="font-semibold mb-2">Weekly Availability</h3>
+                  <div className="space-y-2 text-sm">
+                    {Object.entries(selectedOfficer.availability_schedule).map(([day, schedule]: [string, any]) => {
+                      if (schedule?.start && schedule?.end) {
+                        return (
+                          <div key={day} className="flex justify-between items-center">
+                            <span className="font-medium capitalize">{day}:</span>
+                            <span className="text-muted-foreground">
+                              {schedule.start} - {schedule.end}
+                            </span>
+                          </div>
+                        );
+                      }
+                      return null;
                     })}
                   </div>
                 </div>
