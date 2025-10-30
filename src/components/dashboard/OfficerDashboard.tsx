@@ -13,6 +13,7 @@ import { CertificationsManager } from "./CertificationsManager";
 import { PhotoUpload } from "./PhotoUpload";
 import { OfficerPhotos } from "./OfficerPhotos";
 import { WorkHistory } from "./WorkHistory";
+import { OfficerMessages } from "./OfficerMessages";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { OfficerSidebar } from "./OfficerSidebar";
 
@@ -763,6 +764,13 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
               userId={userId}
               onEnsureProfile={ensureOfficerProfile}
             />
+            )}
+
+            {activeTab === "messages" && (
+              <OfficerMessages 
+                officerId={officerProfile?.id || ""} 
+                officerName={profile?.full_name || profile?.email || "Officer"}
+              />
             )}
           </div>
         </div>

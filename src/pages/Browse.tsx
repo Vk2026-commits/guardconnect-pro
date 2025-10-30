@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, DollarSign, Briefcase, Search, Heart, HeartOff, Lock, Calendar } from "lucide-react";
+import { MapPin, DollarSign, Briefcase, Search, Heart, HeartOff, Lock, Calendar, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ChatDialog } from "@/components/dashboard/ChatDialog";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ const Browse = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [selectedOfficerCertifications, setSelectedOfficerCertifications] = useState<any[]>([]);
   const [officerInterests, setOfficerInterests] = useState<Record<string, string>>({});
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     checkAccess();
@@ -739,11 +741,21 @@ const Browse = () => {
                   )}
                   
                   {canViewFullDetails && (
-                    <HireButton 
-                      officerId={selectedOfficer.id}
-                      officerName={selectedOfficer.profiles?.full_name || "Officer"}
-                      companyId={companyProfile.id}
-                    />
+                    <>
+                      <Button 
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setChatOpen(true)}
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Chat with Officer
+                      </Button>
+                      <HireButton 
+                        officerId={selectedOfficer.id}
+                        officerName={selectedOfficer.profiles?.full_name || "Officer"}
+                        companyId={companyProfile.id}
+                      />
+                    </>
                   )}
                 </div>
               )}
@@ -751,6 +763,19 @@ const Browse = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Chat Dialog */}
+      {selectedOfficer && companyProfile && chatOpen && (
+        <ChatDialog
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+          companyId={companyProfile.id}
+          companyName={companyProfile.company_name}
+          officerId={selectedOfficer.id}
+          officerName={selectedOfficer.profiles?.full_name || "Officer"}
+          currentUserType="company"
+        />
+      )}
     </div>
   );
 };

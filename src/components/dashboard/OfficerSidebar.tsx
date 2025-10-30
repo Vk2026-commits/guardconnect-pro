@@ -1,5 +1,5 @@
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { User, Clock, Images, Award, Briefcase, Check } from "lucide-react";
+import { User, Clock, Images, Award, Briefcase, Check, MessageCircle } from "lucide-react";
 
 interface OfficerSidebarProps {
   activeTab: string;
@@ -10,6 +10,7 @@ interface OfficerSidebarProps {
     photos: boolean;
     certifications: boolean;
     workHistory: boolean;
+    messages?: boolean;
   };
 }
 
@@ -22,16 +23,25 @@ export function OfficerSidebar({ activeTab, onTabChange, completionStatus }: Off
     { title: "Photos", value: "photos", icon: Images },
     { title: "Certifications", value: "certifications", icon: Award },
     { title: "Work History", value: "work-history", icon: Briefcase },
+    { title: "Messages", value: "messages", icon: MessageCircle },
   ];
 
   const getNavCls = (value: string) => {
+    // Messages tab doesn't need completion status
+    if (value === 'messages') {
+      return activeTab === value ? "font-medium bg-accent text-accent-foreground" : "hover:bg-muted/50";
+    }
+    
     const isComplete = completionStatus?.[value as keyof typeof completionStatus];
     const baseClasses = activeTab === value ? "font-medium" : "hover:bg-muted/50";
     const statusColor = isComplete ? "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20" : "bg-red-500/10 text-red-600 hover:bg-red-500/20";
     return `${baseClasses} ${statusColor}`;
   };
 
-  const isTabComplete = (value: string) => completionStatus?.[value as keyof typeof completionStatus];
+  const isTabComplete = (value: string) => {
+    if (value === 'messages') return false; // Messages tab doesn't show completion
+    return completionStatus?.[value as keyof typeof completionStatus];
+  };
 
   return (
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
@@ -52,7 +62,7 @@ export function OfficerSidebar({ activeTab, onTabChange, completionStatus }: Off
                     <div className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       {open && <span>{item.title}</span>}
-                      {isTabComplete(item.value) && open && (
+                      {isTabComplete(item.value) && open && item.value !== 'messages' && (
                         <Check className="h-3 w-3 ml-auto text-blue-600" />
                       )}
                     </div>
