@@ -37,7 +37,7 @@ const Index = () => {
             
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
               {t('hero.title')}
-              <span className="block mt-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <span className="block mt-2 pb-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {t('hero.titleHighlight')}
               </span>
             </h1>
@@ -120,7 +120,10 @@ const Index = () => {
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <Video className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{t('features.video.title')}</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-xl font-semibold">{t('features.video.title')}</h3>
+                  <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">Coming Soon</span>
+                </div>
                 <p className="text-muted-foreground">
                   {t('features.video.description')}
                 </p>
