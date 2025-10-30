@@ -32,9 +32,9 @@ interface CertificationsManagerProps {
 }
 
 const LICENSE_LEVELS = [
-  { value: "level-ii", label: "Level II - Non-Commissioned Security Officer" },
-  { value: "level-iii", label: "Level III - Commissioned Security Officer" },
-  { value: "level-iv", label: "Level IV - Personal Protection Officer (PPO)" },
+  { value: "level-ii", label: "Non-Commission Certificate" },
+  { value: "level-iii", label: "Commission Certificate" },
+  { value: "level-iv", label: "Personal Protection Officer (Bodyguard)" },
 ];
 
 const TRAINING_CERTIFICATIONS = [
@@ -82,13 +82,14 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
   };
 
   const loadCertifications = async () => {
-    const id = await ensureOfficerId();
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-
     try {
+      const id = await ensureOfficerId();
+      if (!id) {
+        setLoading(false);
+        setCertifications([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("certifications")
         .select("*")

@@ -178,8 +178,16 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
     setLoading(true);
 
     try {
+      // Get the current authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("You must be logged in to update your profile");
+        return;
+      }
+
       const profileData = {
-        user_id: userId,
+        user_id: user.id, // Use auth.uid() directly
         title: formData.title,
         bio: formData.bio,
         years_experience: parseInt(formData.years_experience) || null,

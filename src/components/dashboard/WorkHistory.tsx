@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Briefcase, Plus, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,7 +16,7 @@ interface WorkHistoryProps {
 }
 
 interface WorkHistoryEntry {
-  id: string;
+  id?: string;
   officer_id?: string;
   company_name: string;
   position_title: string;
@@ -33,27 +32,33 @@ interface WorkHistoryEntry {
   reason_for_leaving: string;
   job_description: string;
   may_contact: boolean;
-  created_at?: string;
-  updated_at?: string;
 }
 
 export const WorkHistory = ({ officerId, userId, onEnsureProfile }: WorkHistoryProps) => {
   const [workHistory, setWorkHistory] = useState<WorkHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("employer-1");
   const [currentOfficerId, setCurrentOfficerId] = useState(officerId);
+  const [currentEntry, setCurrentEntry] = useState<WorkHistoryEntry>({
+    company_name: "",
+    position_title: "",
+    start_date: "",
+    end_date: "",
+    company_address: "",
+    company_city: "",
+    company_state: "",
+    company_zip: "",
+    supervisor_name: "",
+    supervisor_phone: "",
+    company_phone: "",
+    reason_for_leaving: "",
+    job_description: "",
+    may_contact: true,
+  });
 
   useEffect(() => {
     if (officerId) {
       setCurrentOfficerId(officerId);
       loadWorkHistory();
-    } else {
-      // Initialize with empty entries if no officer profile yet
-      setWorkHistory([
-        createEmptyEntry(),
-        createEmptyEntry(),
-        createEmptyEntry(),
-      ]);
     }
   }, [officerId]);
 
@@ -85,50 +90,34 @@ export const WorkHistory = ({ officerId, userId, onEnsureProfile }: WorkHistoryP
       return;
     }
 
-    // Initialize with 3 empty entries if none exist
-    if (!data || data.length === 0) {
-      setWorkHistory([
-        createEmptyEntry(),
-        createEmptyEntry(),
-        createEmptyEntry(),
-      ]);
-    } else {
-      // Ensure we always have at least 3 slots
-      const entries = [...data] as WorkHistoryEntry[];
-      while (entries.length < 3) {
-        entries.push(createEmptyEntry());
-      }
-      setWorkHistory(entries);
-    }
+    setWorkHistory(data || []);
   };
 
-  const createEmptyEntry = (): WorkHistoryEntry => ({
-    id: "",
-    company_name: "",
-    position_title: "",
-    start_date: "",
-    end_date: "",
-    company_address: "",
-    company_city: "",
-    company_state: "",
-    company_zip: "",
-    supervisor_name: "",
-    supervisor_phone: "",
-    company_phone: "",
-    reason_for_leaving: "",
-    job_description: "",
-    may_contact: true,
-  });
+  const resetForm = () => {
+    setCurrentEntry({
+      company_name: "",
+      position_title: "",
+      start_date: "",
+      end_date: "",
+      company_address: "",
+      company_city: "",
+      company_state: "",
+      company_zip: "",
+      supervisor_name: "",
+      supervisor_phone: "",
+      company_phone: "",
+      reason_for_leaving: "",
+      job_description: "",
+      may_contact: true,
+    });
+  };
 
-  const handleSave = async (index: number) => {
-    const entry = workHistory[index];
-    
-    if (!entry.company_name) {
+  const handleSave = async () => {
+    if (!currentEntry.company_name) {
       toast.error("Company name is required");
       return;
     }
 
-    // Ensure we have an officer profile
     const id = await ensureOfficerId();
     if (!id) {
       toast.error("Please save your profile first");
@@ -139,298 +128,316 @@ export const WorkHistory = ({ officerId, userId, onEnsureProfile }: WorkHistoryP
     try {
       const workData = {
         officer_id: id,
-        company_name: entry.company_name,
-        position_title: entry.position_title,
-        start_date: entry.start_date || null,
-        end_date: entry.end_date || null,
-        company_address: entry.company_address,
-        company_city: entry.company_city,
-        company_state: entry.company_state,
-        company_zip: entry.company_zip,
-        supervisor_name: entry.supervisor_name,
-        supervisor_phone: entry.supervisor_phone,
-        company_phone: entry.company_phone,
-        reason_for_leaving: entry.reason_for_leaving,
-        job_description: entry.job_description,
-        may_contact: entry.may_contact,
+        company_name: currentEntry.company_name,
+        position_title: currentEntry.position_title,
+        start_date: currentEntry.start_date || null,
+        end_date: currentEntry.end_date || null,
+        company_address: currentEntry.company_address,
+        company_city: currentEntry.company_city,
+        company_state: currentEntry.company_state,
+        company_zip: currentEntry.company_zip,
+        supervisor_name: currentEntry.supervisor_name,
+        supervisor_phone: currentEntry.supervisor_phone,
+        company_phone: currentEntry.company_phone,
+        reason_for_leaving: currentEntry.reason_for_leaving,
+        job_description: currentEntry.job_description,
+        may_contact: currentEntry.may_contact,
       };
 
-      if (entry.id) {
+      if (currentEntry.id) {
+        // Update existing entry
         const { error } = await supabase
           .from("work_history")
           .update(workData)
-          .eq("id", entry.id);
+          .eq("id", currentEntry.id);
 
         if (error) throw error;
+        toast.success("Work history updated successfully");
       } else {
-        const { data, error } = await supabase
+        // Insert new entry
+        const { error } = await supabase
           .from("work_history")
-          .insert(workData)
-          .select()
-          .single();
+          .insert(workData);
 
         if (error) throw error;
-        
-        // Update the entry with the new ID
-        const updated = [...workHistory];
-        updated[index] = { ...entry, id: data.id };
-        setWorkHistory(updated);
+        toast.success("Work history added successfully");
       }
 
-      toast.success("Work history saved successfully!");
+      resetForm();
+      loadWorkHistory();
     } catch (error: any) {
-      toast.error(error.message || "Failed to save work history");
+      toast.error("Failed to save work history");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (index: number) => {
-    const entry = workHistory[index];
-    
-    if (!entry.id) {
-      // Just clear the form if not saved
-      const updated = [...workHistory];
-      updated[index] = createEmptyEntry();
-      setWorkHistory(updated);
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this work history entry?")) {
       return;
     }
 
-    setLoading(true);
     try {
       const { error } = await supabase
         .from("work_history")
         .delete()
-        .eq("id", entry.id);
+        .eq("id", id);
 
       if (error) throw error;
 
-      const updated = [...workHistory];
-      updated[index] = createEmptyEntry();
-      setWorkHistory(updated);
-      
-      toast.success("Work history deleted successfully!");
+      toast.success("Work history deleted successfully");
+      loadWorkHistory();
     } catch (error: any) {
-      toast.error(error.message || "Failed to delete work history");
-    } finally {
-      setLoading(false);
+      toast.error("Failed to delete work history");
     }
   };
 
-  const updateEntry = (index: number, field: keyof WorkHistoryEntry, value: any) => {
-    const updated = [...workHistory];
-    updated[index] = { ...updated[index], [field]: value };
-    setWorkHistory(updated);
+  const handleEdit = (entry: WorkHistoryEntry) => {
+    setCurrentEntry(entry);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const renderEmployerForm = (index: number) => {
-    const entry = workHistory[index];
-    if (!entry) return null;
-
-    return (
+  return (
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5" />
-              Employer #{index + 1}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDelete(index)}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <CardTitle className="flex items-center gap-2">
+            <Briefcase className="h-5 w-5" />
+            {currentEntry.id ? "Edit Work History" : "Add Work History"}
           </CardTitle>
           <CardDescription>
-            Provide detailed information about your employment history
+            Please provide your last 3 years of work history
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor={`company-name-${index}`}>Company Name *</Label>
+              <Label htmlFor="company_name">Company Name *</Label>
               <Input
-                id={`company-name-${index}`}
-                value={entry.company_name}
-                onChange={(e) => updateEntry(index, "company_name", e.target.value)}
-                placeholder="ABC Security Services"
+                id="company_name"
+                value={currentEntry.company_name}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, company_name: e.target.value })}
+                placeholder="Enter company name"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`position-${index}`}>Position/Job Title</Label>
+              <Label htmlFor="position_title">Position Title</Label>
               <Input
-                id={`position-${index}`}
-                value={entry.position_title}
-                onChange={(e) => updateEntry(index, "position_title", e.target.value)}
-                placeholder="Security Officer"
+                id="position_title"
+                value={currentEntry.position_title}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, position_title: e.target.value })}
+                placeholder="Enter position title"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`start-date-${index}`}>Start Date</Label>
+              <Label htmlFor="start_date">Start Date</Label>
               <Input
-                id={`start-date-${index}`}
+                id="start_date"
                 type="date"
-                value={entry.start_date}
-                onChange={(e) => updateEntry(index, "start_date", e.target.value)}
+                value={currentEntry.start_date}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, start_date: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`end-date-${index}`}>End Date</Label>
+              <Label htmlFor="end_date">End Date</Label>
               <Input
-                id={`end-date-${index}`}
+                id="end_date"
                 type="date"
-                value={entry.end_date}
-                onChange={(e) => updateEntry(index, "end_date", e.target.value)}
+                value={currentEntry.end_date}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, end_date: e.target.value })}
               />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`address-${index}`}>Company Address</Label>
-            <Input
-              id={`address-${index}`}
-              value={entry.company_address}
-              onChange={(e) => updateEntry(index, "company_address", e.target.value)}
-              placeholder="Street Address"
-            />
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor={`city-${index}`}>City</Label>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="company_address">Company Address</Label>
               <Input
-                id={`city-${index}`}
-                value={entry.company_city}
-                onChange={(e) => updateEntry(index, "company_city", e.target.value)}
+                id="company_address"
+                value={currentEntry.company_address}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, company_address: e.target.value })}
+                placeholder="Street address"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="company_city">City</Label>
+              <Input
+                id="company_city"
+                value={currentEntry.company_city}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, company_city: e.target.value })}
                 placeholder="City"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`state-${index}`}>State</Label>
+              <Label htmlFor="company_state">State</Label>
               <Input
-                id={`state-${index}`}
-                value={entry.company_state}
-                onChange={(e) => updateEntry(index, "company_state", e.target.value)}
+                id="company_state"
+                value={currentEntry.company_state}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, company_state: e.target.value })}
                 placeholder="State"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`zip-${index}`}>ZIP Code</Label>
+              <Label htmlFor="company_zip">Zip Code</Label>
               <Input
-                id={`zip-${index}`}
-                value={entry.company_zip}
-                onChange={(e) => updateEntry(index, "company_zip", e.target.value)}
-                placeholder="ZIP"
-              />
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor={`supervisor-${index}`}>Supervisor Name</Label>
-              <Input
-                id={`supervisor-${index}`}
-                value={entry.supervisor_name}
-                onChange={(e) => updateEntry(index, "supervisor_name", e.target.value)}
-                placeholder="John Smith"
+                id="company_zip"
+                value={currentEntry.company_zip}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, company_zip: e.target.value })}
+                placeholder="Zip code"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`supervisor-phone-${index}`}>Supervisor Phone</Label>
+              <Label htmlFor="company_phone">Company Phone</Label>
               <Input
-                id={`supervisor-phone-${index}`}
+                id="company_phone"
                 type="tel"
-                value={entry.supervisor_phone}
-                onChange={(e) => updateEntry(index, "supervisor_phone", e.target.value)}
-                placeholder="+1 (555) 000-0000"
+                value={currentEntry.company_phone}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, company_phone: e.target.value })}
+                placeholder="Company phone"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor={`company-phone-${index}`}>Company Phone</Label>
+              <Label htmlFor="supervisor_name">Supervisor Name</Label>
               <Input
-                id={`company-phone-${index}`}
-                type="tel"
-                value={entry.company_phone}
-                onChange={(e) => updateEntry(index, "company_phone", e.target.value)}
-                placeholder="+1 (555) 000-0000"
+                id="supervisor_name"
+                value={currentEntry.supervisor_name}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, supervisor_name: e.target.value })}
+                placeholder="Supervisor name"
               />
             </div>
 
-            <div className="flex items-center space-x-2 pt-8">
+            <div className="space-y-2">
+              <Label htmlFor="supervisor_phone">Supervisor Phone</Label>
+              <Input
+                id="supervisor_phone"
+                type="tel"
+                value={currentEntry.supervisor_phone}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, supervisor_phone: e.target.value })}
+                placeholder="Supervisor phone"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="job_description">Job Description</Label>
+              <Textarea
+                id="job_description"
+                value={currentEntry.job_description}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, job_description: e.target.value })}
+                placeholder="Describe your responsibilities and duties"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="reason_for_leaving">Reason for Leaving</Label>
+              <Textarea
+                id="reason_for_leaving"
+                value={currentEntry.reason_for_leaving}
+                onChange={(e) => setCurrentEntry({ ...currentEntry, reason_for_leaving: e.target.value })}
+                placeholder="Reason for leaving"
+                rows={2}
+              />
+            </div>
+
+            <div className="flex items-center space-x-2 md:col-span-2">
               <Checkbox
-                id={`may-contact-${index}`}
-                checked={entry.may_contact}
-                onCheckedChange={(checked) => updateEntry(index, "may_contact", checked)}
+                id="may_contact"
+                checked={currentEntry.may_contact}
+                onCheckedChange={(checked) => 
+                  setCurrentEntry({ ...currentEntry, may_contact: checked as boolean })
+                }
               />
-              <Label htmlFor={`may-contact-${index}`} className="cursor-pointer">
-                May we contact this employer?
+              <Label htmlFor="may_contact" className="text-sm font-normal cursor-pointer">
+                Employer may be contacted
               </Label>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`reason-${index}`}>Reason for Leaving</Label>
-            <Textarea
-              id={`reason-${index}`}
-              value={entry.reason_for_leaving}
-              onChange={(e) => updateEntry(index, "reason_for_leaving", e.target.value)}
-              placeholder="Describe why you left this position..."
-              rows={3}
-            />
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleSave} 
+              disabled={loading}
+              className="flex-1"
+            >
+              {loading ? "Saving..." : "Save Work History"}
+            </Button>
+            {currentEntry.id && (
+              <Button 
+                onClick={resetForm} 
+                variant="outline"
+              >
+                Cancel Edit
+              </Button>
+            )}
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`description-${index}`}>Job Description</Label>
-            <Textarea
-              id={`description-${index}`}
-              value={entry.job_description}
-              onChange={(e) => updateEntry(index, "job_description", e.target.value)}
-              placeholder="Describe your duties, responsibilities, and achievements in this role..."
-              rows={4}
-            />
-          </div>
-
-          <Button
-            onClick={() => handleSave(index)}
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? "Saving..." : "Save Work History"}
-          </Button>
         </CardContent>
       </Card>
-    );
-  };
 
-  return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="employer-1">Employer 1</TabsTrigger>
-        <TabsTrigger value="employer-2">Employer 2</TabsTrigger>
-        <TabsTrigger value="employer-3">Employer 3</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="employer-1">
-        {renderEmployerForm(0)}
-      </TabsContent>
-
-      <TabsContent value="employer-2">
-        {renderEmployerForm(1)}
-      </TabsContent>
-
-      <TabsContent value="employer-3">
-        {renderEmployerForm(2)}
-      </TabsContent>
-    </Tabs>
+      {workHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Previous Employers</CardTitle>
+            <CardDescription>
+              Your saved work history ({workHistory.length} {workHistory.length === 1 ? 'entry' : 'entries'})
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {workHistory.map((entry) => (
+              <div
+                key={entry.id}
+                className="border rounded-lg p-4 space-y-2 hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-semibold">{entry.company_name}</h4>
+                    {entry.position_title && (
+                      <p className="text-sm text-muted-foreground">{entry.position_title}</p>
+                    )}
+                    {(entry.start_date || entry.end_date) && (
+                      <p className="text-sm text-muted-foreground">
+                        {entry.start_date} - {entry.end_date || "Present"}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(entry)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => entry.id && handleDelete(entry.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {!currentEntry.id && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Another Previous Employer
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
