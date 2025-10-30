@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail, MoreVertical, Pause, XCircle, Trash2, PlayCircle, Search, AlertTriangle } from "lucide-react";
+import { Users, Building2, Briefcase, Eye, TrendingUp, KeyRound, Mail, MoreVertical, Pause, XCircle, Trash2, PlayCircle, Search, AlertTriangle, Shield, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Analytics {
   totalOfficers: number;
@@ -31,10 +34,16 @@ const Admin = () => {
   const [allOfficers, setAllOfficers] = useState<any[]>([]);
   const [allCompanies, setAllCompanies] = useState<any[]>([]);
   const [suspendedCompanies, setSuspendedCompanies] = useState<any[]>([]);
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [resettingPassword, setResettingPassword] = useState(false);
   const [officerSearch, setOfficerSearch] = useState("");
   const [companySearch, setCompanySearch] = useState("");
   const [suspendedSearch, setSuspendedSearch] = useState("");
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteFullName, setInviteFullName] = useState("");
+  const [inviteRole, setInviteRole] = useState("view_only");
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -158,6 +167,60 @@ const Admin = () => {
     } catch (error: any) {
       console.error("Error updating account status:", error);
       toast.error(error.message || "Failed to update account status");
+    }
+  };
+
+  const handleInviteUser = async () => {
+    if (!inviteEmail || !inviteRole) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setInviting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('invite-admin-user', {
+        body: {
+          email: inviteEmail,
+          full_name: inviteFullName,
+          role: inviteRole,
+        },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      toast.success(`Invitation sent to ${inviteEmail}`);
+      setInviteDialogOpen(false);
+      setInviteEmail("");
+      setInviteFullName("");
+      setInviteRole("view_only");
+      await loadAllProfiles();
+    } catch (error: any) {
+      console.error("Error inviting user:", error);
+      toast.error(error.message || "Failed to invite user");
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleRemoveUserRole = async (userId: string, roleId: string, email: string) => {
+    try {
+      const { error } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("id", roleId);
+
+      if (error) throw error;
+
+      toast.success(`Removed access for ${email}`);
+      await loadAllProfiles();
+    } catch (error: any) {
+      console.error("Error removing user role:", error);
+      toast.error(error.message || "Failed to remove user access");
     }
   };
 
@@ -381,6 +444,10 @@ const Admin = () => {
             <TabsTrigger value="suspended">
               <AlertTriangle className="h-4 w-4 mr-2" />
               Suspended Companies
+            </TabsTrigger>
+            <TabsTrigger value="users">
+              <Shield className="h-4 w-4 mr-2" />
+              User Management
             </TabsTrigger>
           </TabsList>
 
@@ -936,6 +1003,169 @@ const Admin = () => {
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5" />
+                      User Management
+                    </CardTitle>
+                    <CardDescription>Manage admin users and their permissions</CardDescription>
+                  </div>
+                  <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Invite User
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Invite New User</DialogTitle>
+                        <DialogDescription>
+                          Add a new user with specific access permissions
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email *</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="user@example.com"
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="full_name">Full Name</Label>
+                          <Input
+                            id="full_name"
+                            placeholder="John Doe"
+                            value={inviteFullName}
+                            onChange={(e) => setInviteFullName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="role">Access Level *</Label>
+                          <Select value={inviteRole} onValueChange={setInviteRole}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="view_only">
+                                <div className="flex flex-col items-start">
+                                  <span className="font-medium">View Only</span>
+                                  <span className="text-xs text-muted-foreground">Can view officers and companies only</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="full_access">
+                                <div className="flex flex-col items-start">
+                                  <span className="font-medium">Full Access</span>
+                                  <span className="text-xs text-muted-foreground">Can view and edit everything (except user management)</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="admin">
+                                <div className="flex flex-col items-start">
+                                  <span className="font-medium">Administrator</span>
+                                  <span className="text-xs text-muted-foreground">Full control including user management</span>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleInviteUser} disabled={inviting}>
+                          {inviting ? "Sending..." : "Send Invitation"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Access Level</TableHead>
+                      <TableHead>Added On</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {adminUsers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                          No admin users found. Click "Invite User" to get started.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      adminUsers.map((userRole) => {
+                        const roleLabels: Record<string, { label: string; description: string; color: string }> = {
+                          admin: { label: "Administrator", description: "Full control", color: "bg-red-100 text-red-800" },
+                          full_access: { label: "Full Access", description: "Can edit all data", color: "bg-blue-100 text-blue-800" },
+                          view_only: { label: "View Only", description: "Read-only access", color: "bg-gray-100 text-gray-800" },
+                        };
+                        const roleInfo = roleLabels[userRole.role] || roleLabels.view_only;
+
+                        return (
+                          <TableRow key={userRole.id}>
+                            <TableCell className="font-medium">{userRole.profiles?.email}</TableCell>
+                            <TableCell>{userRole.profiles?.full_name || "N/A"}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className={`px-2 py-1 rounded text-xs font-semibold w-fit ${roleInfo.color}`}>
+                                  {roleInfo.label}
+                                </span>
+                                <span className="text-xs text-muted-foreground mt-1">{roleInfo.description}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{formatDate(userRole.created_at)}</TableCell>
+                            <TableCell>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="text-destructive">
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Remove
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Remove User Access</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Remove {roleInfo.label} access for {userRole.profiles?.email}? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleRemoveUserRole(userRole.user_id, userRole.id, userRole.profiles?.email)}
+                                      className="bg-destructive text-destructive-foreground"
+                                    >
+                                      Remove Access
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </TableCell>
                           </TableRow>
                         );
