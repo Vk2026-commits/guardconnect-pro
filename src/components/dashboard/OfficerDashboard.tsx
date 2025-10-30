@@ -21,6 +21,7 @@ interface OfficerDashboardProps {
 }
 
 const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
+  const [activeTab, setActiveTab] = useState("profile");
   const [officerProfile, setOfficerProfile] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -237,8 +238,18 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid md:grid-cols-3 gap-4">
+    <SidebarProvider>
+      <div className="flex w-full min-h-screen">
+        <OfficerSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="flex-1 p-8">
+          <div className="mb-4">
+            <SidebarTrigger />
+          </div>
+          <h1 className="text-3xl font-bold mb-8">
+            Welcome, {profile?.full_name || profile?.email}
+          </h1>
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Profile</CardTitle>
@@ -277,16 +288,8 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </Card>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="availability">Availability</TabsTrigger>
-          <TabsTrigger value="photos">Photos</TabsTrigger>
-          <TabsTrigger value="certifications">Certifications</TabsTrigger>
-          <TabsTrigger value="work-history">Work History</TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="profile">
+            {activeTab === "profile" && (
           <Card>
             <CardHeader>
               <CardTitle>Professional Profile</CardTitle>
@@ -531,12 +534,12 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                 <Button type="submit" disabled={loading}>
                   {loading ? "Saving..." : "Save Profile"}
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                </form>
+              </CardContent>
+            </Card>
+            )}
 
-        <TabsContent value="availability">
+            {activeTab === "availability" && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -709,32 +712,34 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                     {loading ? "Saving..." : "Save Availability"}
                   </Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                </div>
+              </CardContent>
+            </Card>
+            )}
 
-        <TabsContent value="photos">
-          <OfficerPhotos userId={userId} />
-        </TabsContent>
+            {activeTab === "photos" && (
+              <OfficerPhotos userId={userId} />
+            )}
 
-        <TabsContent value="certifications">
-          <CertificationsManager 
-            officerId={officerProfile?.id || ""} 
-            userId={userId}
-            onEnsureProfile={ensureOfficerProfile}
-          />
-        </TabsContent>
+            {activeTab === "certifications" && (
+            <CertificationsManager 
+              officerId={officerProfile?.id || ""} 
+              userId={userId}
+              onEnsureProfile={ensureOfficerProfile}
+            />
+            )}
 
-        <TabsContent value="work-history">
-          <WorkHistory 
-            officerId={officerProfile?.id || ""} 
-            userId={userId}
-            onEnsureProfile={ensureOfficerProfile}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
+            {activeTab === "work-history" && (
+            <WorkHistory 
+              officerId={officerProfile?.id || ""} 
+              userId={userId}
+              onEnsureProfile={ensureOfficerProfile}
+            />
+            )}
+          </div>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 

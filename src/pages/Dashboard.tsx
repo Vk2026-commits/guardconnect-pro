@@ -71,20 +71,7 @@ const Dashboard = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         {profile?.role === "officer" ? (
-          <>
-            <h1 className="text-3xl font-bold mb-8">
-              Welcome, {profile?.full_name || user?.email}
-            </h1>
-            <SidebarProvider>
-              <div className="flex w-full">
-                <OfficerSidebar />
-                <div className="flex-1 ml-4">
-                  <SidebarTrigger className="mb-4" />
-                  <OfficerDashboard userId={user!.id} />
-                </div>
-              </div>
-            </SidebarProvider>
-          </>
+          <OfficerDashboard userId={user!.id} />
         ) : (
           <div className="-mx-4 -my-8">
             <CompanyDashboard 
