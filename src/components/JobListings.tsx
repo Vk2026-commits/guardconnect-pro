@@ -131,6 +131,9 @@ const JobListings = () => {
     }
 
     try {
+      // Get job details for message
+      const job = jobs.find(j => j.id === jobId);
+      
       const { error } = await supabase
         .from("job_applications")
         .upsert({
@@ -143,9 +146,29 @@ const JobListings = () => {
 
       if (error) throw error;
 
-      toast.success(status === 'interested' ? "Added to interested jobs!" : "Marked as not interested");
+      // Send message to employer if interested
+      if (status === 'interested' && job) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", currentUser.id)
+          .single();
+
+        await supabase
+          .from("messages")
+          .insert({
+            company_id: job.company_id,
+            officer_id: officerProfile.id,
+            sender_type: 'officer',
+            message: `${profileData?.full_name || 'An officer'} is interested in your "${job.title}" position.`,
+            is_read: false
+          });
+      }
+
+      toast.success(status === 'interested' ? "Added to interested jobs! Employer notified." : "Marked as not interested");
       setJobApplications(prev => ({ ...prev, [jobId]: status }));
     } catch (error: any) {
+      console.error("Error:", error);
       toast.error(error.message);
     }
   };

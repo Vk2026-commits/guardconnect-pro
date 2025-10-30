@@ -20,6 +20,27 @@ export function InterestedJobsPanel({ officerId, officerName }: InterestedJobsPa
 
   useEffect(() => {
     loadInterestedJobs();
+    
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('interested-jobs-panel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'job_applications',
+          filter: `officer_id=eq.${officerId}`,
+        },
+        () => {
+          loadInterestedJobs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [officerId]);
 
   const loadInterestedJobs = async () => {
