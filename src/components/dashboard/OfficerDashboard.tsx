@@ -72,7 +72,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
       .from("profiles")
       .select("*")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
     
     setProfile(profileData);
 
@@ -81,7 +81,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
       .from("officer_profiles")
       .select("*")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
     if (data) {
       setOfficerProfile(data);
@@ -196,20 +196,15 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         shift_preference: formData.shift_preference,
       };
 
-      if (officerProfile) {
-        const { error } = await supabase
-          .from("officer_profiles")
-          .update(profileData)
-          .eq("id", officerProfile.id);
+      // Use upsert to avoid duplicate key errors
+      const { error } = await supabase
+        .from("officer_profiles")
+        .upsert(profileData, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
+        });
 
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("officer_profiles")
-          .insert(profileData);
-
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       toast.success("Profile updated successfully!");
       loadProfile();
@@ -713,14 +708,11 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </TabsContent>
 
         <TabsContent value="work-history">
-          {officerProfile && <WorkHistory officerId={officerProfile.id} userId={userId} />}
-          {!officerProfile && (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Please complete your profile first to add work history
-              </CardContent>
-            </Card>
-          )}
+          <WorkHistory 
+            officerId={officerProfile?.id || ""} 
+            userId={userId}
+            onEnsureProfile={ensureOfficerProfile}
+          />
         </TabsContent>
       </Tabs>
     </div>

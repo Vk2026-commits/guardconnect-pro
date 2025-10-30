@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface WorkHistoryProps {
   officerId: string;
   userId: string;
+  onEnsureProfile?: () => Promise<any>;
 }
 
 interface WorkHistoryEntry {
@@ -36,20 +37,47 @@ interface WorkHistoryEntry {
   updated_at?: string;
 }
 
-export const WorkHistory = ({ officerId, userId }: WorkHistoryProps) => {
+export const WorkHistory = ({ officerId, userId, onEnsureProfile }: WorkHistoryProps) => {
   const [workHistory, setWorkHistory] = useState<WorkHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("employer-1");
+  const [currentOfficerId, setCurrentOfficerId] = useState(officerId);
 
   useEffect(() => {
-    loadWorkHistory();
+    if (officerId) {
+      setCurrentOfficerId(officerId);
+      loadWorkHistory();
+    } else {
+      // Initialize with empty entries if no officer profile yet
+      setWorkHistory([
+        createEmptyEntry(),
+        createEmptyEntry(),
+        createEmptyEntry(),
+      ]);
+    }
   }, [officerId]);
 
+  const ensureOfficerId = async () => {
+    if (currentOfficerId) return currentOfficerId;
+    
+    if (onEnsureProfile) {
+      const profile = await onEnsureProfile();
+      if (profile?.id) {
+        setCurrentOfficerId(profile.id);
+        return profile.id;
+      }
+    }
+    return null;
+  };
+
   const loadWorkHistory = async () => {
+    const id = await ensureOfficerId();
+    if (!id) return;
+
     const { data, error } = await supabase
       .from("work_history")
       .select("*")
-      .eq("officer_id", officerId)
+      .eq("officer_id", id)
       .order("start_date", { ascending: false });
 
     if (error) {
@@ -100,10 +128,17 @@ export const WorkHistory = ({ officerId, userId }: WorkHistoryProps) => {
       return;
     }
 
+    // Ensure we have an officer profile
+    const id = await ensureOfficerId();
+    if (!id) {
+      toast.error("Please save your profile first");
+      return;
+    }
+
     setLoading(true);
     try {
       const workData = {
-        officer_id: officerId,
+        officer_id: id,
         company_name: entry.company_name,
         position_title: entry.position_title,
         start_date: entry.start_date || null,
