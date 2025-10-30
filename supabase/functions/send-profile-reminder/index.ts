@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { Resend } from "npm:resend@4.0.0";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -21,7 +21,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get all officer profiles
+    // Get all officer profiles with user email
     const { data: officers, error: officersError } = await supabase
       .from("officer_profiles")
       .select(`
@@ -32,8 +32,7 @@ const handler = async (req: Request): Promise<Response> => {
         phone,
         address_city,
         address_state,
-        avatar_url,
-        profiles!inner(email, full_name)
+        avatar_url
       `);
 
     if (officersError) {
@@ -47,6 +46,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Check each officer for completeness
     for (const officer of officers || []) {
+      // Get user profile info
+      const { data: userProfile } = await supabase
+        .from("profiles")
+        .select("email, full_name")
+        .eq("id", officer.user_id)
+        .single();
+
+      if (!userProfile?.email) continue;
+
       const isProfileComplete = !!(
         officer.title &&
         officer.bio &&
@@ -75,8 +83,8 @@ const handler = async (req: Request): Promise<Response> => {
       // Profile is incomplete if any of these are missing
       if (!isProfileComplete || !hasPhoto || !hasCertifications || !hasWorkHistory) {
         incompleteProfiles.push({
-          email: officer.profiles.email,
-          name: officer.profiles.full_name || "Officer",
+          email: userProfile.email,
+          name: userProfile.full_name || "Officer",
           missingItems: {
             basicInfo: !isProfileComplete,
             photo: !hasPhoto,
