@@ -44,6 +44,22 @@ const Admin = () => {
   const [inviteFullName, setInviteFullName] = useState("");
   const [inviteRole, setInviteRole] = useState("view_only");
   const [inviting, setInviting] = useState(false);
+  
+  // Create user states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createEmail, setCreateEmail] = useState("");
+  const [createPassword, setCreatePassword] = useState("");
+  const [createUsername, setCreateUsername] = useState("");
+  const [createFullName, setCreateFullName] = useState("");
+  const [createRole, setCreateRole] = useState("view_only");
+  const [creating, setCreating] = useState(false);
+  
+  // Admin permissions states
+  const [manualResetDialogOpen, setManualResetDialogOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedUserEmail, setSelectedUserEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -75,10 +91,27 @@ const Admin = () => {
 
       await loadAnalytics();
       await loadAllProfiles();
+      await loadAdminUsers();
     } catch (error) {
       console.error("Error checking admin access:", error);
       toast.error("Error checking permissions");
       navigate("/dashboard");
+    }
+  };
+
+  const loadAdminUsers = async () => {
+    try {
+      const { data: users, error } = await supabase
+        .from("user_roles")
+        .select("*, profiles(email, full_name)")
+        .in("role", ["admin", "full_access", "view_only"])
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setAdminUsers(users || []);
+    } catch (error) {
+      console.error("Error loading admin users:", error);
+      toast.error("Error loading users");
     }
   };
 
@@ -198,12 +231,135 @@ const Admin = () => {
       setInviteEmail("");
       setInviteFullName("");
       setInviteRole("view_only");
-      await loadAllProfiles();
+      await loadAdminUsers();
     } catch (error: any) {
       console.error("Error inviting user:", error);
       toast.error(error.message || "Failed to invite user");
     } finally {
       setInviting(false);
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!createEmail || !createPassword) {
+      toast.error("Email and password are required");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('create-admin-user', {
+        body: {
+          email: createEmail,
+          password: createPassword,
+          username: createUsername,
+          full_name: createFullName,
+          role: createRole,
+        },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      toast.success(`User ${createEmail} created successfully`);
+      setCreateDialogOpen(false);
+      setCreateEmail("");
+      setCreatePassword("");
+      setCreateUsername("");
+      setCreateFullName("");
+      setCreateRole("view_only");
+      await loadAdminUsers();
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      toast.error(error.message || "Failed to create user");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleManualPasswordReset = async () => {
+    if (!newPassword) {
+      toast.error("Please enter a new password");
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('update-user-password', {
+        body: {
+          user_id: selectedUserId,
+          new_password: newPassword,
+        },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      toast.success(`Password updated for ${selectedUserEmail}`);
+      setManualResetDialogOpen(false);
+      setNewPassword("");
+      setSelectedUserId("");
+      setSelectedUserEmail("");
+    } catch (error: any) {
+      console.error("Error updating password:", error);
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
+  const handlePauseUser = async (userId: string, email: string, paused: boolean) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('pause-user-account', {
+        body: {
+          user_id: userId,
+          paused,
+        },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      toast.success(`Account ${paused ? 'paused' : 'unpaused'} for ${email}`);
+      await loadAdminUsers();
+    } catch (error: any) {
+      console.error("Error pausing user:", error);
+      toast.error(error.message || "Failed to update account status");
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, email: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('delete-user', {
+        body: {
+          user_id: userId,
+        },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      toast.success(`User ${email} deleted successfully`);
+      await loadAdminUsers();
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      toast.error(error.message || "Failed to delete user");
     }
   };
 
@@ -217,7 +373,7 @@ const Admin = () => {
       if (error) throw error;
 
       toast.success(`Removed access for ${email}`);
-      await loadAllProfiles();
+      await loadAdminUsers();
     } catch (error: any) {
       console.error("Error removing user role:", error);
       toast.error(error.message || "Failed to remove user access");
@@ -1015,17 +1171,25 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Shield className="h-5 w-5" />
-                      User Management
-                    </CardTitle>
-                    <CardDescription>Manage admin users and their permissions</CardDescription>
-                  </div>
-                  <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+            <Tabs defaultValue="invite" className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="invite">Invite Users</TabsTrigger>
+                <TabsTrigger value="create">Create User</TabsTrigger>
+                <TabsTrigger value="permissions">Admin Permissions</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="invite">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Mail className="h-5 w-5" />
+                          Invite Users via Email
+                        </CardTitle>
+                        <CardDescription>Send email invitations to new users</CardDescription>
+                      </div>
+                      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
                     <DialogTrigger asChild>
                       <Button>
                         <UserPlus className="h-4 w-4 mr-2" />
@@ -1176,6 +1340,287 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="create">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <UserPlus className="h-5 w-5" />
+                      Create User Manually
+                    </CardTitle>
+                    <CardDescription>Create a new user with username and password</CardDescription>
+                  </div>
+                  <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Create New User
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create New User</DialogTitle>
+                        <DialogDescription>
+                          Manually create a new user with login credentials
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="create_email">Email *</Label>
+                          <Input
+                            id="create_email"
+                            type="email"
+                            placeholder="user@example.com"
+                            value={createEmail}
+                            onChange={(e) => setCreateEmail(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="create_password">Password *</Label>
+                          <Input
+                            id="create_password"
+                            type="password"
+                            placeholder="Minimum 6 characters"
+                            value={createPassword}
+                            onChange={(e) => setCreatePassword(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="create_username">Username</Label>
+                          <Input
+                            id="create_username"
+                            placeholder="johndoe"
+                            value={createUsername}
+                            onChange={(e) => setCreateUsername(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="create_full_name">Full Name</Label>
+                          <Input
+                            id="create_full_name"
+                            placeholder="John Doe"
+                            value={createFullName}
+                            onChange={(e) => setCreateFullName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="create_role">Access Level *</Label>
+                          <Select value={createRole} onValueChange={setCreateRole}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="view_only">View Only</SelectItem>
+                              <SelectItem value="full_access">Full Access</SelectItem>
+                              <SelectItem value="admin">Administrator</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleCreateUser} disabled={creating}>
+                          {creating ? "Creating..." : "Create User"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center text-muted-foreground py-8">
+                  Click "Create New User" to manually add users with username and password
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="permissions">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Admin Permissions
+                </CardTitle>
+                <CardDescription>Manage user accounts, pause access, and reset passwords</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Access Level</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {adminUsers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                          No users found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      adminUsers.map((userRole) => {
+                        const roleLabels: Record<string, { label: string; color: string }> = {
+                          admin: { label: "Administrator", color: "bg-red-100 text-red-800" },
+                          full_access: { label: "Full Access", color: "bg-blue-100 text-blue-800" },
+                          view_only: { label: "View Only", color: "bg-gray-100 text-gray-800" },
+                        };
+                        const roleInfo = roleLabels[userRole.role] || roleLabels.view_only;
+
+                        return (
+                          <TableRow key={userRole.id}>
+                            <TableCell className="font-medium">{userRole.profiles?.email}</TableCell>
+                            <TableCell>{userRole.profiles?.full_name || "N/A"}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 rounded text-xs font-semibold ${roleInfo.color}`}>
+                                {roleInfo.label}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                      <KeyRound className="h-4 w-4 mr-2" />
+                                      Reset via Email
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Send Password Reset Email</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Send a password reset email to {userRole.profiles?.email}?
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handlePasswordReset(userRole.profiles?.email, userRole.profiles?.full_name || userRole.profiles?.email)}>
+                                        Send Email
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedUserId(userRole.user_id);
+                                    setSelectedUserEmail(userRole.profiles?.email || "");
+                                    setManualResetDialogOpen(true);
+                                  }}
+                                >
+                                  <KeyRound className="h-4 w-4 mr-2" />
+                                  Manual Reset
+                                </Button>
+
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem 
+                                      onClick={() => handlePauseUser(userRole.user_id, userRole.profiles?.email || "", true)}
+                                      className="text-amber-600"
+                                    >
+                                      <Pause className="h-4 w-4 mr-2" />
+                                      Pause Account
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => handlePauseUser(userRole.user_id, userRole.profiles?.email || "", false)}
+                                      className="text-green-600"
+                                    >
+                                      <PlayCircle className="h-4 w-4 mr-2" />
+                                      Unpause Account
+                                    </DropdownMenuItem>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem 
+                                          onSelect={(e) => e.preventDefault()}
+                                          className="text-destructive"
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-2" />
+                                          Delete Account
+                                        </DropdownMenuItem>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete User Account</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Permanently delete the account for {userRole.profiles?.email}? This action cannot be undone and will remove all associated data.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction 
+                                            onClick={() => handleDeleteUser(userRole.user_id, userRole.profiles?.email || "")}
+                                            className="bg-destructive text-destructive-foreground"
+                                          >
+                                            Delete Account
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        <Dialog open={manualResetDialogOpen} onOpenChange={setManualResetDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Manually Reset Password</DialogTitle>
+              <DialogDescription>
+                Set a new password for {selectedUserEmail}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="new_password">New Password</Label>
+                <Input
+                  id="new_password"
+                  type="password"
+                  placeholder="Enter new password (min 6 characters)"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setManualResetDialogOpen(false);
+                setNewPassword("");
+                setSelectedUserId("");
+                setSelectedUserEmail("");
+              }}>
+                Cancel
+              </Button>
+              <Button onClick={handleManualPasswordReset} disabled={updatingPassword}>
+                {updatingPassword ? "Updating..." : "Update Password"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </TabsContent>
         </Tabs>
       </div>
     </div>
