@@ -1110,11 +1110,28 @@ export type Database = {
     }
     Functions: {
       check_overdue_payments: { Args: never; Returns: undefined }
+      company_has_paid_tier: {
+        Args: { _company_user_id: string }
+        Returns: boolean
+      }
+      company_hired_officer: {
+        Args: { _company_user_id: string; _officer_id: string }
+        Returns: boolean
+      }
+      company_interested_in_officer: {
+        Args: { _company_user_id: string; _officer_id: string }
+        Returns: boolean
+      }
+      get_officer_user_id: { Args: { _officer_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_officer_owner: {
+        Args: { _officer_id: string; _user_id: string }
         Returns: boolean
       }
     }
