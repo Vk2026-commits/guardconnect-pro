@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2, Upload, FileText, X } from "lucide-react";
+import { Plus, Trash2, Upload, FileText, X, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Certification {
@@ -171,6 +171,24 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
       console.error("Upload error:", error);
     } finally {
       setUploading(null);
+    }
+  };
+
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      toast.success("Document downloaded");
+    } catch (error: any) {
+      toast.error("Failed to download document");
     }
   };
 
@@ -357,20 +375,28 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                             alt={`License ${side}`}
                             className="w-full h-full object-cover"
                           />
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2"
-                            onClick={() =>
-                              removeDocument(
-                                existingLicense.id,
-                                side as "front" | "back",
-                                url
-                              )
-                            }
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                          <div className="absolute top-2 right-2 flex gap-1">
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              onClick={() => handleDownload(url, `${label}-${side}.${url.split('.').pop()}`)}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() =>
+                                removeDocument(
+                                  existingLicense.id,
+                                  side as "front" | "back",
+                                  url
+                                )
+                              }
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       ) : (
                         <div className="relative aspect-[3/2] bg-muted rounded-lg overflow-hidden border-2 border-dashed flex items-center justify-center">
@@ -657,16 +683,24 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                                     alt={`Certificate ${side}`}
                                     className="w-full h-full object-cover"
                                   />
-                                  <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    className="absolute top-2 right-2"
-                                    onClick={() =>
-                                      removeDocument(training.id, side as "front" | "back", url)
-                                    }
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
+                                  <div className="absolute top-2 right-2 flex gap-1">
+                                    <Button
+                                      variant="secondary"
+                                      size="icon"
+                                      onClick={() => handleDownload(url, `${training.name}-${side}.${url.split('.').pop()}`)}
+                                    >
+                                      <Download className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="icon"
+                                      onClick={() =>
+                                        removeDocument(training.id, side as "front" | "back", url)
+                                      }
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 </div>
                               ) : (
                                 <div className="relative aspect-[3/2] bg-muted rounded-lg overflow-hidden border-2 border-dashed flex items-center justify-center">
