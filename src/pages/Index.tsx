@@ -90,6 +90,40 @@ const Index = () => {
         </div>
       </section>
 
+            {/* Disclaimer Section */}
+            <section className="py-8">
+              <Card className="border-2 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
+                <CardContent className="pt-6">
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="h-12 w-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                        <Shield className="h-6 w-6 text-amber-600 dark:text-amber-500" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold mb-3 text-amber-900 dark:text-amber-100">
+                        Important Notice for Security Companies
+                      </h3>
+                      <div className="space-y-2 text-amber-800 dark:text-amber-200">
+                        <p className="flex items-start gap-2">
+                          <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                          <span>This platform is designed exclusively for licensed security companies seeking to hire qualified security officers.</span>
+                        </p>
+                        <p className="flex items-start gap-2">
+                          <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                          <span>You must possess a valid security company license to post job openings and hire security officers through our platform.</span>
+                        </p>
+                        <p className="flex items-start gap-2">
+                          <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                          <span>All security officers must be properly associated with a licensed security company to be eligible for employment.</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
             {/* Features Section */}
             <section className="py-20 bg-muted/30 rounded-lg">
         <div className="container mx-auto max-w-6xl">
