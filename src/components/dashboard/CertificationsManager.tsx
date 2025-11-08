@@ -383,7 +383,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                       <input
                         id={`license-upload-${existingLicense.id}-${side}`}
                         type="file"
-                        accept="image/*,.pdf"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                         onChange={(e) =>
                           handleDocumentUpload(e, existingLicense.id, side as "front" | "back")
                         }
@@ -679,7 +679,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                               <input
                                 id={`training-upload-${training.id}-${side}`}
                                 type="file"
-                                accept="image/*,.pdf"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                                 onChange={(e) =>
                                   handleDocumentUpload(e, training.id, side as "front" | "back")
                                 }
