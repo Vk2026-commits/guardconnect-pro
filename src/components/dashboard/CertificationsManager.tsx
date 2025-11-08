@@ -390,20 +390,16 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                         disabled={isUploading}
                         className="hidden"
                       />
-                      <label htmlFor={`license-upload-${existingLicense.id}-${side}`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          disabled={isUploading}
-                          asChild
-                        >
-                          <span className="cursor-pointer">
-                            <Upload className="mr-2 h-4 w-4" />
-                            {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
-                          </span>
-                        </Button>
-                      </label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        disabled={isUploading}
+                        onClick={() => document.getElementById(`license-upload-${existingLicense.id}-${side}`)?.click()}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
+                      </Button>
                     </div>
                   );
                 })}
@@ -690,20 +686,16 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                                 disabled={isUploading}
                                 className="hidden"
                               />
-                              <label htmlFor={`training-upload-${training.id}-${side}`}>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="w-full"
-                                  disabled={isUploading}
-                                  asChild
-                                >
-                                  <span className="cursor-pointer">
-                                    <Upload className="mr-2 h-3 w-3" />
-                                    {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
-                                  </span>
-                                </Button>
-                              </label>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                disabled={isUploading}
+                                onClick={() => document.getElementById(`training-upload-${training.id}-${side}`)?.click()}
+                              >
+                                <Upload className="mr-2 h-3 w-3" />
+                                {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
+                              </Button>
                             </div>
                           );
                         })}
