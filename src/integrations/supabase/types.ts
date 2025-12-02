@@ -63,6 +63,13 @@ export type Database = {
             foreignKeyName: "assigned_sites_officer_id_fkey"
             columns: ["officer_id"]
             isOneToOne: false
+            referencedRelation: "officer_profiles_limited"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assigned_sites_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
             referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
@@ -123,6 +130,13 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certifications_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_limited"
             referencedColumns: ["id"]
           },
           {
@@ -431,6 +445,13 @@ export type Database = {
             foreignKeyName: "hires_officer_id_fkey"
             columns: ["officer_id"]
             isOneToOne: false
+            referencedRelation: "officer_profiles_limited"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hires_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
             referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
@@ -474,6 +495,13 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_limited"
             referencedColumns: ["id"]
           },
           {
@@ -591,6 +619,13 @@ export type Database = {
             foreignKeyName: "messages_officer_id_fkey"
             columns: ["officer_id"]
             isOneToOne: false
+            referencedRelation: "officer_profiles_limited"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
             referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
@@ -634,6 +669,13 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "officer_interests_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_limited"
             referencedColumns: ["id"]
           },
           {
@@ -753,6 +795,85 @@ export type Database = {
           },
         ]
       }
+      officer_sensitive_data: {
+        Row: {
+          created_at: string
+          drivers_license_back_url: string | null
+          drivers_license_expiry: string | null
+          drivers_license_front_url: string | null
+          drivers_license_number_encrypted: string | null
+          drivers_license_state: string | null
+          drivers_license_verified: boolean | null
+          id: string
+          officer_id: string
+          ssn_document_url: string | null
+          ssn_encrypted: string | null
+          ssn_last_four: string | null
+          ssn_verified: boolean | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          drivers_license_back_url?: string | null
+          drivers_license_expiry?: string | null
+          drivers_license_front_url?: string | null
+          drivers_license_number_encrypted?: string | null
+          drivers_license_state?: string | null
+          drivers_license_verified?: boolean | null
+          id?: string
+          officer_id: string
+          ssn_document_url?: string | null
+          ssn_encrypted?: string | null
+          ssn_last_four?: string | null
+          ssn_verified?: boolean | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          drivers_license_back_url?: string | null
+          drivers_license_expiry?: string | null
+          drivers_license_front_url?: string | null
+          drivers_license_number_encrypted?: string | null
+          drivers_license_state?: string | null
+          drivers_license_verified?: boolean | null
+          id?: string
+          officer_id?: string
+          ssn_document_url?: string | null
+          ssn_encrypted?: string | null
+          ssn_last_four?: string | null
+          ssn_verified?: boolean | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "officer_sensitive_data_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: true
+            referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "officer_sensitive_data_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: true
+            referencedRelation: "officer_profiles_limited"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "officer_sensitive_data_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: true
+            referencedRelation: "officer_profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_views: {
         Row: {
           company_id: string
@@ -794,6 +915,13 @@ export type Database = {
             foreignKeyName: "profile_views_officer_id_fkey"
             columns: ["officer_id"]
             isOneToOne: false
+            referencedRelation: "officer_profiles_limited"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_views_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
             referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
@@ -829,6 +957,42 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      security_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          record_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          record_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          record_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -887,6 +1051,13 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_interviews_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
+            referencedRelation: "officer_profiles_limited"
             referencedColumns: ["id"]
           },
           {
@@ -1003,7 +1174,77 @@ export type Database = {
             foreignKeyName: "certifications_officer_id_fkey"
             columns: ["officer_id"]
             isOneToOne: false
+            referencedRelation: "officer_profiles_limited"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certifications_officer_id_fkey"
+            columns: ["officer_id"]
+            isOneToOne: false
             referencedRelation: "officer_profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      officer_profiles_limited: {
+        Row: {
+          availability_status: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          employment_type: string[] | null
+          id: string | null
+          location: string | null
+          main_region: string | null
+          shift_preference: string[] | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          availability_status?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          employment_type?: string[] | null
+          id?: string | null
+          location?: string | null
+          main_region?: string | null
+          shift_preference?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          availability_status?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          employment_type?: string[] | null
+          id?: string | null
+          location?: string | null
+          main_region?: string | null
+          shift_preference?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "officer_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "officer_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "safe_officer_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1110,6 +1351,10 @@ export type Database = {
     }
     Functions: {
       check_overdue_payments: { Args: never; Returns: undefined }
+      company_can_view_officer_contact: {
+        Args: { _company_user_id: string; _officer_id: string }
+        Returns: boolean
+      }
       company_has_paid_tier: {
         Args: { _company_user_id: string }
         Returns: boolean
@@ -1133,6 +1378,15 @@ export type Database = {
       is_officer_owner: {
         Args: { _officer_id: string; _user_id: string }
         Returns: boolean
+      }
+      log_sensitive_access: {
+        Args: {
+          _action: string
+          _details?: Json
+          _record_id: string
+          _table_name: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
