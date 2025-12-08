@@ -60,6 +60,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
   const [currentOfficerId, setCurrentOfficerId] = useState(officerId);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (officerId) {
@@ -82,6 +83,60 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
     return null;
   };
 
+  // Generate signed URLs for all document paths
+  const generateSignedUrls = async (certs: Certification[]) => {
+    const urls: Record<string, string> = {};
+    
+    for (const cert of certs) {
+      if (cert.document_front_url) {
+        const signedUrl = await getSignedUrlForPath(cert.document_front_url);
+        if (signedUrl) {
+          urls[`${cert.id}-front`] = signedUrl;
+        }
+      }
+      if (cert.document_back_url) {
+        const signedUrl = await getSignedUrlForPath(cert.document_back_url);
+        if (signedUrl) {
+          urls[`${cert.id}-back`] = signedUrl;
+        }
+      }
+    }
+    
+    setSignedUrls(urls);
+  };
+
+  // Get signed URL for a file path
+  const getSignedUrlForPath = async (filePath: string): Promise<string | null> => {
+    if (!filePath) return null;
+    
+    // Check if it's already a full URL (legacy data)
+    if (filePath.startsWith('http')) {
+      // Extract just the path portion
+      const pathMatch = filePath.match(/certification-documents\/(.+)$/);
+      if (pathMatch) {
+        filePath = pathMatch[1];
+      } else {
+        return filePath; // Return as-is if can't extract
+      }
+    }
+    
+    try {
+      const { data, error } = await supabase.storage
+        .from("certification-documents")
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
+      
+      if (error) {
+        console.error("Error creating signed URL:", error);
+        return null;
+      }
+      
+      return data.signedUrl;
+    } catch (err) {
+      console.error("Error generating signed URL:", err);
+      return null;
+    }
+  };
+
   const loadCertifications = async () => {
     try {
       const id = await ensureOfficerId();
@@ -99,6 +154,11 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
 
       if (error) throw error;
       setCertifications(data || []);
+      
+      // Generate signed URLs for all documents
+      if (data && data.length > 0) {
+        await generateSignedUrls(data);
+      }
     } catch (error: any) {
       toast.error("Failed to load certifications");
     } finally {
@@ -123,12 +183,10 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
 
     if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage
-      .from("certification-documents")
-      .getPublicUrl(fileName);
-
-    return data.publicUrl;
+    // Store the file path for later signed URL generation
+    return fileName;
   };
+
 
   const handleDocumentUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -359,27 +417,31 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
               <Label>Upload License Documents</Label>
               <div className="grid grid-cols-2 gap-4">
                 {["front", "back"].map((side) => {
-                  const url =
+                  const hasDocument =
                     side === "front"
                       ? existingLicense.document_front_url
                       : existingLicense.document_back_url;
+                  const displayUrl = signedUrls[`${existingLicense.id}-${side}`];
                   const isUploading = uploading === `${existingLicense.id}-${side}`;
 
                   return (
                     <div key={side} className="space-y-2">
                       <Label className="capitalize">{side} of License</Label>
-                      {url ? (
+                      {hasDocument && displayUrl ? (
                         <div className="relative aspect-[3/2] bg-muted rounded-lg overflow-hidden border">
                           <img
-                            src={url}
+                            src={displayUrl}
                             alt={`License ${side}`}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
                           />
                           <div className="absolute top-2 right-2 flex gap-1">
                             <Button
                               variant="secondary"
                               size="icon"
-                              onClick={() => handleDownload(url, `${label}-${side}.${url.split('.').pop()}`)}
+                              onClick={() => handleDownload(displayUrl, `${label}-${side}.${hasDocument.split('.').pop()}`)}
                             >
                               <Download className="h-4 w-4" />
                             </Button>
@@ -390,12 +452,19 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                                 removeDocument(
                                   existingLicense.id,
                                   side as "front" | "back",
-                                  url
+                                  hasDocument
                                 )
                               }
                             >
                               <X className="h-4 w-4" />
                             </Button>
+                          </div>
+                        </div>
+                      ) : hasDocument ? (
+                        <div className="relative aspect-[3/2] bg-muted rounded-lg overflow-hidden border flex items-center justify-center">
+                          <div className="text-center text-muted-foreground">
+                            <FileText className="h-8 w-8 mx-auto mb-2" />
+                            <p className="text-sm">Loading...</p>
                           </div>
                         </div>
                       ) : (
@@ -424,7 +493,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                         onClick={() => document.getElementById(`license-upload-${existingLicense.id}-${side}`)?.click()}
                       >
                         <Upload className="mr-2 h-4 w-4" />
-                        {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
+                        {isUploading ? "Uploading..." : hasDocument ? "Change" : "Upload"}
                       </Button>
                     </div>
                   );
@@ -665,10 +734,11 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                       <Label className="mb-2 block">Upload Certificate Documents</Label>
                       <div className="grid grid-cols-2 gap-4">
                         {["front", "back"].map((side) => {
-                          const url =
+                          const hasDocument =
                             side === "front"
                               ? training.document_front_url
                               : training.document_back_url;
+                          const displayUrl = signedUrls[`${training.id}-${side}`];
                           const isUploading = uploading === `${training.id}-${side}`;
 
                           return (
@@ -676,18 +746,21 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                               <Label className="capitalize text-xs">
                                 {side === "front" ? "Certificate" : "Additional Document"}
                               </Label>
-                              {url ? (
+                              {hasDocument && displayUrl ? (
                                 <div className="relative aspect-[3/2] bg-muted rounded-lg overflow-hidden border">
                                   <img
-                                    src={url}
+                                    src={displayUrl}
                                     alt={`Certificate ${side}`}
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
                                   />
                                   <div className="absolute top-2 right-2 flex gap-1">
                                     <Button
                                       variant="secondary"
                                       size="icon"
-                                      onClick={() => handleDownload(url, `${training.name}-${side}.${url.split('.').pop()}`)}
+                                      onClick={() => handleDownload(displayUrl, `${training.name}-${side}.${hasDocument.split('.').pop()}`)}
                                     >
                                       <Download className="h-4 w-4" />
                                     </Button>
@@ -695,11 +768,18 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                                       variant="destructive"
                                       size="icon"
                                       onClick={() =>
-                                        removeDocument(training.id, side as "front" | "back", url)
+                                        removeDocument(training.id, side as "front" | "back", hasDocument)
                                       }
                                     >
                                       <X className="h-4 w-4" />
                                     </Button>
+                                  </div>
+                                </div>
+                              ) : hasDocument ? (
+                                <div className="relative aspect-[3/2] bg-muted rounded-lg overflow-hidden border flex items-center justify-center">
+                                  <div className="text-center text-muted-foreground">
+                                    <FileText className="h-6 w-6 mx-auto mb-1" />
+                                    <p className="text-xs">Loading...</p>
                                   </div>
                                 </div>
                               ) : (
@@ -728,7 +808,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                                 onClick={() => document.getElementById(`training-upload-${training.id}-${side}`)?.click()}
                               >
                                 <Upload className="mr-2 h-3 w-3" />
-                                {isUploading ? "Uploading..." : url ? "Change" : "Upload"}
+                                {isUploading ? "Uploading..." : hasDocument ? "Change" : "Upload"}
                               </Button>
                             </div>
                           );
