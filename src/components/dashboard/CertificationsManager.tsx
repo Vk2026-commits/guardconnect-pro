@@ -33,7 +33,7 @@ interface CertificationsManagerProps {
 
 const LICENSE_LEVELS = [
   { value: "level-ii", label: "Non-Commission Certificate or License" },
-  { value: "level-iii", label: "Commission Certificate" },
+  { value: "level-iii", label: "Commission Certificate or License" },
   { value: "level-iv", label: "Personal Protection Officer (Bodyguard)" },
 ];
 
@@ -891,7 +891,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
       <TabsContent value="level-iii" className="space-y-4">
         <LicenseForm
           licenseLevel="level-iii"
-          label="Commission Certificate"
+          label="Commission Certificate or License"
         />
       </TabsContent>
 
