@@ -115,14 +115,32 @@ const Admin = () => {
 
   const loadAdminUsers = async () => {
     try {
-      const { data: users, error } = await supabase
+      // First get all admin/access roles
+      const { data: roles, error: rolesError } = await supabase
         .from("user_roles")
-        .select("*, profiles(email, full_name)")
+        .select("*")
         .in("role", ["admin", "full_access", "view_only"])
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setAdminUsers(users || []);
+      if (rolesError) throw rolesError;
+
+      // Then fetch profile data for each user
+      const usersWithProfiles = await Promise.all(
+        (roles || []).map(async (role) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("email, full_name")
+            .eq("id", role.user_id)
+            .single();
+          
+          return {
+            ...role,
+            profiles: profile
+          };
+        })
+      );
+
+      setAdminUsers(usersWithProfiles);
     } catch (error) {
       console.error("Error loading admin users:", error);
       toast.error("Error loading users");
