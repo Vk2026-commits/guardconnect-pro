@@ -601,7 +601,7 @@ const Browse = () => {
                           case "level-ii":
                             return "Non-Commission Certificate or License";
                           case "level-iii":
-                            return "Commission Certificate";
+                            return "Commission Certificate or License";
                           case "level-iv":
                             return "Personal Protection Officer (PPO)";
                           default:
