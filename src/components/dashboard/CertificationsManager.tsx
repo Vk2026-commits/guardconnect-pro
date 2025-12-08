@@ -306,6 +306,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
       issue_date: "",
       expiry_date: "",
     });
+    const [pendingUploads, setPendingUploads] = useState<{ front?: File; back?: File }>({});
 
     const existingLicense = certifications.find(
       (c) => c.license_level === licenseLevel && c.certification_type === "license"
@@ -320,6 +321,19 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
         });
       }
     }, [existingLicense]);
+
+    const handlePendingUpload = (e: React.ChangeEvent<HTMLInputElement>, side: "front" | "back") => {
+      if (!e.target.files || e.target.files.length === 0) return;
+      const file = e.target.files[0];
+      
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File size must be less than 10MB");
+        return;
+      }
+      
+      setPendingUploads(prev => ({ ...prev, [side]: file }));
+      toast.success(`${side === "front" ? "Front" : "Back"} document selected. Save the license to upload.`);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -347,18 +361,33 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
           issuing_organization: "Texas Department of Public Safety",
         };
 
+        let certId: string;
+
         if (existingLicense) {
           const { error } = await supabase
             .from("certifications")
             .update(certData)
             .eq("id", existingLicense.id);
           if (error) throw error;
+          certId = existingLicense.id;
         } else {
-          const { error } = await supabase.from("certifications").insert(certData);
+          const { data, error } = await supabase.from("certifications").insert(certData).select().single();
           if (error) throw error;
+          certId = data.id;
+        }
+
+        // Upload pending documents after saving
+        if (pendingUploads.front) {
+          const frontUrl = await uploadDocument(pendingUploads.front, certId, "front");
+          await supabase.from("certifications").update({ document_front_url: frontUrl }).eq("id", certId);
+        }
+        if (pendingUploads.back) {
+          const backUrl = await uploadDocument(pendingUploads.back, certId, "back");
+          await supabase.from("certifications").update({ document_back_url: backUrl }).eq("id", certId);
         }
 
         toast.success("License saved successfully");
+        setPendingUploads({});
         loadCertifications();
       } catch (error: any) {
         toast.error("Failed to save license");
@@ -407,22 +436,17 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
               </div>
             </div>
 
-            <Button type="submit" className="w-full">
-              {existingLicense ? "Update License" : "Save License"}
-            </Button>
-          </form>
-
-          {existingLicense && (
+            {/* Upload section - always visible */}
             <div className="space-y-4 pt-4 border-t">
               <Label>Upload License Documents</Label>
               <div className="grid grid-cols-2 gap-4">
                 {["front", "back"].map((side) => {
-                  const hasDocument =
-                    side === "front"
-                      ? existingLicense.document_front_url
-                      : existingLicense.document_back_url;
-                  const displayUrl = signedUrls[`${existingLicense.id}-${side}`];
-                  const isUploading = uploading === `${existingLicense.id}-${side}`;
+                  const hasDocument = existingLicense
+                    ? (side === "front" ? existingLicense.document_front_url : existingLicense.document_back_url)
+                    : null;
+                  const displayUrl = existingLicense ? signedUrls[`${existingLicense.id}-${side}`] : null;
+                  const isUploading = existingLicense && uploading === `${existingLicense.id}-${side}`;
+                  const hasPending = pendingUploads[side as "front" | "back"];
 
                   return (
                     <div key={side} className="space-y-2">
@@ -439,6 +463,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                           />
                           <div className="absolute top-2 right-2 flex gap-1">
                             <Button
+                              type="button"
                               variant="secondary"
                               size="icon"
                               onClick={() => handleDownload(displayUrl, `${label}-${side}.${hasDocument.split('.').pop()}`)}
@@ -446,11 +471,12 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                               <Download className="h-4 w-4" />
                             </Button>
                             <Button
+                              type="button"
                               variant="destructive"
                               size="icon"
                               onClick={() =>
                                 removeDocument(
-                                  existingLicense.id,
+                                  existingLicense!.id,
                                   side as "front" | "back",
                                   hasDocument
                                 )
@@ -467,6 +493,14 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                             <p className="text-sm">Loading...</p>
                           </div>
                         </div>
+                      ) : hasPending ? (
+                        <div className="relative aspect-[3/2] bg-muted rounded-lg overflow-hidden border flex items-center justify-center bg-primary/10">
+                          <div className="text-center text-primary">
+                            <FileText className="h-8 w-8 mx-auto mb-2" />
+                            <p className="text-sm font-medium">{hasPending.name}</p>
+                            <p className="text-xs">Ready to upload</p>
+                          </div>
+                        </div>
                       ) : (
                         <div className="relative aspect-[3/2] bg-muted rounded-lg overflow-hidden border-2 border-dashed flex items-center justify-center">
                           <div className="text-center text-muted-foreground">
@@ -476,31 +510,40 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                         </div>
                       )}
                       <input
-                        id={`license-upload-${existingLicense.id}-${side}`}
+                        id={`license-upload-${licenseLevel}-${side}`}
                         type="file"
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
-                        onChange={(e) =>
-                          handleDocumentUpload(e, existingLicense.id, side as "front" | "back")
-                        }
+                        onChange={(e) => {
+                          if (existingLicense) {
+                            handleDocumentUpload(e, existingLicense.id, side as "front" | "back");
+                          } else {
+                            handlePendingUpload(e, side as "front" | "back");
+                          }
+                        }}
                         disabled={isUploading}
                         className="hidden"
                       />
                       <Button
+                        type="button"
                         variant="outline"
                         size="sm"
                         className="w-full"
-                        disabled={isUploading}
-                        onClick={() => document.getElementById(`license-upload-${existingLicense.id}-${side}`)?.click()}
+                        disabled={!!isUploading}
+                        onClick={() => document.getElementById(`license-upload-${licenseLevel}-${side}`)?.click()}
                       >
                         <Upload className="mr-2 h-4 w-4" />
-                        {isUploading ? "Uploading..." : hasDocument ? "Change" : "Upload"}
+                        {isUploading ? "Uploading..." : (hasDocument || hasPending) ? "Change" : "Upload"}
                       </Button>
                     </div>
                   );
                 })}
               </div>
             </div>
-          )}
+
+            <Button type="submit" className="w-full">
+              {existingLicense ? "Update License" : "Save License"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     );
