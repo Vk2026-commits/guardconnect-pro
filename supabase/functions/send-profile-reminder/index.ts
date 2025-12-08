@@ -147,7 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
         if (profile.missingItems.workHistory) missingItems.push("add your work history");
 
         const emailResponse = await resend.emails.send({
-          from: "WeFindGuards <onboarding@resend.dev>",
+          from: "WeFindGuards <noreply@wefindguards.com>",
           to: [profile.email],
           subject: "Complete Your Profile - Increase Your Chances of Getting Hired!",
           html: `
