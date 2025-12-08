@@ -1367,6 +1367,10 @@ export type Database = {
         Args: { _company_user_id: string; _officer_id: string }
         Returns: boolean
       }
+      company_received_application: {
+        Args: { _company_user_id: string; _officer_id: string }
+        Returns: boolean
+      }
       get_officer_user_id: { Args: { _officer_id: string }; Returns: string }
       has_role: {
         Args: {
