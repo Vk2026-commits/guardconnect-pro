@@ -599,7 +599,7 @@ const Browse = () => {
                       const getLicenseLabel = (level: string) => {
                         switch (level) {
                           case "level-ii":
-                            return "Non-Commission Certificate";
+                            return "Non-Commission Certificate or License";
                           case "level-iii":
                             return "Commission Certificate";
                           case "level-iv":
