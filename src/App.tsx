@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Browse from "./pages/Browse";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const App = () => {
   const queryClient = new QueryClient({
@@ -34,6 +35,7 @@ const App = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/browse" element={<Browse />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>

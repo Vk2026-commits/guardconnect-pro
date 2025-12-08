@@ -245,7 +245,12 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">
         <div className="container mx-auto max-w-6xl text-center text-muted-foreground">
-          <p>{t('footer.copyright')}</p>
+          <p className="mb-2">{t('footer.copyright')}</p>
+          <div className="flex justify-center gap-4 text-sm">
+            <Link to="/privacy" className="hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
