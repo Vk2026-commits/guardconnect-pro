@@ -3,6 +3,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.0";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const cronSecret = Deno.env.get("CRON_SECRET");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,11 +17,46 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  // Verify cron secret for scheduled calls
+  const requestCronSecret = req.headers.get("x-cron-secret");
+  const authHeader = req.headers.get("Authorization");
+  
+  // Allow if valid cron secret OR valid admin JWT
+  let isAuthorized = false;
+  
+  if (cronSecret && requestCronSecret === cronSecret) {
+    isAuthorized = true;
+    console.log("Request authorized via cron secret");
+  } else if (authHeader) {
+    // Verify if caller is an admin
+    const supabaseAuth = createClient(supabaseUrl, supabaseServiceKey);
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    
+    if (!authError && user) {
+      // Check if user has admin role
+      const { data: hasAdminRole } = await supabaseAuth.rpc("has_role", {
+        _user_id: user.id,
+        _role: "admin"
+      });
+      
+      if (hasAdminRole) {
+        isAuthorized = true;
+        console.log("Request authorized via admin JWT");
+      }
+    }
+  }
+  
+  if (!isAuthorized) {
+    console.error("Unauthorized request - missing or invalid cron secret/admin auth");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+  }
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get evaluations that are due and haven't been sent yet
     const today = new Date().toISOString().split('T')[0];
@@ -94,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
         const periodName = periodNames[evaluation.evaluation_period] || evaluation.evaluation_period;
 
         // Generate evaluation link
-        const evaluationLink = `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || 'https://lovable.app'}/dashboard?evaluation=${evaluation.id}`;
+        const evaluationLink = `${supabaseUrl?.replace('.supabase.co', '.lovable.app') || 'https://lovable.app'}/dashboard?evaluation=${evaluation.id}`;
 
         // Send email
         const emailResponse = await resend.emails.send({

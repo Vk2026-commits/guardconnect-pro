@@ -6,8 +6,84 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Encryption key should be stored as a secret
+// Encryption key should be stored as a secret (must be 32 bytes for AES-256)
 const ENCRYPTION_KEY = Deno.env.get("SENSITIVE_DATA_ENCRYPTION_KEY") || "";
+
+// AES-256-GCM encryption utilities
+async function getEncryptionKey(): Promise<CryptoKey | null> {
+  if (!ENCRYPTION_KEY) return null;
+  
+  // Create a consistent 32-byte key from the secret using SHA-256
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(ENCRYPTION_KEY);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", keyData);
+  
+  return await crypto.subtle.importKey(
+    "raw",
+    hashBuffer,
+    { name: "AES-GCM" },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function encrypt(text: string): Promise<string> {
+  if (!text || !ENCRYPTION_KEY) return "";
+  
+  try {
+    const key = await getEncryptionKey();
+    if (!key) return "";
+    
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    
+    // Generate a random 12-byte IV (recommended for AES-GCM)
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    
+    const encrypted = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      key,
+      data
+    );
+    
+    // Combine IV + ciphertext and encode as base64
+    const combined = new Uint8Array(iv.length + encrypted.byteLength);
+    combined.set(iv, 0);
+    combined.set(new Uint8Array(encrypted), iv.length);
+    
+    return btoa(String.fromCharCode(...combined));
+  } catch (error) {
+    console.error("Encryption error:", error);
+    return "";
+  }
+}
+
+async function decrypt(encryptedBase64: string): Promise<string> {
+  if (!encryptedBase64 || !ENCRYPTION_KEY) return "";
+  
+  try {
+    const key = await getEncryptionKey();
+    if (!key) return "";
+    
+    // Decode base64 to bytes
+    const combined = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+    
+    // Extract IV (first 12 bytes) and ciphertext (rest)
+    const iv = combined.slice(0, 12);
+    const ciphertext = combined.slice(12);
+    
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv },
+      key,
+      ciphertext
+    );
+    
+    return new TextDecoder().decode(decrypted);
+  } catch (error) {
+    console.error("Decryption error:", error);
+    return "";
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -60,27 +136,6 @@ serve(async (req) => {
 
     const officerId = officerProfile.id;
 
-    // Simple XOR-based encryption for demo (use AES in production with proper key management)
-    const encrypt = (text: string): string => {
-      if (!text || !ENCRYPTION_KEY) return "";
-      const textBytes = new TextEncoder().encode(text);
-      const keyBytes = new TextEncoder().encode(ENCRYPTION_KEY);
-      const encrypted = textBytes.map((byte, i) => byte ^ keyBytes[i % keyBytes.length]);
-      return btoa(String.fromCharCode(...encrypted));
-    };
-
-    const decrypt = (encryptedBase64: string): string => {
-      if (!encryptedBase64 || !ENCRYPTION_KEY) return "";
-      try {
-        const encrypted = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
-        const keyBytes = new TextEncoder().encode(ENCRYPTION_KEY);
-        const decrypted = encrypted.map((byte, i) => byte ^ keyBytes[i % keyBytes.length]);
-        return new TextDecoder().decode(decrypted);
-      } catch {
-        return "";
-      }
-    };
-
     // Log the access for audit
     await supabase.rpc("log_sensitive_access", {
       _action: action,
@@ -103,7 +158,15 @@ serve(async (req) => {
         }
 
         const ssnLastFour = `***-**-${ssn.slice(-4)}`;
-        const ssnEncrypted = encrypt(ssn);
+        const ssnEncrypted = await encrypt(ssn);
+
+        if (!ssnEncrypted) {
+          console.error("Failed to encrypt SSN - encryption key may not be configured");
+          return new Response(
+            JSON.stringify({ error: "Encryption service unavailable" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
 
         const { error: upsertError } = await supabase
           .from("officer_sensitive_data")
@@ -138,7 +201,15 @@ serve(async (req) => {
           );
         }
 
-        const licenseEncrypted = encrypt(license_number);
+        const licenseEncrypted = await encrypt(license_number);
+
+        if (!licenseEncrypted) {
+          console.error("Failed to encrypt driver's license - encryption key may not be configured");
+          return new Response(
+            JSON.stringify({ error: "Encryption service unavailable" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
 
         const { error: upsertError } = await supabase
           .from("officer_sensitive_data")
