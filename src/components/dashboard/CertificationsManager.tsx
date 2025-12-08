@@ -398,7 +398,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
       <Card>
         <CardHeader>
           <CardTitle>{label}</CardTitle>
-          <CardDescription>Enter license details and upload documentation</CardDescription>
+          <CardDescription>Enter license details and upload license document</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -438,7 +438,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
 
             {/* Upload section - always visible */}
             <div className="space-y-4 pt-4 border-t">
-              <Label>Upload License Documents</Label>
+              <Label>Upload License Document</Label>
               <div className="grid grid-cols-2 gap-4">
                 {["front", "back"].map((side) => {
                   const hasDocument = existingLicense
@@ -606,9 +606,9 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
       <div className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>Add Training Certification</CardTitle>
+            <CardTitle>Add Training Certificate</CardTitle>
             <CardDescription>
-              Add training certificates such as CPR, use of force, handcuffing, etc.
+              Add training certificate such as CPR, use of force, handcuffing, etc.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -717,7 +717,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
           {trainings.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                No training certifications added yet
+                No training certificate added yet
               </CardContent>
             </Card>
           ) : (
@@ -774,7 +774,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
                     </div>
 
                     <div className="pt-4 border-t">
-                      <Label className="mb-2 block">Upload Certificate Documents</Label>
+                      <Label className="mb-2 block">Upload Certificate Document</Label>
                       <div className="grid grid-cols-2 gap-4">
                         {["front", "back"].map((side) => {
                           const hasDocument =
