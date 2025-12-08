@@ -119,7 +119,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "We Find Guards <onboarding@resend.dev>",
+      from: "We Find Guards <noreply@wefindguards.com>",
       to: [officerEmail],
       subject: `${companyProfile.company_name} is Interested in Your Profile`,
       html: `
