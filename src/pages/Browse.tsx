@@ -133,7 +133,6 @@ const Browse = () => {
           profiles:user_id (
             id,
             full_name,
-            email,
             avatar_url
           )
         `)
