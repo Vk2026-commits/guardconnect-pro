@@ -59,20 +59,6 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "assigned_sites_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assigned_sites_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       certifications: {
@@ -130,20 +116,6 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "certifications_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "certifications_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -275,13 +247,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "company_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "safe_officer_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -441,20 +406,6 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "hires_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "hires_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       job_applications: {
@@ -495,20 +446,6 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "job_applications_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "job_applications_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -615,21 +552,40 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "messages_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_public"
-            referencedColumns: ["id"]
-          },
         ]
+      }
+      officer_certifications_safe: {
+        Row: {
+          certification_id: string
+          certification_type: string | null
+          expiry_date: string | null
+          issue_date: string | null
+          issuing_organization: string | null
+          license_level: string | null
+          name: string | null
+          officer_id: string | null
+        }
+        Insert: {
+          certification_id: string
+          certification_type?: string | null
+          expiry_date?: string | null
+          issue_date?: string | null
+          issuing_organization?: string | null
+          license_level?: string | null
+          name?: string | null
+          officer_id?: string | null
+        }
+        Update: {
+          certification_id?: string
+          certification_type?: string | null
+          expiry_date?: string | null
+          issue_date?: string | null
+          issuing_organization?: string | null
+          license_level?: string | null
+          name?: string | null
+          officer_id?: string | null
+        }
+        Relationships: []
       }
       officer_interests: {
         Row: {
@@ -669,20 +625,6 @@ export type Database = {
             columns: ["officer_id"]
             isOneToOne: false
             referencedRelation: "officer_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "officer_interests_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "officer_interests_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -786,14 +728,64 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "officer_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "safe_officer_profiles"
-            referencedColumns: ["id"]
-          },
         ]
+      }
+      officer_profiles_safe: {
+        Row: {
+          account_status: string | null
+          availability_schedule: Json | null
+          availability_status: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          employment_type: string[] | null
+          hourly_rate: number | null
+          id: string
+          location: string | null
+          main_region: string | null
+          shift_preference: string[] | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          account_status?: string | null
+          availability_schedule?: Json | null
+          availability_status?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          employment_type?: string[] | null
+          hourly_rate?: number | null
+          id: string
+          location?: string | null
+          main_region?: string | null
+          shift_preference?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          account_status?: string | null
+          availability_schedule?: Json | null
+          availability_status?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          employment_type?: string[] | null
+          hourly_rate?: number | null
+          id?: string
+          location?: string | null
+          main_region?: string | null
+          shift_preference?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+          years_experience?: number | null
+        }
+        Relationships: []
       }
       officer_sensitive_data: {
         Row: {
@@ -858,20 +850,6 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "officer_sensitive_data_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: true
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "officer_sensitive_data_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: true
-            referencedRelation: "officer_profiles_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       profile_views: {
@@ -911,20 +889,6 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "profile_views_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profile_views_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       profiles: {
@@ -955,6 +919,36 @@ export type Database = {
           full_name?: string | null
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
           username?: string | null
         }
@@ -1053,20 +1047,6 @@ export type Database = {
             referencedRelation: "officer_profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "video_interviews_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "video_interviews_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       work_history: {
@@ -1162,29 +1142,7 @@ export type Database = {
           name?: string | null
           officer_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "certifications_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "certifications_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_limited"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "certifications_officer_id_fkey"
-            columns: ["officer_id"]
-            isOneToOne: false
-            referencedRelation: "officer_profiles_public"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       officer_profiles_limited: {
         Row: {
@@ -1232,22 +1190,7 @@ export type Database = {
           user_id?: string | null
           years_experience?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "officer_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "officer_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "safe_officer_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       officer_profiles_public: {
         Row: {
@@ -1301,22 +1244,7 @@ export type Database = {
           user_id?: string | null
           years_experience?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "officer_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "officer_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "safe_officer_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       safe_officer_profiles: {
         Row: {
