@@ -39,14 +39,17 @@ export function OfficerPhotos({ userId }: OfficerPhotosProps) {
 
       const photoUrls: Record<string, string> = {};
       
-      data?.forEach((file) => {
+      // Use signed URLs for private bucket access
+      for (const file of data || []) {
         const photoType = file.name.split(".")[0];
-        const { data: urlData } = supabase.storage
+        const { data: signedData, error: signedError } = await supabase.storage
           .from("officer-photos")
-          .getPublicUrl(`${userId}/${file.name}`);
+          .createSignedUrl(`${userId}/${file.name}`, 3600); // 1 hour expiry
         
-        photoUrls[photoType] = urlData.publicUrl;
-      });
+        if (!signedError && signedData) {
+          photoUrls[photoType] = signedData.signedUrl;
+        }
+      }
 
       setPhotos(photoUrls);
     } catch (error: any) {

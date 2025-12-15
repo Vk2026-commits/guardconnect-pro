@@ -36,9 +36,16 @@ export function PhotoUpload({ userId, currentPhotoUrl, onPhotoChange, size = "sm
         throw uploadError;
       }
 
-      const { data } = supabase.storage.from("officer-avatars").getPublicUrl(filePath);
+      // Use signed URL for private bucket (24 hour expiry for avatars)
+      const { data, error: signedError } = await supabase.storage
+        .from("officer-avatars")
+        .createSignedUrl(filePath, 86400);
 
-      onPhotoChange(data.publicUrl);
+      if (signedError || !data) {
+        throw signedError || new Error("Failed to get signed URL");
+      }
+
+      onPhotoChange(data.signedUrl);
       toast.success("Photo uploaded successfully");
     } catch (error: any) {
       toast.error(error.message);
