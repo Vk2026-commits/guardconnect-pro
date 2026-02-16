@@ -74,6 +74,17 @@ const Admin = () => {
   const [editingOfficer, setEditingOfficer] = useState<any>(null);
   const [editingCompany, setEditingCompany] = useState<any>(null);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [officerCertifications, setOfficerCertifications] = useState<any[]>([]);
+  const [officerWorkHistory, setOfficerWorkHistory] = useState<any[]>([]);
+
+  const loadOfficerDetails = async (officerId: string) => {
+    const [certsResult, workResult] = await Promise.all([
+      supabase.from("certifications").select("*").eq("officer_id", officerId).order("created_at", { ascending: false }),
+      supabase.from("work_history").select("*").eq("officer_id", officerId).order("start_date", { ascending: false }),
+    ]);
+    setOfficerCertifications(certsResult.data || []);
+    setOfficerWorkHistory(workResult.data || []);
+  };
 
   useEffect(() => {
     checkAdminAccess();
@@ -1194,6 +1205,7 @@ const Admin = () => {
                         onClick={() => {
                           setSelectedOfficer(officer);
                           setEditingOfficer({ ...officer });
+                          loadOfficerDetails(officer.id);
                         }}
                         className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                           selectedOfficer?.id === officer.id
@@ -1352,6 +1364,92 @@ const Admin = () => {
                         <Button variant="outline" onClick={() => { setSelectedOfficer(null); setEditingOfficer(null); }}>
                           Cancel
                         </Button>
+                      </div>
+
+                      {/* Availability Schedule */}
+                      {selectedOfficer?.availability_schedule && (
+                        <div className="pt-4 border-t">
+                          <h3 className="font-semibold mb-3">Weekly Availability</h3>
+                          <div className="grid md:grid-cols-2 gap-2 text-sm">
+                            {Object.entries(selectedOfficer.availability_schedule).map(([day, schedule]: [string, any]) => (
+                              <div key={day} className="flex justify-between items-center p-2 border rounded">
+                                <span className="font-medium capitalize">{day}</span>
+                                <span className="text-muted-foreground">
+                                  {schedule?.available ? `${schedule.start || '—'} - ${schedule.end || '—'}` : 'Unavailable'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Certifications */}
+                      <div className="pt-4 border-t">
+                        <h3 className="font-semibold mb-3">Certifications ({officerCertifications.length})</h3>
+                        {officerCertifications.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No certifications on file.</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {officerCertifications.map((cert) => (
+                              <div key={cert.id} className="p-3 border rounded-lg">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-medium">{cert.name}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {cert.certification_type === 'license' ? 'License' : cert.certification_type === 'training' ? 'Training' : cert.certification_type}
+                                      {cert.license_level && ` — ${cert.license_level}`}
+                                    </p>
+                                  </div>
+                                  {cert.expiry_date && (
+                                    <span className={`text-xs px-2 py-1 rounded ${new Date(cert.expiry_date) < new Date() ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
+                                      {new Date(cert.expiry_date) < new Date() ? 'Expired' : 'Active'}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-2 text-xs text-muted-foreground">
+                                  {cert.issuing_organization && <span>Issuer: {cert.issuing_organization}</span>}
+                                  {cert.certification_number && <span>Cert #: {cert.certification_number}</span>}
+                                  {cert.issue_date && <span>Issued: {new Date(cert.issue_date).toLocaleDateString()}</span>}
+                                  {cert.expiry_date && <span>Expires: {new Date(cert.expiry_date).toLocaleDateString()}</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Work History */}
+                      <div className="pt-4 border-t">
+                        <h3 className="font-semibold mb-3">Work History ({officerWorkHistory.length})</h3>
+                        {officerWorkHistory.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No work history on file.</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {officerWorkHistory.map((job) => (
+                              <div key={job.id} className="p-3 border rounded-lg">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-medium">{job.position_title || 'Position not specified'}</p>
+                                    <p className="text-sm text-muted-foreground">{job.company_name}</p>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">
+                                    {job.start_date ? new Date(job.start_date).toLocaleDateString() : '—'} — {job.end_date ? new Date(job.end_date).toLocaleDateString() : 'Present'}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-2 text-xs text-muted-foreground">
+                                  {job.company_city && <span>City: {job.company_city}{job.company_state ? `, ${job.company_state}` : ''}</span>}
+                                  {job.company_phone && <span>Phone: {job.company_phone}</span>}
+                                  {job.supervisor_name && <span>Supervisor: {job.supervisor_name}</span>}
+                                  {job.supervisor_phone && <span>Supervisor Phone: {job.supervisor_phone}</span>}
+                                  {job.reason_for_leaving && <span className="col-span-2">Reason for leaving: {job.reason_for_leaving}</span>}
+                                </div>
+                                {job.job_description && (
+                                  <p className="text-xs text-muted-foreground mt-2">{job.job_description}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
