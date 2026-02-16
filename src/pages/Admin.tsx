@@ -76,14 +76,38 @@ const Admin = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [officerCertifications, setOfficerCertifications] = useState<any[]>([]);
   const [officerWorkHistory, setOfficerWorkHistory] = useState<any[]>([]);
+  const [officerPhotos, setOfficerPhotos] = useState<Record<string, string>>({});
 
-  const loadOfficerDetails = async (officerId: string) => {
+  const loadOfficerDetails = async (officerId: string, userId: string) => {
     const [certsResult, workResult] = await Promise.all([
       supabase.from("certifications").select("*").eq("officer_id", officerId).order("created_at", { ascending: false }),
       supabase.from("work_history").select("*").eq("officer_id", officerId).order("start_date", { ascending: false }),
     ]);
     setOfficerCertifications(certsResult.data || []);
     setOfficerWorkHistory(workResult.data || []);
+
+    // Load photos from storage
+    try {
+      const { data: files } = await supabase.storage.from("officer-photos").list(userId, { limit: 100 });
+      if (files && files.length > 0) {
+        const photoMap: Record<string, string> = {};
+        for (const file of files) {
+          const photoType = file.name.split(".")[0];
+          const { data: signedData } = await supabase.storage
+            .from("officer-photos")
+            .createSignedUrl(`${userId}/${file.name}`, 3600);
+          if (signedData?.signedUrl) {
+            photoMap[photoType] = signedData.signedUrl;
+          }
+        }
+        setOfficerPhotos(photoMap);
+      } else {
+        setOfficerPhotos({});
+      }
+    } catch (error) {
+      console.error("Error loading officer photos:", error);
+      setOfficerPhotos({});
+    }
   };
 
   useEffect(() => {
@@ -1205,7 +1229,7 @@ const Admin = () => {
                         onClick={() => {
                           setSelectedOfficer(officer);
                           setEditingOfficer({ ...officer });
-                          loadOfficerDetails(officer.id);
+                          loadOfficerDetails(officer.id, officer.user_id);
                         }}
                         className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                           selectedOfficer?.id === officer.id
@@ -1377,6 +1401,21 @@ const Admin = () => {
                                 <span className="text-muted-foreground">
                                   {schedule?.available ? `${schedule.start || '—'} - ${schedule.end || '—'}` : 'Unavailable'}
                                 </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Officer Photos */}
+                      {Object.keys(officerPhotos).length > 0 && (
+                        <div className="pt-4 border-t">
+                          <h3 className="font-semibold mb-3">Photos ({Object.keys(officerPhotos).length})</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {Object.entries(officerPhotos).map(([type, url]) => (
+                              <div key={type} className="space-y-1">
+                                <img src={url} alt={type} className="w-full h-40 object-cover rounded-lg border" />
+                                <p className="text-xs text-muted-foreground capitalize text-center">{type.replace(/_/g, ' ')}</p>
                               </div>
                             ))}
                           </div>
