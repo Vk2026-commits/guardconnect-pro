@@ -811,11 +811,38 @@ const Admin = () => {
     }));
     setOfficerAgeData(ageData);
 
+    // State name normalization map
+    const stateAbbreviations: Record<string, string> = {
+      'al': 'Alabama', 'ak': 'Alaska', 'az': 'Arizona', 'ar': 'Arkansas', 'ca': 'California',
+      'co': 'Colorado', 'ct': 'Connecticut', 'de': 'Delaware', 'fl': 'Florida', 'ga': 'Georgia',
+      'hi': 'Hawaii', 'id': 'Idaho', 'il': 'Illinois', 'in': 'Indiana', 'ia': 'Iowa',
+      'ks': 'Kansas', 'ky': 'Kentucky', 'la': 'Louisiana', 'me': 'Maine', 'md': 'Maryland',
+      'ma': 'Massachusetts', 'mi': 'Michigan', 'mn': 'Minnesota', 'ms': 'Mississippi', 'mo': 'Missouri',
+      'mt': 'Montana', 'ne': 'Nebraska', 'nv': 'Nevada', 'nh': 'New Hampshire', 'nj': 'New Jersey',
+      'nm': 'New Mexico', 'ny': 'New York', 'nc': 'North Carolina', 'nd': 'North Dakota', 'oh': 'Ohio',
+      'ok': 'Oklahoma', 'or': 'Oregon', 'pa': 'Pennsylvania', 'ri': 'Rhode Island', 'sc': 'South Carolina',
+      'sd': 'South Dakota', 'tn': 'Tennessee', 'tx': 'Texas', 'ut': 'Utah', 'vt': 'Vermont',
+      'va': 'Virginia', 'wa': 'Washington', 'wv': 'West Virginia', 'wi': 'Wisconsin', 'wy': 'Wyoming',
+      'dc': 'District of Columbia',
+    };
+
+    const normalizeState = (state: string): string => {
+      const trimmed = state.trim().toLowerCase();
+      // Check if it's an abbreviation
+      if (stateAbbreviations[trimmed]) return stateAbbreviations[trimmed];
+      // Check if it's already a full name (case-insensitive match)
+      const fullName = Object.values(stateAbbreviations).find(name => name.toLowerCase() === trimmed);
+      if (fullName) return fullName;
+      // Capitalize first letter of each word as fallback
+      return trimmed.replace(/\b\w/g, c => c.toUpperCase());
+    };
+
     // Officer States Distribution
     const officerStates: Record<string, number> = {};
     allOfficers.forEach((officer) => {
       if (officer.address_state) {
-        officerStates[officer.address_state] = (officerStates[officer.address_state] || 0) + 1;
+        const normalized = normalizeState(officer.address_state);
+        officerStates[normalized] = (officerStates[normalized] || 0) + 1;
       }
     });
 
@@ -837,7 +864,8 @@ const Admin = () => {
     const companyStates: Record<string, number> = {};
     allCompanies.forEach((company) => {
       if (company.company_state) {
-        companyStates[company.company_state] = (companyStates[company.company_state] || 0) + 1;
+        const normalized = normalizeState(company.company_state);
+        companyStates[normalized] = (companyStates[normalized] || 0) + 1;
       }
     });
 
