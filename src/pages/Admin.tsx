@@ -68,6 +68,7 @@ const Admin = () => {
   const [officerStateData, setOfficerStateData] = useState<any[]>([]);
   const [companyStateData, setCompanyStateData] = useState<any[]>([]);
   const [officerLevelData, setOfficerLevelData] = useState<any[]>([]);
+  const [selectedChart, setSelectedChart] = useState("stats-overview");
   
   // Edit states for Browse and Company Profiles tabs
   const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
@@ -1016,209 +1017,81 @@ const Admin = () => {
           </Card>
         </div>
 
-        {/* Pie Charts Section */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {/* Stats Overview Pie Chart */}
-          <Card>
-            <CardHeader>
+        {/* Pie Charts Section - Compact with dropdown selector */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <PieChartIcon className="h-5 w-5" />
-                Stats Overview
+                Analytics Charts
               </CardTitle>
-              <CardDescription>Distribution of key metrics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                  <Pie
-                    data={statsOverviewData}
-                    cx="50%"
-                    cy="40%"
-                    labelLine={false}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {statsOverviewData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number, name: string) => [`${value}`, name]} />
-                  <Legend
-                    layout="horizontal"
-                    verticalAlign="bottom"
-                    formatter={(value: string) => {
-                      const total = statsOverviewData.reduce((sum, d) => sum + d.value, 0);
-                      const item = statsOverviewData.find(d => d.name === value);
-                      const pct = total > 0 && item ? ((item.value / total) * 100).toFixed(0) : 0;
-                      return `${value}: ${item?.value} (${pct}%)`;
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Officer Age Groups Pie Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Officer Age Groups
-              </CardTitle>
-              <CardDescription>Age distribution in 10-year increments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                  <Pie
-                    data={officerAgeData}
-                    cx="50%"
-                    cy="40%"
-                    labelLine={false}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {officerAgeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number, name: string) => [`${value} officers`, name]} />
-                  <Legend
-                    layout="horizontal"
-                    verticalAlign="bottom"
-                    formatter={(value: string) => {
-                      const item = officerAgeData.find(d => d.name === value);
-                      return `${value}: ${item?.value || 0}`;
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Officers by State Pie Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Officers by State
-              </CardTitle>
-              <CardDescription>Geographic distribution of officers</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                  <Pie
-                    data={officerStateData}
-                    cx="50%"
-                    cy="40%"
-                    labelLine={false}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {officerStateData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number, name: string) => [`${value} officers`, name]} />
-                  <Legend
-                    layout="horizontal"
-                    verticalAlign="bottom"
-                    formatter={(value: string) => {
-                      const item = officerStateData.find(d => d.name === value);
-                      return `${value}: ${item?.value || 0}`;
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Companies by State Pie Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Companies by State
-              </CardTitle>
-              <CardDescription>Geographic distribution of companies</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                  <Pie
-                    data={companyStateData}
-                    cx="50%"
-                    cy="40%"
-                    labelLine={false}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {companyStateData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number, name: string) => [`${value} companies`, name]} />
-                  <Legend
-                    layout="horizontal"
-                    verticalAlign="bottom"
-                    formatter={(value: string) => {
-                      const item = companyStateData.find(d => d.name === value);
-                      return `${value}: ${item?.value || 0}`;
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Officers by License Level Pie Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Officers by License Level
-              </CardTitle>
-              <CardDescription>Distribution of Level 2, 3, 4 officers</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {officerLevelData.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground text-sm">No license level data available.</div>
-              ) : (
-                <ResponsiveContainer width="100%" height={350}>
+              <Select value={selectedChart} onValueChange={setSelectedChart}>
+                <SelectTrigger className="w-[240px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="stats-overview">Stats Overview</SelectItem>
+                  <SelectItem value="officer-age">Officer Age Groups</SelectItem>
+                  <SelectItem value="officer-state">Officers by State</SelectItem>
+                  <SelectItem value="company-state">Companies by State</SelectItem>
+                  <SelectItem value="officer-level">Officers by License Level</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <CardDescription>
+              {selectedChart === "stats-overview" && "Distribution of key metrics"}
+              {selectedChart === "officer-age" && "Age distribution in 10-year increments"}
+              {selectedChart === "officer-state" && "Geographic distribution of officers"}
+              {selectedChart === "company-state" && "Geographic distribution of companies"}
+              {selectedChart === "officer-level" && "Distribution of Level 2, 3, 4 officers"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const chartMap: Record<string, { data: any[]; label: string }> = {
+                "stats-overview": { data: statsOverviewData, label: "" },
+                "officer-age": { data: officerAgeData, label: "officers" },
+                "officer-state": { data: officerStateData, label: "officers" },
+                "company-state": { data: companyStateData, label: "companies" },
+                "officer-level": { data: officerLevelData, label: "officers" },
+              };
+              const current = chartMap[selectedChart];
+              if (!current || current.data.length === 0) {
+                return <div className="text-center py-12 text-muted-foreground text-sm">No data available.</div>;
+              }
+              return (
+                <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={officerLevelData}
+                      data={current.data}
                       cx="50%"
-                      cy="40%"
+                      cy="45%"
                       labelLine={false}
-                      outerRadius={100}
+                      outerRadius={90}
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {officerLevelData.map((entry, index) => (
+                      {current.data.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number, name: string) => [`${value} officers`, name]} />
+                    <Tooltip formatter={(value: number, name: string) => [`${value}${current.label ? ` ${current.label}` : ''}`, name]} />
                     <Legend
                       layout="horizontal"
                       verticalAlign="bottom"
                       formatter={(value: string) => {
-                        const item = officerLevelData.find(d => d.name === value);
-                        return `${value}: ${item?.value || 0}`;
+                        const total = current.data.reduce((sum, d) => sum + d.value, 0);
+                        const item = current.data.find(d => d.name === value);
+                        const pct = total > 0 && item ? ((item.value / total) * 100).toFixed(0) : 0;
+                        return `${value}: ${item?.value || 0} (${pct}%)`;
                       }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Recent Officers */}
