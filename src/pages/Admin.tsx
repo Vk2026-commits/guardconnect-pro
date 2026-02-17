@@ -882,22 +882,21 @@ const Admin = () => {
     try {
       const { data: allCerts } = await supabase
         .from("certifications")
-        .select("officer_id, license_level")
+        .select("officer_id, license_level, certification_type")
+        .eq("certification_type", "license")
         .not("license_level", "is", null);
 
-      // Normalize license levels to standard names
-      const normalizeLicenseLevel = (level: string): string => {
-        const l = level.trim().toLowerCase().replace(/[\s-_]+/g, '');
-        if (l.includes('ii') || l.includes('2') || l === 'levelii' || l === 'level2') return 'Level 2 (Non-Commission)';
-        if (l.includes('iv') || l.includes('4') || l === 'leveliv' || l === 'level4') return 'Level 4 (PPO)';
-        if (l.includes('iii') || l.includes('3') || l === 'leveliii' || l === 'level3') return 'Level 3 (Commission)';
-        return level;
+      // Map license_level values to display names
+      const levelMap: Record<string, string> = {
+        'level-ii': 'Level 2 (Non-Commission)',
+        'level-iii': 'Level 3 (Commission)',
+        'level-iv': 'Level 4 (PPO)',
       };
 
-      // Count unique officers per normalized level
+      // Count unique officers per level
       const officerLevels: Record<string, Set<string>> = {};
       (allCerts || []).forEach((cert) => {
-        const level = normalizeLicenseLevel(cert.license_level || 'Unknown');
+        const level = levelMap[cert.license_level] || cert.license_level;
         if (!officerLevels[level]) officerLevels[level] = new Set();
         officerLevels[level].add(cert.officer_id);
       });
