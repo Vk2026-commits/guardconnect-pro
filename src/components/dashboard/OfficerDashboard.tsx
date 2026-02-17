@@ -35,6 +35,8 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
   const [photoCount, setPhotoCount] = useState(0);
   const [workHistoryCount, setWorkHistoryCount] = useState(0);
   const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
     title: "",
     bio: "",
     years_experience: "",
@@ -103,7 +105,12 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
 
     if (data) {
       setOfficerProfile(data);
+      const nameParts = (profileData?.full_name || "").split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
       setFormData({
+        first_name: firstName,
+        last_name: lastName,
         title: data.title || "",
         bio: data.bio || "",
         years_experience: data.years_experience?.toString() || "",
@@ -208,8 +215,18 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         return;
       }
 
+      const fullName = `${formData.first_name} ${formData.last_name}`.trim();
+
+      // Update the profiles table with the name
+      if (fullName) {
+        await supabase
+          .from("profiles")
+          .update({ full_name: fullName })
+          .eq("id", user.id);
+      }
+
       const profileData = {
-        user_id: user.id, // Use auth.uid() directly
+        user_id: user.id,
         title: formData.title,
         bio: formData.bio,
         years_experience: parseInt(formData.years_experience) || null,
@@ -355,6 +372,26 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">First Name</Label>
+                    <Input
+                      id="first_name"
+                      placeholder="First Name"
+                      value={formData.first_name}
+                      onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Last Name</Label>
+                    <Input
+                      id="last_name"
+                      placeholder="Last Name"
+                      value={formData.last_name}
+                      onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="title">
                       Professional Title
