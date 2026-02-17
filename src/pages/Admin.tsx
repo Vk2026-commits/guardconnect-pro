@@ -1258,7 +1258,14 @@ const Admin = () => {
                       Select an officer from the list to view and edit their profile
                     </div>
                   ) : (
-                    <div className="space-y-6 max-h-[600px] overflow-y-auto pr-4">
+                    <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto pr-4">
+                      {/* Profile Photo */}
+                      {selectedOfficer?.avatar_url && (
+                        <div className="flex justify-center">
+                          <img src={selectedOfficer.avatar_url} alt="Profile" className="w-32 h-32 rounded-full object-cover border-2" />
+                        </div>
+                      )}
+
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Full Name</Label>
@@ -1408,19 +1415,21 @@ const Admin = () => {
                       )}
 
                       {/* Officer Photos */}
-                      {Object.keys(officerPhotos).length > 0 && (
-                        <div className="pt-4 border-t">
-                          <h3 className="font-semibold mb-3">Photos ({Object.keys(officerPhotos).length})</h3>
+                      <div className="pt-4 border-t">
+                        <h3 className="font-semibold mb-3">Photos ({Object.keys(officerPhotos).length})</h3>
+                        {Object.keys(officerPhotos).length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No photos uploaded.</p>
+                        ) : (
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {Object.entries(officerPhotos).map(([type, url]) => (
                               <div key={type} className="space-y-1">
                                 <img src={url} alt={type} className="w-full h-40 object-cover rounded-lg border" />
-                                <p className="text-xs text-muted-foreground capitalize text-center">{type.replace(/_/g, ' ')}</p>
+                                <p className="text-xs text-muted-foreground capitalize text-center">{type.replace(/-/g, ' ')}</p>
                               </div>
                             ))}
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
 
                       {/* Certifications */}
                       <div className="pt-4 border-t">
@@ -1445,15 +1454,31 @@ const Admin = () => {
                                     </span>
                                   )}
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 mt-2 text-xs text-muted-foreground">
-                                  {cert.issuing_organization && <span>Issuer: {cert.issuing_organization}</span>}
-                                  {cert.certification_number && <span>Cert #: {cert.certification_number}</span>}
-                                  {cert.issue_date && <span>Issued: {new Date(cert.issue_date).toLocaleDateString()}</span>}
-                                  {cert.expiry_date && <span>Expires: {new Date(cert.expiry_date).toLocaleDateString()}</span>}
+                                  <div className="grid grid-cols-2 gap-2 mt-2 text-xs text-muted-foreground">
+                                    {cert.issuing_organization && <span>Issuer: {cert.issuing_organization}</span>}
+                                    {cert.certification_number && <span>Cert #: {cert.certification_number}</span>}
+                                    {cert.issue_date && <span>Issued: {new Date(cert.issue_date).toLocaleDateString()}</span>}
+                                    {cert.expiry_date && <span>Expires: {new Date(cert.expiry_date).toLocaleDateString()}</span>}
+                                    {cert.credential_id && <span>Credential ID: {cert.credential_id}</span>}
+                                    {cert.description && <span className="col-span-2">Description: {cert.description}</span>}
+                                  </div>
+                                  {(cert.document_front_url || cert.document_back_url) && (
+                                    <div className="flex gap-2 mt-2">
+                                      {cert.document_front_url && (
+                                        <a href={cert.document_front_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
+                                          View Document (Front)
+                                        </a>
+                                      )}
+                                      {cert.document_back_url && (
+                                        <a href={cert.document_back_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
+                                          View Document (Back)
+                                        </a>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
-                              </div>
-                            ))}
-                          </div>
+                              ))}
+                            </div>
                         )}
                       </div>
 
