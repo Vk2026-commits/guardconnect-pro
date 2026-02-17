@@ -951,7 +951,7 @@ const Admin = () => {
         </div>
 
         {/* Pie Charts Section */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Stats Overview Pie Chart */}
           <Card>
             <CardHeader>
@@ -962,15 +962,14 @@ const Admin = () => {
               <CardDescription>Distribution of key metrics</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={350}>
                 <PieChart>
                   <Pie
                     data={statsOverviewData}
                     cx="50%"
-                    cy="50%"
+                    cy="40%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -978,8 +977,17 @@ const Admin = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip formatter={(value: number, name: string) => [`${value}`, name]} />
+                  <Legend
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    formatter={(value: string) => {
+                      const total = statsOverviewData.reduce((sum, d) => sum + d.value, 0);
+                      const item = statsOverviewData.find(d => d.name === value);
+                      const pct = total > 0 && item ? ((item.value / total) * 100).toFixed(0) : 0;
+                      return `${value}: ${item?.value} (${pct}%)`;
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -995,15 +1003,14 @@ const Admin = () => {
               <CardDescription>Age distribution in 10-year increments</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={350}>
                 <PieChart>
                   <Pie
                     data={officerAgeData}
                     cx="50%"
-                    cy="50%"
+                    cy="40%"
                     labelLine={false}
-                    label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
-                    outerRadius={80}
+                    outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -1011,8 +1018,15 @@ const Admin = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip formatter={(value: number, name: string) => [`${value} officers`, name]} />
+                  <Legend
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    formatter={(value: string) => {
+                      const item = officerAgeData.find(d => d.name === value);
+                      return `${value}: ${item?.value || 0}`;
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -1028,15 +1042,14 @@ const Admin = () => {
               <CardDescription>Geographic distribution of officers</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={350}>
                 <PieChart>
                   <Pie
                     data={officerStateData}
                     cx="50%"
-                    cy="50%"
+                    cy="40%"
                     labelLine={false}
-                    label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
-                    outerRadius={80}
+                    outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -1044,8 +1057,15 @@ const Admin = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip formatter={(value: number, name: string) => [`${value} officers`, name]} />
+                  <Legend
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    formatter={(value: string) => {
+                      const item = officerStateData.find(d => d.name === value);
+                      return `${value}: ${item?.value || 0}`;
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -1061,15 +1081,14 @@ const Admin = () => {
               <CardDescription>Geographic distribution of companies</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={350}>
                 <PieChart>
                   <Pie
                     data={companyStateData}
                     cx="50%"
-                    cy="50%"
+                    cy="40%"
                     labelLine={false}
-                    label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}
-                    outerRadius={80}
+                    outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -1077,8 +1096,15 @@ const Admin = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip formatter={(value: number, name: string) => [`${value} companies`, name]} />
+                  <Legend
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    formatter={(value: string) => {
+                      const item = companyStateData.find(d => d.name === value);
+                      return `${value}: ${item?.value || 0}`;
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
