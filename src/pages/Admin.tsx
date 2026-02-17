@@ -67,6 +67,7 @@ const Admin = () => {
   const [officerAgeData, setOfficerAgeData] = useState<any[]>([]);
   const [officerStateData, setOfficerStateData] = useState<any[]>([]);
   const [companyStateData, setCompanyStateData] = useState<any[]>([]);
+  const [officerLevelData, setOfficerLevelData] = useState<any[]>([]);
   
   // Edit states for Browse and Company Profiles tabs
   const [selectedOfficer, setSelectedOfficer] = useState<any>(null);
@@ -769,7 +770,7 @@ const Admin = () => {
     return age;
   };
 
-  const preparePieChartData = () => {
+  const preparePieChartData = async () => {
     // Stats Overview Pie Chart
     const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'];
     const statsData = [
@@ -848,6 +849,35 @@ const Admin = () => {
         color: STATE_COLORS[index % STATE_COLORS.length],
       }));
     setCompanyStateData(companyStateChartData);
+
+    // Officer License Levels Distribution
+    try {
+      const { data: allCerts } = await supabase
+        .from("certifications")
+        .select("officer_id, license_level")
+        .not("license_level", "is", null);
+
+      // Count unique officers per level (an officer's highest level counts)
+      const officerLevels: Record<string, Set<string>> = {};
+      (allCerts || []).forEach((cert) => {
+        const level = cert.license_level || 'Unknown';
+        if (!officerLevels[level]) officerLevels[level] = new Set();
+        officerLevels[level].add(cert.officer_id);
+      });
+
+      const LEVEL_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+      const levelData = Object.entries(officerLevels)
+        .map(([name, officers], index) => ({
+          name: `Level ${name}`,
+          value: officers.size,
+          color: LEVEL_COLORS[index % LEVEL_COLORS.length],
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setOfficerLevelData(levelData);
+    } catch (error) {
+      console.error("Error loading license levels:", error);
+      setOfficerLevelData([]);
+    }
   };
 
   // Update pie charts when data changes
@@ -1107,6 +1137,49 @@ const Admin = () => {
                   />
                 </PieChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Officers by License Level Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Officers by License Level
+              </CardTitle>
+              <CardDescription>Distribution of Level 2, 3, 4 officers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {officerLevelData.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground text-sm">No license level data available.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={350}>
+                  <PieChart>
+                    <Pie
+                      data={officerLevelData}
+                      cx="50%"
+                      cy="40%"
+                      labelLine={false}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {officerLevelData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: number, name: string) => [`${value} officers`, name]} />
+                    <Legend
+                      layout="horizontal"
+                      verticalAlign="bottom"
+                      formatter={(value: string) => {
+                        const item = officerLevelData.find(d => d.name === value);
+                        return `${value}: ${item?.value || 0}`;
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
         </div>
