@@ -885,10 +885,19 @@ const Admin = () => {
         .select("officer_id, license_level")
         .not("license_level", "is", null);
 
-      // Count unique officers per level (an officer's highest level counts)
+      // Normalize license levels to standard names
+      const normalizeLicenseLevel = (level: string): string => {
+        const l = level.trim().toLowerCase().replace(/[\s-_]+/g, '');
+        if (l.includes('ii') || l.includes('2') || l === 'levelii' || l === 'level2') return 'Level 2 (Non-Commission)';
+        if (l.includes('iv') || l.includes('4') || l === 'leveliv' || l === 'level4') return 'Level 4 (PPO)';
+        if (l.includes('iii') || l.includes('3') || l === 'leveliii' || l === 'level3') return 'Level 3 (Commission)';
+        return level;
+      };
+
+      // Count unique officers per normalized level
       const officerLevels: Record<string, Set<string>> = {};
       (allCerts || []).forEach((cert) => {
-        const level = cert.license_level || 'Unknown';
+        const level = normalizeLicenseLevel(cert.license_level || 'Unknown');
         if (!officerLevels[level]) officerLevels[level] = new Set();
         officerLevels[level].add(cert.officer_id);
       });
@@ -896,7 +905,7 @@ const Admin = () => {
       const LEVEL_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
       const levelData = Object.entries(officerLevels)
         .map(([name, officers], index) => ({
-          name: `Level ${name}`,
+          name,
           value: officers.size,
           color: LEVEL_COLORS[index % LEVEL_COLORS.length],
         }))
