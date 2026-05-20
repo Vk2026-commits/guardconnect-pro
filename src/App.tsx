@@ -11,6 +11,7 @@ import Browse from "./pages/Browse";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   const queryClient = new QueryClient({
@@ -36,6 +37,7 @@ const App = () => {
             <Route path="/browse" element={<Browse />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
