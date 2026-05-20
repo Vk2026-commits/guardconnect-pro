@@ -10,24 +10,36 @@ Deno.serve(async (req) => {
   }
   const { officers } = await req.json();
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
-  const results = { created: 0, skipped: 0, errors: [] as any[] };
+  const results = { user_created: 0, profile_created: 0, officer_created: 0, errors: [] as any[] };
 
   for (const o of officers) {
     try {
-      const { data: u, error: ue } = await admin.auth.admin.createUser({
-        email: o.email,
-        email_confirm: true,
-        password: crypto.randomUUID() + "Aa1!",
-        user_metadata: { full_name: o.full_name, role: "officer" },
-      });
-      if (ue || !u.user) {
-        results.skipped++;
-        results.errors.push({ email: o.email, error: ue?.message });
-        continue;
+      // Try to find existing profile by email
+      let uid: string | null = null;
+      const { data: existing } = await admin.from("profiles").select("id").eq("email", o.email).maybeSingle();
+      if (existing) {
+        uid = existing.id;
+      } else {
+        const { data: u, error: ue } = await admin.auth.admin.createUser({
+          email: o.email,
+          email_confirm: true,
+          password: crypto.randomUUID() + "Aa1!",
+          user_metadata: { full_name: o.full_name, role: "officer" },
+        });
+        if (ue || !u.user) {
+          results.errors.push({ email: o.email, step: "createUser", error: ue?.message });
+          continue;
+        }
+        uid = u.user.id;
+        results.user_created++;
+        await admin.from("profiles").update({ full_name: o.full_name }).eq("id", uid);
+        results.profile_created++;
       }
-      const uid = u.user.id;
-      // profile row is auto-created by handle_new_user trigger; update name
-      await admin.from("profiles").update({ full_name: o.full_name }).eq("id", uid);
+
+      // Check if officer_profile already exists
+      const { data: opExisting } = await admin.from("officer_profiles").select("id").eq("user_id", uid).maybeSingle();
+      if (opExisting) continue;
+
       const { error: opErr } = await admin.from("officer_profiles").insert({
         user_id: uid,
         title: o.title,
@@ -38,10 +50,13 @@ Deno.serve(async (req) => {
         address_state: o.address_state || null,
         address_zip: o.address_zip || null,
         date_of_birth: o.date_of_birth,
-        account_status: "inactive",
+        account_status: "cancelled",
       });
-      if (opErr) results.errors.push({ email: o.email, error: opErr.message });
-      results.created++;
+      if (opErr) {
+        results.errors.push({ email: o.email, step: "officer_profiles", error: opErr.message });
+      } else {
+        results.officer_created++;
+      }
     } catch (e: any) {
       results.errors.push({ email: o.email, error: String(e) });
     }
