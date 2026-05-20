@@ -214,7 +214,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
       const updateField = side === "front" ? "document_front_url" : "document_back_url";
       const { error } = await supabase
         .from("certifications")
-        .update({ [updateField]: url })
+        .update({ [updateField]: url } as any)
         .eq("id", certId);
 
       if (error) throw error;
@@ -260,7 +260,7 @@ export function CertificationsManager({ officerId, userId, onEnsureProfile }: Ce
       const updateField = side === "front" ? "document_front_url" : "document_back_url";
       const { error } = await supabase
         .from("certifications")
-        .update({ [updateField]: null })
+        .update({ [updateField]: null } as any)
         .eq("id", certId);
 
       if (error) throw error;
