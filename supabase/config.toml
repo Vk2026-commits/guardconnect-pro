@@ -26,3 +26,12 @@ verify_jwt = true
 
 [functions.pause-user-account]
 verify_jwt = true
+
+[functions.ensure-officer-profile]
+verify_jwt = true
+
+[functions.manage-sensitive-data]
+verify_jwt = true
+
+[functions.send-profile-reminder]
+verify_jwt = true
