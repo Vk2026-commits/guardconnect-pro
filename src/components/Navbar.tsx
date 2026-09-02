@@ -111,9 +111,27 @@ const Navbar = () => {
                 <Link to="/dashboard">{t('nav.dashboard')}</Link>
               </Button>
               {isAdmin && (
-                <Button variant="ghost" asChild>
-                  <Link to="/admin">Admin</Link>
-                </Button>
+                <>
+                  <Button variant="ghost" asChild>
+                    <Link to="/admin">Admin</Link>
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">View as</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => navigate("/dashboard?viewAs=officer")}>
+                        Security Officer
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/dashboard?viewAs=company")}>
+                        Company
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/admin")}>
+                        Admin
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
               )}
               {userRole !== "officer" && (
                 <Button variant="ghost" asChild>
