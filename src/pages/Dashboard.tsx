@@ -80,7 +80,7 @@ const Dashboard = () => {
     };
 
     getProfile();
-  }, [navigate]);
+  }, [navigate, viewAs]);
 
   if (loading) {
     return (
