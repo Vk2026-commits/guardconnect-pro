@@ -56,7 +56,7 @@ const Dashboard = () => {
 
 
       // Check if this is a company with expired trial
-      if (profileData?.role === "company") {
+      if (!previewRole && profileData?.role === "company") {
         const { data: companyData } = await supabase
           .from("company_profiles")
           .select("*")
