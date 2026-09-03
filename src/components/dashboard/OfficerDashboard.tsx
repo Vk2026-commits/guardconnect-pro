@@ -20,6 +20,7 @@ import { InterestedJobsPanel } from "./InterestedJobsPanel";
 import JobSearch from "./JobSearch";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { OfficerSidebar } from "./OfficerSidebar";
+import { ExpiringCredentialsAlert } from "./ExpiringCredentialsAlert";
 
 interface OfficerDashboardProps {
   userId: string;
@@ -281,6 +282,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
 
   return (
     <SidebarProvider>
+      <ExpiringCredentialsAlert userId={userId} mode="officer" />
       <div className="flex w-full min-h-screen">
         <OfficerSidebar 
           activeTab={activeTab} 
