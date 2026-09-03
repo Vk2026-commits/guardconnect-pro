@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Building2, Crown, Users, Upload } from "lucide-react";
+import { Building2, Crown, Users, Upload, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CompanySidebar } from "./CompanySidebar";
@@ -18,7 +18,7 @@ import JobApplicants from "./JobApplicants";
 import JobApplicationsList from "./JobApplicationsList";
 import SubscriptionManager from "./SubscriptionManager";
 import { useSearchParams } from "react-router-dom";
-import { ExpiringCredentialsAlert } from "./ExpiringCredentialsAlert";
+import { useExpiringCredentials } from "@/hooks/useExpiringCredentials";
 
 interface CompanyDashboardProps {
   userId: string;
@@ -180,7 +180,6 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
 
   return (
     <SidebarProvider>
-      <ExpiringCredentialsAlert userId={userId} mode="company" />
       <div className="flex min-h-[calc(100vh-4rem)] w-full">
         <CompanySidebar activeTab={activeTab} onTabChange={setActiveTab} />
         
@@ -202,7 +201,7 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
           <div className="p-6 space-y-6 w-full overflow-auto">
             {activeTab === "profile" && (
               <>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-3 gap-4">
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Subscription</CardTitle>
