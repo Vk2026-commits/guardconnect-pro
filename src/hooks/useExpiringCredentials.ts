@@ -1,16 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { AlertTriangle } from "lucide-react";
 
 export interface ExpiringItem {
   id: string;
@@ -21,11 +10,6 @@ export interface ExpiringItem {
   officerName?: string;
 }
 
-interface Props {
-  userId: string;
-  mode: "officer" | "company";
-}
-
 const daysUntil = (date: string) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -33,11 +17,8 @@ const daysUntil = (date: string) => {
   return Math.ceil((d.getTime() - today.getTime()) / 86400000);
 };
 
-const label = (t: string) => (t === "training" ? "Training" : t === "license" ? "License" : "Certificate");
-
-export const ExpiringCredentialsAlert = ({ userId, mode }: Props) => {
+export const useExpiringCredentials = (userId: string, mode: "officer" | "company") => {
   const [items, setItems] = useState<ExpiringItem[]>([]);
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,16 +99,7 @@ export const ExpiringCredentialsAlert = ({ userId, mode }: Props) => {
         }
 
         rows.sort((a, b) => a.daysLeft - b.daysLeft);
-        if (cancelled || rows.length === 0) return;
-
-        setItems(rows);
-
-        // Show once per session per set of alerts
-        const key = `expiring-alert:${mode}:${userId}:${rows.map((r) => `${r.id}:${r.daysLeft <= 30 ? 30 : 90}`).join(",")}`;
-        if (!sessionStorage.getItem(key)) {
-          sessionStorage.setItem(key, "1");
-          setOpen(true);
-        }
+        if (!cancelled) setItems(rows);
       } catch {
         // silently ignore
       }
@@ -139,63 +111,5 @@ export const ExpiringCredentialsAlert = ({ userId, mode }: Props) => {
     };
   }, [userId, mode]);
 
-  if (items.length === 0) return null;
-
-  const urgent = items.some((i) => i.daysLeft <= 30);
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className={`flex items-center gap-2 ${urgent ? "text-destructive" : ""}`}>
-            <AlertTriangle className={`h-5 w-5 ${urgent ? "text-destructive" : "text-amber-500"}`} />
-            Expiring credentials
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "officer"
-              ? "The following licenses, certificates or trainings are expiring soon. Please renew them to stay active."
-              : "The following officer credentials are expiring soon."}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-2 max-h-72 overflow-y-auto">
-          {items.map((item) => {
-            const isUrgent = item.daysLeft <= 30;
-            return (
-              <div
-                key={item.id}
-                className={`flex items-center justify-between rounded-md border p-3 ${
-                  isUrgent ? "border-destructive/50 bg-destructive/5" : ""
-                }`}
-              >
-                <div className="min-w-0">
-                  <p className={`font-medium truncate ${isUrgent ? "text-destructive" : ""}`}>
-                    {item.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {label(item.type)}
-                    {item.officerName ? ` · ${item.officerName}` : ""} · Expires{" "}
-                    {new Date(item.expiry_date + "T00:00:00").toLocaleDateString()}
-                  </p>
-                </div>
-                <Badge variant={isUrgent ? "destructive" : "secondary"} className="shrink-0">
-                  {item.daysLeft < 0
-                    ? "Expired"
-                    : item.daysLeft === 0
-                    ? "Expires today"
-                    : `${item.daysLeft} days`}
-                </Badge>
-              </div>
-            );
-          })}
-        </div>
-
-        <DialogFooter>
-          <Button onClick={() => setOpen(false)}>Got it</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+  return items;
 };
-
-export default ExpiringCredentialsAlert;

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Building2, Crown, Users, Upload } from "lucide-react";
+import { Building2, Crown, Users, Upload, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CompanySidebar } from "./CompanySidebar";
@@ -18,7 +18,7 @@ import JobApplicants from "./JobApplicants";
 import JobApplicationsList from "./JobApplicationsList";
 import SubscriptionManager from "./SubscriptionManager";
 import { useSearchParams } from "react-router-dom";
-import { ExpiringCredentialsAlert } from "./ExpiringCredentialsAlert";
+import { useExpiringCredentials } from "@/hooks/useExpiringCredentials";
 
 interface CompanyDashboardProps {
   userId: string;
@@ -55,6 +55,8 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const expiringItems = useExpiringCredentials(userId, "company");
+  const urgentExpiring = expiringItems.some((i) => i.daysLeft <= 30);
 
   useEffect(() => {
     loadProfile();
@@ -180,7 +182,6 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
 
   return (
     <SidebarProvider>
-      <ExpiringCredentialsAlert userId={userId} mode="company" />
       <div className="flex min-h-[calc(100vh-4rem)] w-full">
         <CompanySidebar activeTab={activeTab} onTabChange={setActiveTab} />
         
@@ -202,7 +203,7 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
           <div className="p-6 space-y-6 w-full overflow-auto">
             {activeTab === "profile" && (
               <>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-3 gap-4">
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Subscription</CardTitle>
@@ -239,6 +240,38 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
                       <p className="text-xs text-muted-foreground">
                         {companyProfile ? "Profile is set up" : "Complete your company profile"}
                       </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className={urgentExpiring ? "border-destructive/50" : ""}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Expiring Officer Skills</CardTitle>
+                      <AlertTriangle className={`h-4 w-4 ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`} />
+                    </CardHeader>
+                    <CardContent>
+                      <div className={`text-2xl font-bold ${urgentExpiring ? "text-destructive" : ""}`}>
+                        {expiringItems.length}
+                      </div>
+                      <p className={`text-xs ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`}>
+                        {expiringItems.length === 0
+                          ? "No officer credentials expiring soon"
+                          : urgentExpiring
+                          ? "Officer credentials expiring within 30 days"
+                          : "Officer credentials expiring within 90 days"}
+                      </p>
+                      {expiringItems.length > 0 && (
+                        <ul className="mt-2 space-y-1">
+                          {expiringItems.slice(0, 3).map((item) => (
+                            <li
+                              key={item.id}
+                              className={`text-xs truncate ${item.daysLeft <= 30 ? "text-destructive" : "text-muted-foreground"}`}
+                            >
+                              {item.officerName ? `${item.officerName} — ` : ""}{item.name} (
+                              {item.daysLeft < 0 ? "expired" : item.daysLeft === 0 ? "today" : `${item.daysLeft}d`})
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </CardContent>
                   </Card>
                 </div>

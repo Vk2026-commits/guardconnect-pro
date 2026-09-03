@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Award, Video, User, Briefcase, Clock, Upload, FileText, Info, GraduationCap } from "lucide-react";
+import { Award, Video, User, Briefcase, Clock, Upload, FileText, Info, GraduationCap, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CertificationsManager } from "./CertificationsManager";
 import { PhotoUpload } from "./PhotoUpload";
@@ -20,7 +20,7 @@ import { InterestedJobsPanel } from "./InterestedJobsPanel";
 import JobSearch from "./JobSearch";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { OfficerSidebar } from "./OfficerSidebar";
-import { ExpiringCredentialsAlert } from "./ExpiringCredentialsAlert";
+import { useExpiringCredentials } from "@/hooks/useExpiringCredentials";
 
 interface OfficerDashboardProps {
   userId: string;
@@ -34,6 +34,8 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
   const [uploadingResume, setUploadingResume] = useState(false);
   const [certCount, setCertCount] = useState(0);
   const [trainingCount, setTrainingCount] = useState(0);
+  const expiringItems = useExpiringCredentials(userId, "officer");
+  const urgentExpiring = expiringItems.some((i) => i.daysLeft <= 30);
   const [photoCount, setPhotoCount] = useState(0);
   const [workHistoryCount, setWorkHistoryCount] = useState(0);
   const [formData, setFormData] = useState({
@@ -282,7 +284,6 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
 
   return (
     <SidebarProvider>
-      <ExpiringCredentialsAlert userId={userId} mode="officer" />
       <div className="flex w-full min-h-screen">
         <OfficerSidebar 
           activeTab={activeTab} 
@@ -311,7 +312,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
 
           <div className="space-y-6">
             {activeTab !== "find-jobs" && (
-              <div className="grid md:grid-cols-4 gap-4">
+              <div className="grid md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Profile</CardTitle>
@@ -346,6 +347,28 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
           <CardContent>
             <div className="text-2xl font-bold">{trainingCount}</div>
             <p className="text-xs text-muted-foreground">Add your training certificates</p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`cursor-pointer transition-colors hover:bg-accent/50 ${urgentExpiring ? "border-destructive/50" : ""}`}
+          onClick={() => setActiveTab("certifications")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Expiring Skills</CardTitle>
+            <AlertTriangle className={`h-4 w-4 ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`} />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${urgentExpiring ? "text-destructive" : ""}`}>
+              {expiringItems.length}
+            </div>
+            <p className={`text-xs ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`}>
+              {expiringItems.length === 0
+                ? "No credentials expiring soon"
+                : urgentExpiring
+                ? "Expiring within 30 days"
+                : "Expiring within 90 days"}
+            </p>
           </CardContent>
         </Card>
 
