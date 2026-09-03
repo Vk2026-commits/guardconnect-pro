@@ -312,7 +312,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
 
           <div className="space-y-6">
             {activeTab !== "find-jobs" && (
-              <div className="grid md:grid-cols-4 gap-4">
+              <div className="grid md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Profile</CardTitle>
@@ -347,6 +347,28 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
           <CardContent>
             <div className="text-2xl font-bold">{trainingCount}</div>
             <p className="text-xs text-muted-foreground">Add your training certificates</p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`cursor-pointer transition-colors hover:bg-accent/50 ${urgentExpiring ? "border-destructive/50" : ""}`}
+          onClick={() => setActiveTab("certifications")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Expiring Skills</CardTitle>
+            <AlertTriangle className={`h-4 w-4 ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`} />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${urgentExpiring ? "text-destructive" : ""}`}>
+              {expiringItems.length}
+            </div>
+            <p className={`text-xs ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`}>
+              {expiringItems.length === 0
+                ? "No credentials expiring soon"
+                : urgentExpiring
+                ? "Expiring within 30 days"
+                : "Expiring within 90 days"}
+            </p>
           </CardContent>
         </Card>
 
