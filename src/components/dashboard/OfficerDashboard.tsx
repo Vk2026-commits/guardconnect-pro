@@ -34,6 +34,8 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
   const [uploadingResume, setUploadingResume] = useState(false);
   const [certCount, setCertCount] = useState(0);
   const [trainingCount, setTrainingCount] = useState(0);
+  const expiringItems = useExpiringCredentials(userId, "officer");
+  const urgentExpiring = expiringItems.some((i) => i.daysLeft <= 30);
   const [photoCount, setPhotoCount] = useState(0);
   const [workHistoryCount, setWorkHistoryCount] = useState(0);
   const [formData, setFormData] = useState({
@@ -282,7 +284,6 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
 
   return (
     <SidebarProvider>
-      <ExpiringCredentialsAlert userId={userId} mode="officer" />
       <div className="flex w-full min-h-screen">
         <OfficerSidebar 
           activeTab={activeTab} 
