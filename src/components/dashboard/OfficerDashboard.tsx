@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Award, Video, User, Briefcase, Clock, Upload, FileText, Info, GraduationCap } from "lucide-react";
+import { Award, Video, User, Briefcase, Clock, Upload, FileText, Info, GraduationCap, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CertificationsManager } from "./CertificationsManager";
 import { PhotoUpload } from "./PhotoUpload";
@@ -20,7 +20,7 @@ import { InterestedJobsPanel } from "./InterestedJobsPanel";
 import JobSearch from "./JobSearch";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { OfficerSidebar } from "./OfficerSidebar";
-import { ExpiringCredentialsAlert } from "./ExpiringCredentialsAlert";
+import { useExpiringCredentials } from "@/hooks/useExpiringCredentials";
 
 interface OfficerDashboardProps {
   userId: string;
