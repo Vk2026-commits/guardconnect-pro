@@ -314,12 +314,12 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
             {activeTab !== "find-jobs" && (
               <div className="grid md:grid-cols-5 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 h-14">
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 py-2 h-[4.5rem]">
             <CardTitle className="text-sm font-medium leading-tight">Profile</CardTitle>
             <User className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold break-words">
+            <div className="text-xl font-bold whitespace-nowrap">
               {officerProfile ? "Complete" : "Incomplete"}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -329,23 +329,23 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 h-14">
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 py-2 h-[4.5rem]">
             <CardTitle className="text-sm font-medium leading-tight">Certifications and Certificates</CardTitle>
             <Award className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold break-words">{certCount}</div>
+            <div className="text-xl font-bold">{certCount}</div>
             <p className="text-xs text-muted-foreground">Add your certifications and certificates</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 h-14">
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 py-2 h-[4.5rem]">
             <CardTitle className="text-sm font-medium leading-tight">Trainings</CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold break-words">{trainingCount}</div>
+            <div className="text-xl font-bold">{trainingCount}</div>
             <p className="text-xs text-muted-foreground">Add your training certificates</p>
           </CardContent>
         </Card>
@@ -354,12 +354,12 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
           className={`cursor-pointer transition-colors hover:bg-accent/50 ${urgentExpiring ? "border-destructive/50" : ""}`}
           onClick={() => setActiveTab("certifications")}
         >
-          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 h-14">
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 py-2 h-[4.5rem]">
             <CardTitle className="text-sm font-medium leading-tight">Expiring Skills</CardTitle>
             <AlertTriangle className={`h-4 w-4 shrink-0 mt-0.5 ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`} />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold break-words ${urgentExpiring ? "text-destructive" : ""}`}>
+            <div className={`text-xl font-bold ${urgentExpiring ? "text-destructive" : ""}`}>
               {expiringItems.length}
             </div>
             <p className={`text-xs ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`}>
@@ -373,12 +373,12 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 h-14">
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 py-2 h-[4.5rem]">
             <CardTitle className="text-sm font-medium leading-tight">Video Interviews</CardTitle>
             <Video className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold break-words">0</div>
+            <div className="text-xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">Upload your interview</p>
           </CardContent>
         </Card>
