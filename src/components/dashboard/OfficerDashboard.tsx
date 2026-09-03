@@ -32,6 +32,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
   const [loading, setLoading] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
   const [certCount, setCertCount] = useState(0);
+  const [trainingCount, setTrainingCount] = useState(0);
   const [photoCount, setPhotoCount] = useState(0);
   const [workHistoryCount, setWorkHistoryCount] = useState(0);
   const [formData, setFormData] = useState({
