@@ -18,6 +18,7 @@ import JobApplicants from "./JobApplicants";
 import JobApplicationsList from "./JobApplicationsList";
 import SubscriptionManager from "./SubscriptionManager";
 import { useSearchParams } from "react-router-dom";
+import { ExpiringCredentialsAlert } from "./ExpiringCredentialsAlert";
 
 interface CompanyDashboardProps {
   userId: string;
@@ -179,6 +180,7 @@ const CompanyDashboard = ({ userId, userName }: CompanyDashboardProps) => {
 
   return (
     <SidebarProvider>
+      <ExpiringCredentialsAlert userId={userId} mode="company" />
       <div className="flex min-h-[calc(100vh-4rem)] w-full">
         <CompanySidebar activeTab={activeTab} onTabChange={setActiveTab} />
         
