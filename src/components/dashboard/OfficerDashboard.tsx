@@ -309,7 +309,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
 
           <div className="space-y-6">
             {activeTab !== "find-jobs" && (
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Profile</CardTitle>
@@ -333,6 +333,17 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
           <CardContent>
             <div className="text-2xl font-bold">{certCount}</div>
             <p className="text-xs text-muted-foreground">Add your certifications and certificates</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Trainings</CardTitle>
+            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{trainingCount}</div>
+            <p className="text-xs text-muted-foreground">Add your training certificates</p>
           </CardContent>
         </Card>
 
