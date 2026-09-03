@@ -130,12 +130,14 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
 
       // Load counts for completion status
       if (data.id) {
-        const [certsResult, workResult] = await Promise.all([
-          supabase.from("certifications").select("id", { count: 'exact' }).eq("officer_id", data.id),
+        const [certsResult, trainingsResult, workResult] = await Promise.all([
+          supabase.from("certifications").select("id", { count: 'exact' }).eq("officer_id", data.id).neq("certification_type", "training"),
+          supabase.from("certifications").select("id", { count: 'exact' }).eq("officer_id", data.id).eq("certification_type", "training"),
           supabase.from("work_history").select("id", { count: 'exact' }).eq("officer_id", data.id)
         ]);
         
         setCertCount(certsResult.count || 0);
+        setTrainingCount(trainingsResult.count || 0);
         setWorkHistoryCount(workResult.count || 0);
         // Photos count is based on avatar_url presence
         setPhotoCount(data.avatar_url ? 1 : 0);
