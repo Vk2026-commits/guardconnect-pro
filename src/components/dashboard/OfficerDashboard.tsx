@@ -314,7 +314,7 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
             {activeTab !== "find-jobs" && (
               <div className="grid md:grid-cols-5 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-h-[3.25rem]">
             <CardTitle className="text-sm font-medium">Profile</CardTitle>
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -329,9 +329,9 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Certifications and Certificates</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-h-[3.25rem]">
+            <CardTitle className="text-sm font-medium leading-tight">Certifications and Certificates</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{certCount}</div>
@@ -340,9 +340,9 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-h-[3.25rem]">
             <CardTitle className="text-sm font-medium">Trainings</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+            <GraduationCap className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{trainingCount}</div>
@@ -354,9 +354,9 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
           className={`cursor-pointer transition-colors hover:bg-accent/50 ${urgentExpiring ? "border-destructive/50" : ""}`}
           onClick={() => setActiveTab("certifications")}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-h-[3.25rem]">
             <CardTitle className="text-sm font-medium">Expiring Skills</CardTitle>
-            <AlertTriangle className={`h-4 w-4 ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`} />
+            <AlertTriangle className={`h-4 w-4 shrink-0 ${urgentExpiring ? "text-destructive" : "text-muted-foreground"}`} />
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${urgentExpiring ? "text-destructive" : ""}`}>
@@ -373,9 +373,9 @@ const OfficerDashboard = ({ userId }: OfficerDashboardProps) => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-h-[3.25rem]">
             <CardTitle className="text-sm font-medium">Video Interviews</CardTitle>
-            <Video className="h-4 w-4 text-muted-foreground" />
+            <Video className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
